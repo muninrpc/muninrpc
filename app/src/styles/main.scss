@@ -1,0 +1,29 @@
+@import 'reset';
+@import 'variables';
+@import 'components/all';
+
+html {
+
+  height: 100%;
+  width: 100%;
+
+}
+
+body {
+
+  font-family: $primary-font;
+  background: $primary-color;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 100%;
+  width: 100%;
+
+}
+
+p {
+    text-align: center;
+    color: black;
+}
