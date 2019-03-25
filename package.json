@@ -6,9 +6,10 @@
   "scripts": {
     "bundle": "webpack --mode development",
     "serve": "electron .",
-    "start": "npm-run-all --parallel bundle serve"
+    "start": "npm-run-all --parallel bundle serve",
+    "express": "nodemon app/server/web/server.js"
   },
-  "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rayyao",
+  "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
   "license": "MIT",
   "devDependencies": {
@@ -20,6 +21,7 @@
     "electron": "^4.1.1",
     "electron-reload": "^1.4.0",
     "file-loader": "^1.1.10",
+    "grpc": "^1.19.0",
     "node-sass": "^4.11.0",
     "npm-run-all": "^4.1.2",
     "sass-loader": "^7.1.0",
@@ -28,6 +30,9 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@grpc/proto-loader": "^0.4.0",
+    "express": "^4.16.4",
+    "nodemon": "^1.18.10",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   }
