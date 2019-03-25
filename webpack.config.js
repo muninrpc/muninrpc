@@ -6,8 +6,11 @@ module.exports = {
 
     entry: './app/src/renderer_process.js',
 
+    externals: ['grpc'],
+
     output: {
         path: __dirname + '/app/build',
+        libraryTarget:'commonjs2',
         publicPath: 'build/',
         filename: 'bundle.js'
     },
