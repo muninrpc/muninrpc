@@ -39,6 +39,11 @@ export default class App extends Component {
     })
   }
 
+  startServer(){
+    const { fork } = require('child_process');
+    const ps = fork(`${__dirname}/server.js`);
+  }
+
   render() {
 
     return (

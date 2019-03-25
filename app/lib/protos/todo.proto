@@ -1,0 +1,18 @@
+package todo;
+syntax = "proto3";
+
+service ListActions {
+  rpc AddItem (Item) returns (ItemList) {}
+  // rpc RemoveItem(Item) returns (ItemList) {}
+  rpc GetList(GetListParams) returns (ItemList) {}
+}
+
+message GetListParams {}
+
+message Item {
+  optional string item = 1;
+}
+
+message ItemList {
+  repeated Item items = 1;
+}

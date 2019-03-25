@@ -6,7 +6,8 @@
   "scripts": {
     "bundle": "webpack --mode development",
     "serve": "electron .",
-    "start": "npm-run-all --parallel bundle serve"
+    "start": "npm-run-all --parallel bundle serve",
+    "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron"
   },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rayyao",
   "repository": "muninrpc/muninrpc",
@@ -17,7 +18,7 @@
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.5",
     "css-loader": "^0.28.11",
-    "electron": "^4.1.1",
+    "electron": "4.0.0",
     "electron-reload": "^1.4.0",
     "file-loader": "^1.1.10",
     "node-sass": "^4.11.0",
@@ -28,6 +29,8 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@grpc/proto-loader": "^0.4.0",
+    "grpc": "^1.19.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   }
