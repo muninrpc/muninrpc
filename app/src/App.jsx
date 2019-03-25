@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
-import {render} from 'react-dom'
-import List from './components/List.jsx';
-import Buttons from './components/Buttons.jsx';
+import Target from './components/Target.jsx';
+import Result from './components/Result.jsx';
+import ProtoPreview from './components/ProtoPreview.jsx';
+import MessageBody from './components/MessageBody.jsx';
+import ServiceConfig from './components/ServiceConfig.jsx';
 
 export default class App extends Component {
 
@@ -40,12 +42,17 @@ export default class App extends Component {
   }
 
   render() {
-
     return (
-      <div className="app">
-          <List items={this.state.items} handleDeleteButton={this.handleDeleteButton}/>
-          <Buttons handleInputBoxChange={this.handleInputBoxChange} submitItem={this.submitItem} />
-      </div>
+      <React.Fragment>
+        <h1>MuninRPC</h1>
+        <div className="app">
+          <Target />
+          <Result />
+          <ProtoPreview />
+          <MessageBody />
+          <ServiceConfig />
+        </div>
+      </React.Fragment>
     )
 
   }
