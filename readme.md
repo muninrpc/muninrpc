@@ -8,5 +8,5 @@ Sterling Deng *@sterlingdeng*
 
 Edward Ryan *@15ryane* 
 
-Ray Yao *@RocaRay*
+Ray Yao *@rocaray*
 

@@ -1,0 +1,16 @@
+syntax = "proto3";
+package todo;
+
+service ListActions {
+  rpc GetList(GetListParams) return (ItemList) {}
+}
+
+message GetListParam {}
+
+message Item {
+  optional string Item = 1;
+}
+
+message ItemList{
+  repeated Item ItemList = 1
+}

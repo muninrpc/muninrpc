@@ -9,7 +9,7 @@
     "start": "npm-run-all --parallel bundle serve",
     "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron"
   },
-  "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rayyao",
+  "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
   "license": "MIT",
   "devDependencies": {
@@ -31,6 +31,7 @@
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
     "grpc": "^1.19.0",
+    "express": "^4.16.4",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   }

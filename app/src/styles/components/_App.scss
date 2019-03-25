@@ -1,3 +1,11 @@
 .app {
-
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  grid-template-rows: 30% 70%;
+  grid-template-areas: 
+  "target result result" 
+  "preview message config";
 }
+
