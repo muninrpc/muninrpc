@@ -1,0 +1,36 @@
+.right {
+  height: 100%;
+  width: 30%;
+
+  span {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .response-display {
+    margin-top: 10px;
+    background: white;
+    border: 1px solid #7FC4FD;
+    height: 80%;
+  }
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 2rem;
+    margin: 30px 0;
+  }
+
+  img {
+   margin: 0 10px;
+   height: 30px; 
+   width: 30px;
+  }
+
+  h2 {
+
+  }
+
+}

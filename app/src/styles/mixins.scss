@@ -1,0 +1,7 @@
+@mixin center {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  vertical-align: center;
+}

@@ -1,0 +1,71 @@
+.left {
+  width: 70%;
+  height: 100%;
+
+  .input-header {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 60px;
+    margin-bottom: 10px;
+
+    label {
+      border: 1px solid #BCE0FD;
+      border-radius: 6px;
+      padding: 5px;
+      width: auto;
+      font-size: 0.7rem;
+      background: white;
+      height: 1.5rem;
+      color: $secondary-color;
+      transition: all ease 0.2s;
+    }
+    
+    .upload-box-contents {
+      display: flex;
+      align-items: center;
+
+      span {
+        background: white;
+        color: $secondary-color;
+
+        margin-left: 10px;
+        overflow: hidden;
+        padding: 5px;
+        width: 67%;
+
+        font-size: 0.85rem;
+      }
+
+      .hide-me {
+        height: 0.1px; 
+        width: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+      }
+
+    }
+
+    input {
+      width: 80%;
+    }
+
+  }
+
+  .address-box {
+    width: 50%;
+  }
+
+  .upload-box {
+    width: 50%;
+  }
+
+  .main {
+
+    height: 78%;
+    width: 95%;
+
+    background: white;
+  }
+
+
+}
