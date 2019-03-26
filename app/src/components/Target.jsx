@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 
-export default function TargetUpload() {
+export default function Target(props) {
   return (
     <div id="Target">
       <p>Target Server IP</p>
-      <input type="text" placeholder="Enter request URL"></input>
+      <input type="text" placeholder="Enter request URL" />
       <p>Upload .proto file</p>
-      <textarea></textarea>
-      <button>Upload</button>
+      <input type="file" onChange={props.handleFileChosen} />
     </div>
-  )
+  );
 }

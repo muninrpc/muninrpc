@@ -1,47 +1,61 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react';
 import Target from './components/Target.jsx';
 import Result from './components/Result.jsx';
 import ProtoPreview from './components/ProtoPreview.jsx';
 import MessageBody from './components/MessageBody.jsx';
 import ServiceConfig from './components/ServiceConfig.jsx';
+import * as grpc from 'grpc';
+
+// import protobuf and grpc functions
+import { loadProtoFile } from '../lib/local/pbActions';
 
 export default class App extends Component {
-
   constructor() {
-    super()
+    super();
     this.state = {
-      inputBox: "",
-      items: []
+      inputBox: '',
+      items: [],
+      protoPath: ''
+    };
+    this.handleDeleteButton = this.handleDeleteButton.bind(this);
+    this.handleInputBoxChange = this.handleInputBoxChange.bind(this);
+    this.submitItem = this.submitItem.bind(this);
+    this.handleFileChosen = this.handleFileChosen.bind(this);
+  }
+
+  handleFileChosen(e) {
+    const file = e.target.files[0];
+    if (file) {
+      console.log(file.path);
+      this.setState({ protoPath: file.path }, () => {
+        loadProtoFile(this.state.protoPath);
+      });
+    } else {
+      throw new Error('incorrect file path');
     }
-    this.handleDeleteButton = this.handleDeleteButton.bind(this)
-    this.handleInputBoxChange = this.handleInputBoxChange.bind(this)
-    this.submitItem = this.submitItem.bind(this)
   }
 
   handleDeleteButton(e) {
-    const idx = e.target.name
-    this.setState(prevState => (
-      {...prevState.items.splice(idx, 1)}
-    ))
-
+    const idx = e.target.name;
+    this.setState(prevState => ({ ...prevState.items.splice(idx, 1) }));
   }
 
   handleInputBoxChange(e) {
     this.setState({
       inputBox: e.target.value
-    })
+    });
   }
 
-  submitItem(){
-    let items = [...this.state.items, this.state.inputBox]
+  submitItem() {
+    let items = [...this.state.items, this.state.inputBox];
     // items.push(this.state.inputBox)
     this.setState({
-      inputBox: "",
+      inputBox: '',
       items
-    })
+    });
   }
 
-  startServer(){
+  startServer() {
     const { fork } = require('child_process');
     const ps = fork(`${__dirname}/server.js`);
   }
@@ -51,14 +65,13 @@ export default class App extends Component {
       <React.Fragment>
         <h1>MuninRPC</h1>
         <div className="app">
-          <Target />
+          <Target handleFileChosen={this.handleFileChosen} />
           <Result />
           <ProtoPreview />
           <MessageBody />
           <ServiceConfig />
         </div>
       </React.Fragment>
-    )
-
+    );
   }
 }
