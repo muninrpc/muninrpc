@@ -1,0 +1,26 @@
+.footer {
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  height: 40px;
+  width: 100%;
+
+  button {
+    width: 15%;
+    background: yellow;
+  }
+
+  .response-metrics {
+    width: 30%;
+    background: green;
+    color: white;
+  }
+
+  .trail {
+      width: 40%;
+      background: white;
+  }
+
+}
+

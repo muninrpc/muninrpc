@@ -1,0 +1,17 @@
+.right {
+  height: 100%;
+  width: 30%;
+
+  span {
+    width: 100%;
+    display: inline-flex;
+    justify-content: flex-end;
+  }
+
+  .response-display {
+    background: lightgrey;
+    height: 92%;
+  }
+
+  
+}
