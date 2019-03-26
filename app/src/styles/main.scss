@@ -1,5 +1,6 @@
 @import 'reset';
 @import 'variables';
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import 'mixins';
 @import 'components/all';
 
@@ -25,8 +26,15 @@ body {
   width: 90%;
   padding: 5% 5%;
 
-  min-width: 450px;
-  min-height: 500px;
+  min-width: 800px;
+  min-height: 800px;
+}
+
+h2 {
+  color: #2699FB;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-bottom: 2px;
 }
 
 p {

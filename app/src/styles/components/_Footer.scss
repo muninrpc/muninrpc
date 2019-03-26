@@ -3,23 +3,39 @@
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  height: 40px;
+  height: 50px;
   width: 100%;
+  margin-top: 30px;
 
   button {
-    width: 15%;
-    background: yellow;
-  }
-
-  .response-metrics {
-    width: 30%;
-    background: green;
+    height: 1.6rem;
+    width: 9.0%;
+    margin: 0 0.25%;
+    background: #2699FB;
     color: white;
   }
 
+  .send-button {
+
+    margin-right: 4%;
+  }
+
+  .response-metrics {
+    height: 1.6rem;
+    width: 30%;
+    padding: 5px;
+    background: white;
+    text-align: right;
+    color: darkgrey;
+    
+  }
+
   .trail {
-      width: 40%;
-      background: white;
+    height: 1.6rem;
+    width: 48%;
+    padding: 5px;
+    background: white;
+    color: darkgrey;
   }
 
 }
