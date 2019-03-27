@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react';
 
 export default function Service() {
   return (
@@ -12,7 +12,7 @@ export default function Service() {
         <img src="rune" />
         <input type="text" placeholder="type a service" />
       </div>
-      <div className="search-area"></div>
+      <div className="search-area" />
     </div>
-  )
+  );
 }

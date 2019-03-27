@@ -16,6 +16,10 @@
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "@babel/preset-react": "^7.0.0",
+    "@types/node": "^11.12.0",
+    "@types/protobufjs": "^6.0.0",
+    "@types/react": "^16.8.8",
+    "@types/react-dom": "^16.8.3",
     "babel-loader": "^8.0.5",
     "css-loader": "^0.28.11",
     "electron": "4.0.0",
@@ -25,13 +29,15 @@
     "npm-run-all": "^4.1.2",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.3.4000",
     "webpack": "^4.1.1",
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
-    "grpc": "^1.19.0",
     "express": "^4.16.4",
+    "grpc": "^1.19.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   }

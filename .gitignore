@@ -1,8 +1,11 @@
 # Bundle
 **/build
+/app/build
 
 # package.lock
 package-lock.json
+
+_*
 
 # Logs
 logs
