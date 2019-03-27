@@ -1,12 +1,16 @@
 @import 'reset';
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import 'variables';
+@import 'mixins';
 @import 'components/all';
 
-html {
+* {
+  box-sizing: border-box;
+}
 
+html {
   height: 100%;
   width: 100%;
-
 }
 
 body {
@@ -19,8 +23,24 @@ body {
   align-items: center;
 
   height: 80%;
-  width: 80%;
-  padding: 5% 10%;
+  width: 90%;
+  padding: 5% 5%;
+
+  min-width: 800px;
+  min-height: 700px;
+}
+
+h2 {
+  color: #2699FB;
+  font-weight: 600;
+  font-size: 1.0rem;
+}
+
+h3 {
+  color: #2699FB;
+  font-weight: 600;
+  font-size: 0.7rem;
+  margin-bottom: 5px;
 }
 
 p {
@@ -30,53 +50,4 @@ p {
 
 textarea {
   resize: none;
-}
-
-#app{
-  height: 100%;
-  width: 100%;
-}
-
-#Target{
-  border: 1px solid red;
-  grid-area: target;
-}
-
-#result{
-  border: 1px solid purple;
-  grid-area: result;
-  div{
-    background: white;
-    border: 1px solid black;
-  }
-}
-
-.resultbox {
-  height: 3em;
-}
-
-#protopreview{
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  border: 1px solid yellow;
-  grid-area: preview;
-  p {
-    margin-top: 8px;
-  }
-  textarea {
-    height: 90%;
-    width: 90%;
-  }
-}
-
-#messagebody{
-  border: 1px solid green;
-  grid-area: message;
-}
-
-#serviceconfig{
-  border: 1px solid blue;
-  grid-area: config;
 }

@@ -1,0 +1,49 @@
+.right {
+  height: 100%;
+  width: 30%;
+
+  span {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .response-display {
+    margin: 10px 0;
+    padding: 7px;
+    background: white;
+    border: 1px solid #7FC4FD;
+    height: 80%;
+    width: 100%;
+  }
+
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 2rem;
+    margin: 30px 0;
+  }
+
+  img {
+   margin: 0 10px;
+   height: 30px; 
+   width: 30px;
+  }
+
+  h2 {
+
+  }
+
+  .response-metrics {
+    height: 1.6rem;
+    width: 100%;
+    padding: 5px;
+    background: white;
+    text-align: right;
+    border: 1px solid #7FC4FD;
+    color: darkgrey;
+    
+  }
+
+}
