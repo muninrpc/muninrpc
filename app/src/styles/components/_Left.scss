@@ -34,7 +34,7 @@
         }
 
         label {
-          border: 1px solid #BCE0FD;
+          border: 1px solid $secondary-color;
           border-radius: 6px;
           padding: 5px 10px;
           font-size: 0.7rem;
@@ -43,11 +43,13 @@
           color: $secondary-color;
           text-align: center;
           transition: all ease 0.2s;
+
         }
         label:hover {
           border: 1px solid #2699FB;
           background: #2699FB;
           color: white;
+          cursor: pointer;
         }
       }
     }
@@ -74,6 +76,7 @@
     height: 82%;
     width: 100%;
     margin-bottom: 16px;
+    padding: 2px;
     background: white;
   }
 
@@ -88,6 +91,22 @@
       margin-left: 10px;
       background: #2699FB;
       color: white;
+    }
+
+    .connection-display {
+      height: 1.6rem;
+      flex-grow: 0.6;
+      margin-left: 10px;
+      background: white;
+      border-radius: 6px;
+      opacity: 0.9;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #005AA7;  
     }
 
     .trail {

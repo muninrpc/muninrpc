@@ -27,7 +27,6 @@
       "check-else",
       "check-whitespace"
     ],
-    "quotemark": [true, "single"],
     "semicolon": [true, "always"],
     "triple-equals": [true, "allow-null-check"],
     "use-strict": true,
