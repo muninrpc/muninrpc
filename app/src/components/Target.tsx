@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 
-export default function Target(props) {
+export function Target(props) {
   return (
     <div id="Target">
       <p>Target Server IP</p>

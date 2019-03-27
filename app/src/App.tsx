@@ -1,16 +1,26 @@
-import React, { Component } from 'react';
-import Target from './components/Target.jsx';
-import Result from './components/Result.jsx';
-import ProtoPreview from './components/ProtoPreview.jsx';
-import MessageBody from './components/MessageBody.jsx';
-import ServiceConfig from './components/ServiceConfig.jsx';
+import * as React from 'react';
+import {
+  Target,
+  Result,
+  ProtoPreview,
+  MessageBody,
+  ServiceConfig
+} from './components';
 
 // import protobuf and grpc functions
 import { loadProtoFile, parsePackageDefinition } from '../lib/local/pbActions';
 
-export default class App extends Component {
-  constructor() {
-    super();
+// define the interface
+
+interface AppState {
+  inputBox: string;
+  items?: any[];
+  [key: string]: any;
+}
+
+export default class App extends React.Component<{}, AppState> {
+  constructor(props) {
+    super(props);
     this.state = {
       inputBox: '',
       items: [],
@@ -36,6 +46,7 @@ export default class App extends Component {
       console.log(file.path);
       this.setState({ protoPath: file.path }, () => {
         const pkgDefn = loadProtoFile(this.state.protoPath);
+        //@ts-ignore
         const { svcs, msgs } = parsePackageDefinition(pkgDefn);
         this.setState({
           protoServices: svcs,

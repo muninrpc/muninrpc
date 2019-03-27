@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as protoLoader from '@grpc/proto-loader';
 
 /**
@@ -6,7 +5,10 @@ import * as protoLoader from '@grpc/proto-loader';
  * @param {string} protoPath loads a protobuf file at the specified path.
  * @returns {packageDefinition} returns the package definition
  */
-export const loadProtoFile = protoPath => {
+
+export const loadProtoFile = (
+  protoPath: string
+): protoLoader.PackageDefinition => {
   const packageDefinition = protoLoader.loadSync(protoPath, {
     keepCase: true,
     longs: String,
@@ -18,7 +20,9 @@ export const loadProtoFile = protoPath => {
   return packageDefinition;
 };
 
-export const parsePackageDefinition = pkgDefn => {
+export const parsePackageDefinition = (
+  pkgDefn: protoLoader.PackageDefinition
+) => {
   const protoMessages = {};
   let protoServices = {};
 

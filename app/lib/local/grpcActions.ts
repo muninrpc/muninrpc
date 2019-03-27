@@ -1,9 +1,10 @@
 import * as grpc from 'grpc';
 
 export const runCall = (reqConfig, callType) => {
-  const { grpcURI, package, service, request, protoPath } = reqConfig;
+  let { grpcURI, pkg, service, request, protoPath } = reqConfig;
 
   // load package definition
+  // @ts-ignore
   const packageDefinition = grpc.packageDefinition(protoPath, {
     keepCase: true,
     longs: String,
@@ -13,10 +14,10 @@ export const runCall = (reqConfig, callType) => {
   });
 
   // load package
-  const package = grpc.loadPackageDefinition(packageDefinition)[package];
+  const package1 = grpc.loadPackageDefinition(packageDefinition)[pkg];
 
   // create client
-  const client = new package[service].
+  // const client = new package[service].
 
   function unaryCall() {
     // handle unaryCall

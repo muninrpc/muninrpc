@@ -1,6 +1,6 @@
-import React from 'react'
+import * as React from 'react';
 
-export default function ServiceConfig() {
+export function ServiceConfig() {
   return (
     <div id="serviceconfig">
       {/* <div class="dropdown">
@@ -13,5 +13,5 @@ export default function ServiceConfig() {
       </div> */}
       <button>Send Request</button>
     </div>
-  )
+  );
 }
