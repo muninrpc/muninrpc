@@ -4,10 +4,9 @@ import Result from './components/Result.jsx';
 import ProtoPreview from './components/ProtoPreview.jsx';
 import MessageBody from './components/MessageBody.jsx';
 import ServiceConfig from './components/ServiceConfig.jsx';
-import * as grpc from 'grpc';
 
 // import protobuf and grpc functions
-import { loadProtoFile } from '../lib/local/pbActions';
+import { loadProtoFile, parsePackageDefinition } from '../lib/local/pbActions';
 
 export default class App extends Component {
   constructor() {
@@ -15,7 +14,15 @@ export default class App extends Component {
     this.state = {
       inputBox: '',
       items: [],
-      protoPath: ''
+      protoServices: {},
+      protoMessages: {},
+      requestConfig: {
+        protoPath: '',
+        grpcURI: '',
+        package: '',
+        service: '',
+        request: ''
+      }
     };
     this.handleDeleteButton = this.handleDeleteButton.bind(this);
     this.handleInputBoxChange = this.handleInputBoxChange.bind(this);
@@ -28,7 +35,12 @@ export default class App extends Component {
     if (file) {
       console.log(file.path);
       this.setState({ protoPath: file.path }, () => {
-        loadProtoFile(this.state.protoPath);
+        const pkgDefn = loadProtoFile(this.state.protoPath);
+        const { svcs, msgs } = parsePackageDefinition(pkgDefn);
+        this.setState({
+          protoServices: svcs,
+          protoMessages: msgs
+        });
       });
     } else {
       throw new Error('incorrect file path');
