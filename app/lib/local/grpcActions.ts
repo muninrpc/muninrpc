@@ -4,7 +4,6 @@ export const runCall = (reqConfig, callType) => {
   let { grpcURI, pkg, service, request, protoPath } = reqConfig;
 
   // load package definition
-  // @ts-ignore
   const packageDefinition = grpc.packageDefinition(protoPath, {
     keepCase: true,
     longs: String,
