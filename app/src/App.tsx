@@ -20,6 +20,7 @@ export namespace App {
     mode: MainModel.Mode
   }
 }
+
 @connect(
   (state: RootState, ownProps): Pick<App.Props, 'main' | 'mode'> => {
     const hash = ownProps.location && ownProps.location.hash.replace('#', ''); // ???
@@ -30,16 +31,17 @@ export namespace App {
     actions: bindActionCreators(omit(mainActions, 'Type'), dispatch)
   })
 )
-export default class App extends React.Component {
-
-  constructor(props) {
+export default class App extends React.Component<App.Props, {}> {
+  constructor(props: any) {
     super(props);
+    console.log('this.props:', this.props)
   }
-
   render() {
+    const { targetIP, filePath } = this.props.main;
+    const { handleIPInput, handleProtoUpload } = this.props.actions;
     return (
       <div className="app">
-        <Left />
+        <Left targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
         <Right />
       </div>
     );

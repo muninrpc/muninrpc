@@ -5,5 +5,5 @@ export interface RootState {
 }
 
 export namespace RootState {
-  export type mainState = MainModel[];
+  export type mainState = MainModel;
 }
