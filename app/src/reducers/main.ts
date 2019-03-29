@@ -3,29 +3,29 @@ import { RootState } from './state';
 import { mainActions } from '../actions';
 import { MainModel } from '../models/MainModel';
 
-const initialState: RootState.mainState = [
+const initialState: RootState.mainState = 
   {
     responseDisplay: 'eggplant 🍆',
     responseMetrics: 'string',
-    targetIP: 'eggplant',
-    filePath: 'omg',
+    targetIP: '',
+    filePath: '',
     trail: 'eggplant',
     connectType: 'lol'
   }
-];
+;
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
   {
     [mainActions.Type.HANDLE_IP_INPUT]: (state, action) => (
       {
-        targetIP: action.payload,
-        ...state
+        ...state,
+        targetIP: action.payload
       }
     ),
     [mainActions.Type.HANDLE_PROTO_UPLOAD]: (state, action) => (
       {
-        filePath: action.payload[0].path,
-        ...state
+        ...state,
+        filePath: action.payload[0].path
       }
     ),
   },
