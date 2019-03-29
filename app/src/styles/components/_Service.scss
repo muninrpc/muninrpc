@@ -1,21 +1,64 @@
-.service {
+.service-request {
+  height: 100%;
+  padding: 10px 30px;
+  padding-top: 30px;
+  background: white;
+  display: flex;
 
-  button {
-    border-radius: 2px;
-    margin: 0 4px;
+  .left {
+    height: 100%;
+    width: 50%;
+
+    .service-header {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+
+      img {
+        height: 1rem;
+        width: 1rem;
+      }
+
+      input {
+        flex-grow: 1;
+        height: 1.3rem;
+        border-radius: 5px;
+        padding-left: 5px;
+        border: 1px solid white;
+      }
+    }
+    .service-area {
+      border: 1px solid black;
+      height: 100%;
+    }
   }
 
-  .service-button{
-    background: #ACC4D8;
-    color: white;
-  }
-  .request-button{
-    background: #BCE0FD;
-    color: #602121;
-  }
-  .req-config-button{
-    background: white;
-    color: #602121;
+  .right {
+    height: 100%;
+    width: 50%;
+
+    .request-header {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+
+      img {
+        height: 1rem;
+        width: 1rem;
+      }
+
+      input {
+        flex-grow: 1;
+        height: 1.3rem;
+        border-radius: 5px;
+        padding-left: 5px;
+        border: 1px solid white;
+      }
+    }
+    .request-area {
+      border: 1px solid black;
+      height: 100%;
+    }
   }
 
 }

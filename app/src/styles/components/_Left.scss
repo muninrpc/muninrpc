@@ -7,7 +7,7 @@
     display: flex;
     justify-content: space-between;
     margin-top: 50px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 
     .upload-box {
       width: 50%;
@@ -16,14 +16,22 @@
         display: flex;
         align-items: center;
 
-        span {
+        .file-path {
           background: white;
           color: $secondary-color;
-          overflow: hidden;
+          overflow-y: scroll;
           margin-left: 10px;
           padding: 5px;
           font-size: 0.85rem;
           border-radius: 6px;
+          flex-grow: 1;
+          height: 1.5rem;
+          white-space: nowrap;
+        }
+
+        .file-path::-webkit-scrollbar {
+          width:0;
+          height:0;
         }
 
         .hide-me {
@@ -70,14 +78,47 @@
 
     }
 
-  }  
+  }
+
+  .tabs {
+
+    button {
+      height: 2rem;
+      border: 0px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      margin-right: 10px;
+      margin-bottom: -5px;
+      padding: 0 30px;
+      border: 1px solid black;
+      z-index: 1;
+      transition: 0.3s ease all;
+    }
+  
+    .service-button{
+      border-bottom: 1px solid #ACC4D8;
+      background: #ACC4D8;
+      color: #392323;
+    }
+    .request-button{
+      border-bottom: 1px solid #BCE0FD;
+      background: #BCE0FD;
+      color: #602121;
+    }
+    .req-setup-button{
+      border-bottom: 1px solid white;
+      background: white;
+      color: #602121;
+    }
+  }
 
   .main {
     height: 82%;
     width: 100%;
     margin-bottom: 16px;
-    padding: 2px;
     background: white;
+    border: 1px solid black;
+    box-shadow: black;
   }
 
   .footer-left {

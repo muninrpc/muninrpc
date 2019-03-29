@@ -1,50 +1,68 @@
 import * as React from 'react';
-import { Left, Right } from './components';
+import { connect } from 'react-redux';
+import { bindActionCreators, Dispatch } from 'redux';
+// import { RouteComponentProps } from 'react-router';
+import { mainActions } from './actions';
+import { RootState } from './reducers';
+import { MainModel } from './models';
+import { omit } from './utils';
+import Left from './components/Left';
+import Right from './components/Right';
 
-// import protobuf and grpc functions
-import { loadProtoFile, parsePackageDefinition } from '../lib/local/pbActions';
+const MODE_VALUES = (Object.keys(
+  MainModel.Mode
+) as (keyof typeof MainModel.Mode)[]).map(key => MainModel.Mode[key]);
 
-interface AppState {
-  protoPath: string;
-  protoServices: any;
-  protoMessages: any;
+export namespace App {
+  export interface Props {
+    main: RootState.mainState;
+    actions: mainActions;
+    mode: MainModel.Mode;
+  }
 }
 
-export default class App extends React.Component<{}, AppState> {
-  constructor(props) {
+@connect(
+  (state: RootState, ownProps): Pick<App.Props, 'main' | 'mode'> => {
+    const hash = ownProps.location && ownProps.location.hash.replace('#', ''); // ???
+    const mode =
+      MODE_VALUES.find(value => value === hash) || MainModel.Mode.SHOW_SERVICE;
+    return { main: state.main, mode };
+  },
+  (dispatch: Dispatch): Pick<App.Props, 'actions'> => ({
+    actions: bindActionCreators(omit(mainActions, 'Type'), dispatch)
+  })
+)
+export default class App extends React.Component<App.Props, {}> {
+  constructor(props: any) {
     super(props);
-    this.state = {
-      protoPath: ''
-    };
+    console.log('this.props:', this.props);
+    console.log('MODE_VALUES are...', MODE_VALUES);
   }
-
-  /**
-   * remove below once redux implemented
-   */
-
-  handleFileChosen(e) {
-    const file = e.target.files[0];
-    if (file) {
-      console.log(file.path);
-      this.setState({ protoPath: file.path }, () => {
-        const pkgDefn = loadProtoFile(this.state.protoPath);
-        //@ts-ignore
-        const { svcs, msgs } = parsePackageDefinition(pkgDefn);
-        this.setState({
-          protoServices: svcs,
-          protoMessages: msgs
-        });
-      });
-    } else {
-      throw new Error('incorrect file path');
-    }
-  }
-
   render() {
+    const {
+      targetIP,
+      filePath,
+      mode,
+      serviceList,
+      requestList
+    } = this.props.main;
+    const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
-      <div className="app">
-        <Left />
-        <Right />
+      <div className="wrapper">
+        <div className="header" />
+        <div className="app">
+          <Left
+            serviceList={serviceList}
+            requestList={requestList}
+            setMode={setMode}
+            mode={mode}
+            targetIP={targetIP}
+            filePath={filePath}
+            handleIPInput={handleIPInput}
+            handleProtoUpload={handleProtoUpload}
+          />
+          <Right />
+        </div>
       </div>
     );
   }
