@@ -8,6 +8,7 @@ import { MainModel } from './models';
 import { omit } from './utils';
 import Left from './components/Left';
 import Right from './components/Right';
+import Header from './components/Header'
 
 const MODE_VALUES = (Object.keys(
   MainModel.Mode
@@ -39,6 +40,16 @@ export default class App extends React.Component<App.Props, {}> {
     console.log('MODE_VALUES are...', MODE_VALUES);
   }
   render() {
+<<<<<<< HEAD
+    const { targetIP, filePath, mode, serviceList, requestList, serverResponse, responseMetrics } = this.props.main;
+    const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
+    return (
+      <div className="wrapper">
+        <Header />
+        <div className="app">
+          <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
+          <Right serverResponse={serverResponse} responseMetrics={responseMetrics}/>
+=======
     const {
       targetIP,
       filePath,
@@ -62,6 +73,7 @@ export default class App extends React.Component<App.Props, {}> {
             handleProtoUpload={handleProtoUpload}
           />
           <Right />
+>>>>>>> 5637aa5cc7bedfb06204d16c52f1007a3aaafb66
         </div>
       </div>
     );

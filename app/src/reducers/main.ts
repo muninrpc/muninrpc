@@ -4,18 +4,20 @@ import { mainActions } from '../actions';
 import { MainModel } from '../models/MainModel';
 import * as pbActions from '../../lib/local/pbActions';
 
-const initialState: RootState.mainState = {
-  responseDisplay: 'eggplant 🍆',
-  responseMetrics: 'string',
-  targetIP: '',
-  filePath: '',
-  trail: 'eggplant',
-  connectType: 'lol',
-  mode: 'service',
-  serviceList: ['testService'],
-  requestList: ['testRequest'],
-  packageDefinition: null
-};
+const initialState: RootState.mainState = 
+  {
+    responseMetrics: 'got2go fast',
+    targetIP: '',
+    filePath: '',
+    trail: 'eggplant',
+    connectType: 'lol',
+    mode: 'service',
+    serviceList: ['testService'],
+    requestList: ['testRequest'],
+    serverResponse: ['response from server will go here'],
+    packageDefinition: null
+  }
+;
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
   {

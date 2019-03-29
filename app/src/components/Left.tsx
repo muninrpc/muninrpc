@@ -79,12 +79,15 @@ export default function Left(props: LeftProps.Props, context?: any) {
           Request Setup
         </button>
       </div>
+<<<<<<< HEAD
+=======
       <div className="main">{mode}</div>
       <div className="footer-left">
         <div className="trail">?</div>
         <div className="connection-display">unary</div>
         <button className="send-button">Send</button>
       </div>
+>>>>>>> 5637aa5cc7bedfb06204d16c52f1007a3aaafb66
     </div>
   );
 }

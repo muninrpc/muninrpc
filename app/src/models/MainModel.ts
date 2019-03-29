@@ -1,4 +1,5 @@
 import { ReactComponentElement } from "react";
+import { ServerResponse } from "http";
 
 export interface MainModel {
   responseDisplay: string,
@@ -9,7 +10,8 @@ export interface MainModel {
   connectType: string,
   mode: MainModel.Mode,
   serviceList: string[],
-  requestList: string[] 
+  requestList: string[],
+  serverResponse: string[]
 }
 
 export namespace MainModel {
