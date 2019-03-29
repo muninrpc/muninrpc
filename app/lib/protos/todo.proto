@@ -5,6 +5,8 @@ service ListActions {
   rpc AddItem (Item) returns (ItemList) {}
   // rpc RemoveItem(Item) returns (ItemList) {}
   rpc GetList(GetListParams) returns (ItemList) {}
+  rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
+  rpc CalculateAverage(stream Numbers) returns (Average) {}
 }
 
 message GetListParams {}
@@ -15,4 +17,16 @@ message Item {
 
 message ItemList {
   repeated Item items = 1;
+}
+
+message StreamResponse {
+  optional string msg = 1;
+}
+
+message Numbers {
+  int32 numb = 1;
+}
+
+message Average {
+  int32 average = 1;
 }

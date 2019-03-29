@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export default function Right() {
+export const Right = (): JSX.Element => {
   return (
     <div className="right">
       <span>
@@ -13,4 +13,4 @@ export default function Right() {
       <div className="response-metrics">?</div>
     </div>
   );
-}
+};

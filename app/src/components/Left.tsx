@@ -3,7 +3,7 @@ import Service from './Service';
 import Request from './Request';
 import Setup from './Setup';
 
-export default function Left() {
+export const Left = (): JSX.Element => {
   return (
     <div className="left">
       <div className="input-header">
@@ -40,4 +40,4 @@ export default function Left() {
       </div>
     </div>
   );
-}
+};
