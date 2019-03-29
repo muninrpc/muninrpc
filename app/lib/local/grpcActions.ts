@@ -83,7 +83,7 @@ export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
     });
   }
 
-  function clientStream(cb): Promise<{}> {
+  function clientStream(): Promise<{}> {
     // handle client stream
     const ClientStreamConfig: ClientStreamRequestBody = <
       ClientStreamRequestBody
@@ -91,22 +91,14 @@ export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
 
     if (!clientStreamCall) {
       if (ClientStreamConfig.action === StreamAction.INITIATE) {
-        return new Promise((resolve, reject) => {
-          console.log(
-            'attempting to connect to grpc server to calculate average',
-            method
-          );
-          clientStreamCall = client[method]((err, response) => {
-            if (err) {
-              reject(err);
-            }
-            console.log(response);
-            resolve(response);
-          });
-          console.log('client stream call', clientStreamCall);
-          clientStreamCall.write({ numb: 12 });
-          clientStreamCall.end();
+        clientStreamCall = client[method]((err, response) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(response);
         });
+        clientStreamCall.write({ numb: 12 });
+        clientStreamCall.end();
       }
     }
 
@@ -115,7 +107,6 @@ export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
     }
 
     if (ClientStreamConfig.action === StreamAction.KILL) {
-      console.log('attempting to close connection from client');
       clientStreamCall.end();
       clientStreamCall = undefined;
     }
