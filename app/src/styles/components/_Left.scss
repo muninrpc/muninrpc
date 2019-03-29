@@ -120,43 +120,4 @@
     border: 1px solid black;
     box-shadow: black;
   }
-
-  .footer-left {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-around;
-
-    button {
-      height: 1.6rem;
-      flex-grow: 1;
-      margin-left: 10px;
-      background: #2699FB;
-      color: white;
-    }
-
-    .connection-display {
-      height: 1.6rem;
-      flex-grow: 0.6;
-      margin-left: 10px;
-      background: white;
-      border-radius: 6px;
-      opacity: 0.9;
-      display: flex;
-      justify-content: center;
-      text-align: center;
-      align-items: center;
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #005AA7;  
-    }
-
-    .trail {
-      height: 1.6rem;
-      flex-grow: 6;
-      padding: 5px;
-      background: white;
-      color: darkgrey;
-    }
-  }
-
 }

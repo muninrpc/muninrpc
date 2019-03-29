@@ -8,6 +8,7 @@ import { MainModel } from './models';
 import { omit } from './utils';
 import Left from './components/Left';
 import Right from './components/Right';
+import Header from './components/Header'
 
 const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
   (key) => MainModel.Mode[key]
@@ -42,7 +43,7 @@ export default class App extends React.Component<App.Props, {}> {
     const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
       <div className="wrapper">
-        <div className="header"></div>
+        <Header />
         <div className="app">
           <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
           <Right />

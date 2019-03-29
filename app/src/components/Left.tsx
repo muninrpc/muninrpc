@@ -64,11 +64,6 @@ export default function Left(props: LeftProps.Props, context?: any) {
       <div className="main">
         {mode}
       </div>
-      <div className="footer-left">
-        <div className="trail">?</div>
-        <div className="connection-display">unary</div>
-        <button className="send-button">Send</button>
-      </div>
     </div>
   );
 }
