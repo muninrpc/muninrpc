@@ -10,22 +10,23 @@ import Left from './components/Left';
 import Right from './components/Right';
 import Header from './components/Header'
 
-const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
-  (key) => MainModel.Mode[key]
-);
+const MODE_VALUES = (Object.keys(
+  MainModel.Mode
+) as (keyof typeof MainModel.Mode)[]).map(key => MainModel.Mode[key]);
 
 export namespace App {
-  export interface Props{
+  export interface Props {
     main: RootState.mainState;
     actions: mainActions;
-    mode: MainModel.Mode
+    mode: MainModel.Mode;
   }
 }
 
 @connect(
   (state: RootState, ownProps): Pick<App.Props, 'main' | 'mode'> => {
     const hash = ownProps.location && ownProps.location.hash.replace('#', ''); // ???
-    const mode = MODE_VALUES.find((value) => value === hash) || MainModel.Mode.SHOW_SERVICE;
+    const mode =
+      MODE_VALUES.find(value => value === hash) || MainModel.Mode.SHOW_SERVICE;
     return { main: state.main, mode };
   },
   (dispatch: Dispatch): Pick<App.Props, 'actions'> => ({
@@ -35,10 +36,11 @@ export namespace App {
 export default class App extends React.Component<App.Props, {}> {
   constructor(props: any) {
     super(props);
-    console.log('this.props:', this.props)
-    console.log('MODE_VALUES are...', MODE_VALUES)
+    console.log('this.props:', this.props);
+    console.log('MODE_VALUES are...', MODE_VALUES);
   }
   render() {
+<<<<<<< HEAD
     const { targetIP, filePath, mode, serviceList, requestList, serverResponse, responseMetrics } = this.props.main;
     const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
@@ -47,6 +49,31 @@ export default class App extends React.Component<App.Props, {}> {
         <div className="app">
           <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
           <Right serverResponse={serverResponse} responseMetrics={responseMetrics}/>
+=======
+    const {
+      targetIP,
+      filePath,
+      mode,
+      serviceList,
+      requestList
+    } = this.props.main;
+    const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
+    return (
+      <div className="wrapper">
+        <div className="header" />
+        <div className="app">
+          <Left
+            serviceList={serviceList}
+            requestList={requestList}
+            setMode={setMode}
+            mode={mode}
+            targetIP={targetIP}
+            filePath={filePath}
+            handleIPInput={handleIPInput}
+            handleProtoUpload={handleProtoUpload}
+          />
+          <Right />
+>>>>>>> 5637aa5cc7bedfb06204d16c52f1007a3aaafb66
         </div>
       </div>
     );

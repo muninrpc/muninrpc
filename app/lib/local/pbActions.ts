@@ -6,9 +6,9 @@ import * as protoLoader from '@grpc/proto-loader';
  * @returns {packageDefinition} returns the package definition
  */
 
-export const loadProtoFile = (
+export function loadProtoFile(
   protoPath: string
-): protoLoader.PackageDefinition => {
+): protoLoader.PackageDefinition {
   const packageDefinition = protoLoader.loadSync(protoPath, {
     keepCase: true,
     longs: String,
@@ -18,21 +18,22 @@ export const loadProtoFile = (
   });
   console.log(packageDefinition);
   return packageDefinition;
-};
+}
 
-export const parsePackageDefinition = (
-  pkgDefn: protoLoader.PackageDefinition
-) => {
-  const protoMessages = {};
-  let protoServices = {};
+export function parsePackageDefinition(pkgDefn: protoLoader.PackageDefinition) {
+  const protoMessages: {
+    [index: string]: protoLoader.MessageTypeDefinition;
+  } = {};
+  const protoServices: { [index: string]: protoLoader.ServiceDefinition } = {};
 
-  Object.values(pkgDefn).forEach(val => {
-    if (!Object.hasOwnProperty.call(val, 'fileDescriptorProtos')) {
+  Object.entries(pkgDefn).forEach(entry => {
+    const [key, value] = entry;
+    if (!Object.hasOwnProperty.call(value, 'fileDescriptorProtos')) {
       // if the object lists the rpc methods
-      protoServices = { ...val };
+      protoServices[key] = <protoLoader.ServiceDefinition>value;
     } else {
       // if the object is the schema of a message
-      protoMessages[val.type.name] = val.type;
+      protoMessages[value.type.name] = <protoLoader.MessageTypeDefinition>value;
     }
   });
 
@@ -40,4 +41,4 @@ export const parsePackageDefinition = (
     protoServices,
     protoMessages
   };
-};
+}
