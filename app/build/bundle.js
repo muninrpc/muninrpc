@@ -131,14 +131,17 @@ var App = /** @class */ (function (_super) {
     function App(props) {
         var _this = _super.call(this, props) || this;
         console.log('this.props:', _this.props);
+        console.log('MODE_VALUES are...', MODE_VALUES);
         return _this;
     }
     App.prototype.render = function () {
-        var _a = this.props.main, targetIP = _a.targetIP, filePath = _a.filePath;
-        var _b = this.props.actions, handleIPInput = _b.handleIPInput, handleProtoUpload = _b.handleProtoUpload;
-        return (React.createElement("div", { className: "app" },
-            React.createElement(Left_1.default, { targetIP: targetIP, filePath: filePath, handleIPInput: handleIPInput, handleProtoUpload: handleProtoUpload }),
-            React.createElement(Right_1.default, null)));
+        var _a = this.props.main, targetIP = _a.targetIP, filePath = _a.filePath, mode = _a.mode, serviceList = _a.serviceList, requestList = _a.requestList;
+        var _b = this.props.actions, handleIPInput = _b.handleIPInput, handleProtoUpload = _b.handleProtoUpload, setMode = _b.setMode;
+        return (React.createElement("div", { className: "wrapper" },
+            React.createElement("div", { className: "header" }),
+            React.createElement("div", { className: "app" },
+                React.createElement(Left_1.default, { serviceList: serviceList, requestList: requestList, setMode: setMode, mode: mode, targetIP: targetIP, filePath: filePath, handleIPInput: handleIPInput, handleProtoUpload: handleProtoUpload }),
+                React.createElement(Right_1.default, null))));
     };
     App = __decorate([
         react_redux_1.connect(function (state, ownProps) {
@@ -192,10 +195,12 @@ var mainActions;
         Type["HANDLE_IP_INPUT"] = "HANDLE_IP_INPUT";
         Type["HANDLE_PROTO_UPLOAD"] = "HANDLE_PROTO_UPLOAD";
         Type["HANDLE_SEND_REQUEST"] = "HANDLE_SEND_REQUEST";
+        Type["HANDLE_SET_MODE"] = "HANDLE_SET_MODE";
     })(Type = mainActions.Type || (mainActions.Type = {}));
     mainActions.handleIPInput = redux_actions_1.createAction(Type.HANDLE_IP_INPUT);
     mainActions.handleProtoUpload = redux_actions_1.createAction(Type.HANDLE_PROTO_UPLOAD);
     mainActions.sendRequest = redux_actions_1.createAction(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
+    mainActions.setMode = redux_actions_1.createAction(Type.HANDLE_SET_MODE);
 })(mainActions = exports.mainActions || (exports.mainActions = {}));
 /*
 
@@ -230,6 +235,14 @@ var Service_1 = __webpack_require__(/*! ./Service */ "./app/src/components/Servi
 var Request_1 = __webpack_require__(/*! ./Request */ "./app/src/components/Request.tsx");
 var Setup_1 = __webpack_require__(/*! ./Setup */ "./app/src/components/Setup.tsx");
 function Left(props, context) {
+    var mode;
+    var serviceList = props.serviceList, requestList = props.requestList;
+    if (props.mode === 'service')
+        mode = React.createElement(Service_1.default, { serviceList: serviceList, requestList: requestList });
+    if (props.mode === 'request')
+        mode = React.createElement(Request_1.default, null);
+    if (props.mode === 'setup')
+        mode = React.createElement(Setup_1.default, null);
     return (React.createElement("div", { className: "left" },
         React.createElement("div", { className: "input-header" },
             React.createElement("div", { className: "address-box" },
@@ -242,10 +255,11 @@ function Left(props, context) {
                         "upload",
                         React.createElement("input", { type: "file", className: "hide-me", placeholder: "upload file", onChange: function (e) { return props.handleProtoUpload(e.target.files); } })),
                     React.createElement("span", { className: "file-path" }, props.filePath)))),
-        React.createElement("div", { className: "main" },
-            React.createElement(Service_1.default, null),
-            React.createElement(Request_1.default, null),
-            React.createElement(Setup_1.default, null)),
+        React.createElement("div", { className: "tabs" },
+            React.createElement("button", { onClick: function () { return props.setMode('service'); }, className: "service-button" }, "Service"),
+            React.createElement("button", { onClick: function () { return props.setMode('request'); }, className: "request-button" }, "Request"),
+            React.createElement("button", { onClick: function () { return props.setMode('setup'); }, className: "req-setup-button" }, "Request Setup")),
+        React.createElement("div", { className: "main" }, mode),
         React.createElement("div", { className: "footer-left" },
             React.createElement("div", { className: "trail" }, "?"),
             React.createElement("div", { className: "connection-display" }, "unary"),
@@ -268,14 +282,7 @@ exports.default = Left;
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 function Request() {
-    return (React.createElement("div", { className: "request" },
-        React.createElement("div", { className: "service" },
-            React.createElement("div", { className: "tabs" }),
-            React.createElement("div", { className: "search-bar" },
-                React.createElement("img", { src: "rune" }),
-                React.createElement("input", { type: "text", placeholder: "type a service" }),
-                React.createElement("div", { className: "rpc-return" })),
-            React.createElement("div", { className: "search-area" }))));
+    return (React.createElement("div", { className: "request" }, "Request!"));
 }
 exports.default = Request;
 
@@ -318,18 +325,35 @@ exports.default = Right;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-function Service() {
-    return (React.createElement("div", { className: "service" },
-        React.createElement("div", { className: "tabs" },
-            React.createElement("button", { className: "service-button" }, "Service"),
-            React.createElement("button", { className: "request-button" }, "Request"),
-            React.createElement("button", { className: "req-setup-button" }, "Request Setup")),
-        React.createElement("div", { className: "search-bar" },
-            React.createElement("img", { src: "rune" }),
-            React.createElement("input", { type: "text", placeholder: "type a service" })),
-        React.createElement("div", { className: "search-area" })));
+function Service(props, context) {
+    var serviceList = [];
+    var requestList = [];
+    if (props.serviceList) {
+        props.serviceList.forEach(function (service, idx) {
+            serviceList.push(React.createElement("p", { key: "servItem" + idx }, service));
+        });
+    }
+    if (props.requestList) {
+        props.requestList.forEach(function (request, idx) {
+            requestList.push(React.createElement("p", { key: "reqItem" + idx }, request));
+        });
+    }
+    return (React.createElement("div", { className: "service-request" },
+        React.createElement("div", { className: "left" },
+            React.createElement("h2", null, "Service"),
+            React.createElement("div", { className: "service-header" },
+                React.createElement("img", { src: "rune" }),
+                React.createElement("input", { type: "text", placeholder: "type a service" })),
+            React.createElement("div", { className: "service-area" }, serviceList)),
+        React.createElement("div", { className: "right" },
+            React.createElement("h2", null, "Request"),
+            React.createElement("div", { className: "request-header" },
+                React.createElement("input", { type: "text", placeholder: "type a request" })),
+            React.createElement("div", { className: "request-area" }, requestList))));
 }
 exports.default = Service;
+// flexbox row: div with rune and searchbar
+// flexbox col: renders services array. each element in array will be a p tag
 
 
 /***/ }),
@@ -346,7 +370,7 @@ exports.default = Service;
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 function Setup() {
-    return React.createElement("div", { className: "setup" });
+    return React.createElement("div", { className: "setup" }, "Setup!");
 }
 exports.default = Setup;
 
@@ -445,11 +469,15 @@ var initialState = {
     targetIP: '',
     filePath: '',
     trail: 'eggplant',
-    connectType: 'lol'
+    connectType: 'lol',
+    mode: 'service',
+    serviceList: ['testService'],
+    requestList: ['testRequest']
 };
 exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_IP_INPUT] = function (state, action) { return (__assign({}, state, { targetIP: action.payload })); },
     _a[actions_1.mainActions.Type.HANDLE_PROTO_UPLOAD] = function (state, action) { return (__assign({}, state, { filePath: action.payload[0].path })); },
+    _a[actions_1.mainActions.Type.HANDLE_SET_MODE] = function (state, action) { return (__assign({}, state, { mode: action.payload })); },
     _a), initialState);
 
 
@@ -668,7 +696,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Open+Sans);", ""]);
 
 // module
-exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.left {\n  width: 70%;\n  height: 100%;\n  margin-right: 30px; }\n  .left .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-top: 50px;\n    margin-bottom: 10px; }\n    .left .input-header .upload-box {\n      width: 50%; }\n      .left .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #2699FB;\n          overflow-y: scroll;\n          margin-left: 10px;\n          padding: 5px;\n          font-size: 0.85rem;\n          border-radius: 6px;\n          flex-grow: 1;\n          height: 1.5rem;\n          white-space: nowrap; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: 0;\n          height: 0; }\n        .left .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left .input-header .upload-box .upload-box-contents label {\n          border: 1px solid #2699FB;\n          border-radius: 6px;\n          padding: 5px 10px;\n          font-size: 0.7rem;\n          background: white;\n          height: 1.5rem;\n          color: #2699FB;\n          text-align: center;\n          transition: all ease 0.2s; }\n        .left .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: #2699FB;\n          color: white;\n          cursor: pointer; }\n    .left .input-header .address-box {\n      width: 50%; }\n      .left .input-header .address-box input {\n        width: 80%;\n        border: 1px solid #BCE0FD;\n        border-radius: 6px;\n        padding: 5px;\n        font-size: 0.7rem;\n        background: white;\n        height: 1.5rem;\n        color: #2699FB; }\n  .left .main {\n    height: 82%;\n    width: 100%;\n    margin-bottom: 16px;\n    padding: 2px;\n    background: white; }\n  .left .footer-left {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: space-around; }\n    .left .footer-left button {\n      height: 1.6rem;\n      flex-grow: 1;\n      margin-left: 10px;\n      background: #2699FB;\n      color: white; }\n    .left .footer-left .connection-display {\n      height: 1.6rem;\n      flex-grow: 0.6;\n      margin-left: 10px;\n      background: white;\n      border-radius: 6px;\n      opacity: 0.9;\n      display: flex;\n      justify-content: center;\n      text-align: center;\n      align-items: center;\n      font-size: 0.8rem;\n      font-weight: 800;\n      color: #005AA7; }\n    .left .footer-left .trail {\n      height: 1.6rem;\n      flex-grow: 6;\n      padding: 5px;\n      background: white;\n      color: darkgrey; }\n\n.right {\n  height: 100%;\n  width: 30%; }\n  .right span {\n    width: 100%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-end;\n    align-items: center; }\n  .right .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid #7FC4FD;\n    height: 80%;\n    width: 100%; }\n  .right img {\n    margin: 0 10px;\n    height: 30px;\n    width: 30px; }\n  .right .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid #7FC4FD;\n    color: darkgrey; }\n\n.service button {\n  border-radius: 2px;\n  margin: 0 4px; }\n\n.service .service-button {\n  background: #ACC4D8;\n  color: white; }\n\n.service .request-button {\n  background: #BCE0FD;\n  color: #602121; }\n\n.service .req-config-button {\n  background: white;\n  color: #602121; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  background: #96CDD5;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 80%;\n  width: 90%;\n  padding: 5% 5%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  margin: 30px 0; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.0rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
+exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n  #app .wrapper {\n    height: 100%;\n    display: flex;\n    flex-flow: column nowrap; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.header {\n  position: sticky;\n  height: 50px;\n  width: 100%;\n  background: black; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.left {\n  width: 70%;\n  height: 100%;\n  margin-right: 30px; }\n  .left .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-top: 50px;\n    margin-bottom: 20px; }\n    .left .input-header .upload-box {\n      width: 50%; }\n      .left .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #2699FB;\n          overflow-y: scroll;\n          margin-left: 10px;\n          padding: 5px;\n          font-size: 0.85rem;\n          border-radius: 6px;\n          flex-grow: 1;\n          height: 1.5rem;\n          white-space: nowrap; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: 0;\n          height: 0; }\n        .left .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left .input-header .upload-box .upload-box-contents label {\n          border: 1px solid #2699FB;\n          border-radius: 6px;\n          padding: 5px 10px;\n          font-size: 0.7rem;\n          background: white;\n          height: 1.5rem;\n          color: #2699FB;\n          text-align: center;\n          transition: all ease 0.2s; }\n        .left .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: #2699FB;\n          color: white;\n          cursor: pointer; }\n    .left .input-header .address-box {\n      width: 50%; }\n      .left .input-header .address-box input {\n        width: 80%;\n        border: 1px solid #BCE0FD;\n        border-radius: 6px;\n        padding: 5px;\n        font-size: 0.7rem;\n        background: white;\n        height: 1.5rem;\n        color: #2699FB; }\n  .left .tabs button {\n    height: 2rem;\n    border: 0px;\n    border-top-left-radius: 6px;\n    border-top-right-radius: 6px;\n    margin-right: 10px;\n    margin-bottom: -5px;\n    padding: 0 30px;\n    border: 1px solid black;\n    z-index: 1;\n    transition: 0.3s ease all; }\n  .left .tabs .service-button {\n    border-bottom: 1px solid #ACC4D8;\n    background: #ACC4D8;\n    color: #392323; }\n  .left .tabs .request-button {\n    border-bottom: 1px solid #BCE0FD;\n    background: #BCE0FD;\n    color: #602121; }\n  .left .tabs .req-setup-button {\n    border-bottom: 1px solid white;\n    background: white;\n    color: #602121; }\n  .left .main {\n    height: 82%;\n    width: 100%;\n    margin-bottom: 16px;\n    background: white;\n    border: 1px solid black;\n    box-shadow: black; }\n  .left .footer-left {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: space-around; }\n    .left .footer-left button {\n      height: 1.6rem;\n      flex-grow: 1;\n      margin-left: 10px;\n      background: #2699FB;\n      color: white; }\n    .left .footer-left .connection-display {\n      height: 1.6rem;\n      flex-grow: 0.6;\n      margin-left: 10px;\n      background: white;\n      border-radius: 6px;\n      opacity: 0.9;\n      display: flex;\n      justify-content: center;\n      text-align: center;\n      align-items: center;\n      font-size: 0.8rem;\n      font-weight: 800;\n      color: #005AA7; }\n    .left .footer-left .trail {\n      height: 1.6rem;\n      flex-grow: 6;\n      padding: 5px;\n      background: white;\n      color: darkgrey; }\n\n.request {\n  height: 100%;\n  padding: 10px;\n  background: #BCE0FD; }\n\n.right {\n  height: 100%;\n  width: 30%; }\n  .right span {\n    width: 100%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-end;\n    align-items: center; }\n  .right .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid #7FC4FD;\n    height: 80%;\n    width: 100%; }\n  .right img {\n    margin: 0 10px;\n    height: 30px;\n    width: 30px; }\n  .right .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid #7FC4FD;\n    color: darkgrey; }\n\n.service-request {\n  height: 100%;\n  padding: 10px 30px;\n  padding-top: 30px;\n  background: white;\n  display: flex; }\n  .service-request .left {\n    height: 100%;\n    width: 50%; }\n    .service-request .left .service-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center; }\n      .service-request .left .service-header img {\n        height: 1rem;\n        width: 1rem; }\n      .service-request .left .service-header input {\n        flex-grow: 1;\n        height: 1.3rem;\n        border-radius: 5px;\n        padding-left: 5px;\n        border: 1px solid white; }\n    .service-request .left .service-area {\n      border: 1px solid black;\n      height: 100%; }\n  .service-request .right {\n    height: 100%;\n    width: 50%; }\n    .service-request .right .request-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center; }\n      .service-request .right .request-header img {\n        height: 1rem;\n        width: 1rem; }\n      .service-request .right .request-header input {\n        flex-grow: 1;\n        height: 1.3rem;\n        border-radius: 5px;\n        padding-left: 5px;\n        border: 1px solid white; }\n    .service-request .right .request-area {\n      border: 1px solid black;\n      height: 100%; }\n\n.setup {\n  height: 100%;\n  padding: 10px;\n  background: white; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  background: #96CDD5;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%;\n  width: 100%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  margin: 30px 0; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.0rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
 
 // exports
 

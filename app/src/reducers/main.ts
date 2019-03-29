@@ -10,7 +10,10 @@ const initialState: RootState.mainState =
     targetIP: '',
     filePath: '',
     trail: 'eggplant',
-    connectType: 'lol'
+    connectType: 'lol',
+    mode: 'service',
+    serviceList: ['testService'],
+    requestList: ['testRequest']
   }
 ;
 
@@ -25,9 +28,15 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
     [mainActions.Type.HANDLE_PROTO_UPLOAD]: (state, action) => (
       {
         ...state,
-        filePath: action.payload[0].path
+        filePath: action.payload[0].path,
       }
     ),
+    [mainActions.Type.HANDLE_SET_MODE]: (state, action) => (
+      {
+        ...state,
+        mode: action.payload
+      }
+    )
   },
   initialState
 );
