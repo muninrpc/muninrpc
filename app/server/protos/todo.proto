@@ -1,16 +1,23 @@
-syntax = "proto3";
 package todo;
+syntax = "proto3";
 
 service ListActions {
-  rpc GetList(GetListParams) return (ItemList) {}
+  rpc AddItem (Item) returns (ItemList) {}
+  // rpc RemoveItem(Item) returns (ItemList) {}
+  rpc GetList(GetListParams) returns (ItemList) {}
+  rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
 }
 
-message GetListParam {}
+message GetListParams {}
 
 message Item {
-  optional string Item = 1;
+  optional string item = 1;
 }
 
-message ItemList{
-  repeated Item ItemList = 1
+message ItemList {
+  repeated Item items = 1;
+}
+
+message StreamResponse {
+  optional string msg = 1;
 }
