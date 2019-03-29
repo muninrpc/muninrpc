@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { MainModel } from '../models/MainModel';
-import { render } from 'react-dom';
 
 export namespace HeaderProps {
   export interface Props {

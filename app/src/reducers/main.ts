@@ -5,15 +5,15 @@ import { MainModel } from '../models/MainModel';
 
 const initialState: RootState.mainState = 
   {
-    responseDisplay: 'eggplant 🍆',
-    responseMetrics: 'string',
+    responseMetrics: 'got2go fast',
     targetIP: '',
     filePath: '',
     trail: 'eggplant',
     connectType: 'lol',
     mode: 'service',
     serviceList: ['testService'],
-    requestList: ['testRequest']
+    requestList: ['testRequest'],
+    serverResponse: ['response from server will go here']
   }
 ;
 

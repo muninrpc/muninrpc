@@ -39,14 +39,14 @@ export default class App extends React.Component<App.Props, {}> {
     console.log('MODE_VALUES are...', MODE_VALUES)
   }
   render() {
-    const { targetIP, filePath, mode, serviceList, requestList } = this.props.main;
+    const { targetIP, filePath, mode, serviceList, requestList, serverResponse, responseMetrics } = this.props.main;
     const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
       <div className="wrapper">
         <Header />
         <div className="app">
           <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
-          <Right />
+          <Right serverResponse={serverResponse} responseMetrics={responseMetrics}/>
         </div>
       </div>
     );
