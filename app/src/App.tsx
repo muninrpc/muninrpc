@@ -35,14 +35,18 @@ export default class App extends React.Component<App.Props, {}> {
   constructor(props: any) {
     super(props);
     console.log('this.props:', this.props)
+    console.log('MODE_VALUES are...', MODE_VALUES)
   }
   render() {
-    const { targetIP, filePath } = this.props.main;
-    const { handleIPInput, handleProtoUpload } = this.props.actions;
+    const { targetIP, filePath, mode, serviceList, requestList } = this.props.main;
+    const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
-      <div className="app">
-        <Left targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
-        <Right />
+      <div className="wrapper">
+        <div className="header"></div>
+        <div className="app">
+          <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
+          <Right />
+        </div>
       </div>
     );
   }

@@ -1,10 +1,15 @@
+import { ReactComponentElement } from "react";
+
 export interface MainModel {
   responseDisplay: string,
   responseMetrics: string,
   targetIP: string,
   filePath: string,
   trail: string,
-  connectType: string 
+  connectType: string,
+  mode: MainModel.Mode,
+  serviceList: string[],
+  requestList: string[] 
 }
 
 export namespace MainModel {
