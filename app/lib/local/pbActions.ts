@@ -6,9 +6,9 @@ import * as protoLoader from '@grpc/proto-loader';
  * @returns {packageDefinition} returns the package definition
  */
 
-export const loadProtoFile = (
+export function loadProtoFile(
   protoPath: string
-): protoLoader.PackageDefinition => {
+): protoLoader.PackageDefinition {
   const packageDefinition = protoLoader.loadSync(protoPath, {
     keepCase: true,
     longs: String,
@@ -18,7 +18,7 @@ export const loadProtoFile = (
   });
   console.log(packageDefinition);
   return packageDefinition;
-};
+}
 
 export function parsePackageDefinition(pkgDefn: protoLoader.PackageDefinition) {
   const protoMessages: {
