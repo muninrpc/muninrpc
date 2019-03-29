@@ -1,0 +1,64 @@
+.header {
+  display: flex;
+  flex-flow: row nowrap;
+  position: sticky;
+  height: 75px;
+  width: 100%;
+  background: black;
+
+  .left {
+    width: 70%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-content: space-around;
+    align-items: center;
+    margin-left: 30px;
+
+    button {
+      flex-grow: 1;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-left: 25px;
+      padding: 4px 0;
+      background: #2699FB;
+      color: white;
+    }
+  
+    .connection-display {
+      margin-left: 25px;
+      border-radius: 6px;
+      opacity: 0.9;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #005AA7;
+      background: white;
+      padding: 7px 20px; 
+    }
+    .trail {
+      flex-grow: 12;
+      padding: 5px;
+      color: darkgrey;
+      background: white;
+    }
+  }
+
+  .right {
+    width: 30%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 30px;
+
+    img {
+      margin-left: 30px;
+      height: 30px; 
+      width: 30px;
+    }
+  }
+}
