@@ -7,7 +7,7 @@
   background: black;
   margin-bottom: 50px;
 
-  .left {
+  .header-left {
     width: 70%;
     display: flex;
     flex-flow: row nowrap;
@@ -17,13 +17,23 @@
     margin-left: 30px;
 
     button {
-      flex-grow: 1;
       font-size: 0.7rem;
       font-weight: 700;
       margin-left: 25px;
-      padding: 4px 0;
-      background: #2699FB;
+      padding: 4px 20px;
+      background: $primary-color;
       color: white;
+      box-shadow: 5px;
+      border: none;
+      transition: 0.2s ease all;
+    }
+    button:hover {
+      color: $primary-color;
+      background: white;
+
+    }
+    button:active {
+      color: darken($primary-color, 20%);
     }
   
     .connection-display {
@@ -41,10 +51,21 @@
       padding: 7px 20px; 
     }
     .trail {
-      flex-grow: 12;
+      height: 1.7rem;
+      flex-grow: 1;
       padding: 5px;
-      color: darkgrey;
+      color: black;
       background: white;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      white-space: nowrap;
+    }
+    .trail::-webkit-scrollbar {
+      width: auto;
+      height: 5px;
+    }
+    .trail::-webkit-scrollbar-thumb {
+      background: black;
     }
   }
 
