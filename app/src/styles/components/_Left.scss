@@ -1,12 +1,11 @@
 .left {
   width: 70%;
   height: 100%;
-  margin-right: 30px;
+  margin-right: 8%;
 
   .input-header {
     display: flex;
     justify-content: space-between;
-    margin-top: 50px;
     margin-bottom: 20px;
 
     .upload-box {
@@ -20,12 +19,12 @@
           background: white;
           color: $secondary-color;
           overflow-y: scroll;
-          margin-left: 10px;
           padding: 5px;
           font-size: 0.85rem;
           border-radius: 6px;
+          border: 1px solid black;
           flex-grow: 1;
-          height: 1.5rem;
+          height: 2rem;
           white-space: nowrap;
         }
 
@@ -43,20 +42,24 @@
 
         label {
           border: 1px solid $secondary-color;
-          border-radius: 6px;
-          padding: 5px 10px;
+          padding: 5px 15px;
           font-size: 0.7rem;
-          background: white;
-          height: 1.5rem;
-          color: $secondary-color;
+          font-weight: 700;
+          background: $primary-color;
+          height: 2rem;
+          color: white;
           text-align: center;
+          vertical-align: middle;
           transition: all ease 0.2s;
-
+          margin-left: -5px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
         label:hover {
           border: 1px solid #2699FB;
-          background: #2699FB;
-          color: white;
+          background: white;
+          color: $primary-color;
           cursor: pointer;
         }
       }
@@ -67,12 +70,12 @@
 
       input {
         width: 80%;
-        border: 1px solid #BCE0FD;
+        border: 1px solid black;
         border-radius: 6px;
         padding: 5px;
         font-size: 0.7rem;
         background: white;
-        height: 1.5rem;
+        height: 2rem;
         color: $secondary-color;
       }
 
@@ -115,9 +118,21 @@
   .main {
     height: 82%;
     width: 100%;
-    margin-bottom: 16px;
     background: white;
     border: 1px solid black;
+    border-bottom-color: white;
+    border-right-color: white;
     box-shadow: black;
+
+    h2 {
+      margin-bottom: 2px;
+    }
+
+    input {
+      border: 1px solid darken($primary-color, 20%);
+      height: 1.5rem;
+      flex-grow: 1;
+      padding-left: 8px;
+    }
   }
 }

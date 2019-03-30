@@ -1,17 +1,15 @@
 .right-half {
   height: 100%;
   width: 30%;
-  margin-top: 50px;
   display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
+  flex-flow: column nowrap;
 
   .response-display {
     margin: 10px 0;
     padding: 7px;
     background: white;
     border: 1px solid black;
-    height: 86%;
+    height: 100%;
     width: 100%;
     
   }

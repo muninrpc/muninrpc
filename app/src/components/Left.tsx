@@ -46,8 +46,9 @@ export default function Left(props: LeftProps.Props, context?: any) {
         <div className="upload-box">
           <h3>Upload .proto file</h3>
           <div className="upload-box-contents">
+            <span className="file-path">{props.filePath}</span>
             <label className="file-upload">
-              upload
+              UPLOAD
               <input
                 type="file"
                 className="hide-me"
@@ -55,7 +56,6 @@ export default function Left(props: LeftProps.Props, context?: any) {
                 onChange={e => props.handleProtoUpload(e.target.files)}
               />
             </label>
-            <span className="file-path">{props.filePath}</span>
           </div>
         </div>
       </div>
@@ -79,15 +79,9 @@ export default function Left(props: LeftProps.Props, context?: any) {
           Request Setup
         </button>
       </div>
-<<<<<<< HEAD
-=======
-      <div className="main">{mode}</div>
-      <div className="footer-left">
-        <div className="trail">?</div>
-        <div className="connection-display">unary</div>
-        <button className="send-button">Send</button>
+      <div className='main'>
+        {mode}
       </div>
->>>>>>> 5637aa5cc7bedfb06204d16c52f1007a3aaafb66
     </div>
   );
 }

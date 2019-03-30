@@ -40,7 +40,6 @@ export default class App extends React.Component<App.Props, {}> {
     console.log('MODE_VALUES are...', MODE_VALUES);
   }
   render() {
-<<<<<<< HEAD
     const { targetIP, filePath, mode, serviceList, requestList, serverResponse, responseMetrics } = this.props.main;
     const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
     return (
@@ -49,31 +48,6 @@ export default class App extends React.Component<App.Props, {}> {
         <div className="app">
           <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload}/>
           <Right serverResponse={serverResponse} responseMetrics={responseMetrics}/>
-=======
-    const {
-      targetIP,
-      filePath,
-      mode,
-      serviceList,
-      requestList
-    } = this.props.main;
-    const { handleIPInput, handleProtoUpload, setMode } = this.props.actions;
-    return (
-      <div className="wrapper">
-        <div className="header" />
-        <div className="app">
-          <Left
-            serviceList={serviceList}
-            requestList={requestList}
-            setMode={setMode}
-            mode={mode}
-            targetIP={targetIP}
-            filePath={filePath}
-            handleIPInput={handleIPInput}
-            handleProtoUpload={handleProtoUpload}
-          />
-          <Right />
->>>>>>> 5637aa5cc7bedfb06204d16c52f1007a3aaafb66
         </div>
       </div>
     );

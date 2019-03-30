@@ -1,6 +1,6 @@
 .service-request {
   height: 100%;
-  padding: 10px 30px;
+  padding: 10px 0px 0px 30px;
   padding-top: 30px;
   background: white;
   display: flex;
@@ -8,56 +8,53 @@
   .left {
     height: 100%;
     width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
 
     .service-header {
       display: flex;
       flex-flow: row nowrap;
       justify-content: center;
+      margin: 8px 0px;
 
       img {
-        height: 1rem;
+        height: auto;
         width: 1rem;
-      }
-
-      input {
-        flex-grow: 1;
-        height: 1.3rem;
-        border-radius: 5px;
-        padding-left: 5px;
-        border: 1px solid white;
+        border: 1px solid black;
       }
     }
     .service-area {
       border: 1px solid black;
-      height: 100%;
+      display: flex;
+      flex-grow: 1;
+      flex-flow: column nowrap;
+      align-items: flex-start;
     }
   }
 
   .right {
     height: 100%;
     width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
 
     .request-header {
       display: flex;
       flex-flow: row nowrap;
       justify-content: center;
+      margin: 8px 0px;
 
       img {
         height: 1rem;
         width: 1rem;
       }
-
-      input {
-        flex-grow: 1;
-        height: 1.3rem;
-        border-radius: 5px;
-        padding-left: 5px;
-        border: 1px solid white;
-      }
     }
     .request-area {
       border: 1px solid black;
-      height: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: flex-start;
     }
   }
 
