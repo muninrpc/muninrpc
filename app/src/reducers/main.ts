@@ -12,8 +12,8 @@ const initialState: RootState.mainState =
     trail: 'eggplant',
     connectType: 'lol',
     mode: 'service',
-    serviceList: ['testService'],
-    requestList: ['testRequest'],
+    serviceList: ['testService', 'testService2'],
+    requestList: ['testRequest', 'testRequest2'],
     serverResponse: ['response from server will go here'],
     packageDefinition: null
   }
