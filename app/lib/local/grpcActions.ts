@@ -1,5 +1,5 @@
-import * as grpc from 'grpc';
-import * as protoLoader from '@grpc/proto-loader';
+import * as grpc from "grpc";
+import * as protoLoader from "@grpc/proto-loader";
 
 export interface BaseConfig {
   grpcServerURI: string;
@@ -8,9 +8,7 @@ export interface BaseConfig {
   service: string;
 }
 
-export interface RequestConfig<
-  T extends UnaryRequestBody | ClientStreamRequestBody
-> {
+export interface RequestConfig<T extends UnaryRequestBody | ClientStreamRequestBody> {
   method: string;
   callType: CallType;
   reqBody: T;
@@ -24,6 +22,7 @@ export interface UnaryRequestBody {
 export interface ClientStreamRequestBody {
   action: StreamAction;
   argument?: object;
+  callback?: (a: any) => any;
 }
 
 // interface ServerStreamRequestBody {
@@ -47,15 +46,15 @@ export enum CallType {
   BIDI_STREAM
 }
 
-export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
-  const {
-    grpcServerURI,
-    packageDefinition,
-    protoPackage,
-    service,
-    callType,
-    method
-  } = reqConfig;
+export function runCall(reqConfig: BaseConfig & RequestConfig<UnaryRequestBody>): Promise<{}>;
+export function runCall(
+  reqConfig: BaseConfig & RequestConfig<ClientStreamRequestBody>
+): {
+  writableStream: grpc.ClientWritableStream<any>;
+  ender: () => void;
+};
+export function runCall(reqConfig) {
+  const { grpcServerURI, packageDefinition, protoPackage, service, callType, method } = reqConfig;
 
   // declare variables to store streams using closure
   let clientStreamCall: grpc.ClientWritableStream<any>;
@@ -83,33 +82,36 @@ export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
     });
   }
 
-  function clientStream(): Promise<{}> {
+  function clientStream(): {
+    writableStream: grpc.ClientWritableStream<any>;
+    ender: () => void;
+  } {
     // handle client stream
-    const ClientStreamConfig: ClientStreamRequestBody = <
-      ClientStreamRequestBody
-    >reqConfig.reqBody;
+    const ClientStreamConfig: ClientStreamRequestBody = <ClientStreamRequestBody>reqConfig.reqBody;
+
+    const cb = ClientStreamConfig.callback;
 
     if (!clientStreamCall) {
       if (ClientStreamConfig.action === StreamAction.INITIATE) {
+        console.log("should be first");
         clientStreamCall = client[method]((err, response) => {
           if (err) {
-            reject(err);
+            throw err;
           }
-          resolve(response);
+          cb(response);
         });
-        clientStreamCall.write({ numb: 12 });
-        clientStreamCall.end();
+        // clientStreamCall.write({ numb: 12 });
+        // clientStreamCall.end();
       }
     }
 
-    if (ClientStreamConfig.action === StreamAction.SEND) {
-      clientStreamCall.write(ClientStreamConfig.argument);
-    }
-
-    if (ClientStreamConfig.action === StreamAction.KILL) {
-      clientStreamCall.end();
-      clientStreamCall = undefined;
-    }
+    return {
+      writableStream: clientStreamCall,
+      ender: () => {
+        clientStreamCall.end();
+        clientStreamCall = undefined;
+      }
+    };
   }
 
   function serverStream() {
@@ -128,4 +130,4 @@ export const runCall = (reqConfig: BaseConfig & RequestConfig<any>) => {
       return clientStream();
     }
   }
-};
+}
