@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ServiceAndRequest from './ServiceAndRequest';
-import Request from './Messages';
+import Messages from './Messages';
 import Setup from './Setup';
 import { MainModel } from '../models/MainModel';
 
@@ -13,7 +13,7 @@ export namespace LeftProps {
     trail?: string;
     connectType?: string;
     serviceList: string[];
-    requestList: string[];
+    messageList: any;
     selectedService: string;
     selectedRequest: string;
 
@@ -29,11 +29,11 @@ export namespace LeftProps {
 
 export default function Left(props: LeftProps.Props, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
-  const { serviceList, requestList, handleServiceClick, handleRequestClick, selectedService, selectedRequest } = props;
+  const { serviceList, messageList, handleServiceClick, handleRequestClick, selectedService, selectedRequest } = props;
   if (props.mode === 'service_and_request')
-    mode = <ServiceAndRequest serviceList={serviceList} requestList={requestList} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService}
+    mode = <ServiceAndRequest serviceList={serviceList} messageList={messageList} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService}
     selectedRequest={selectedRequest}/>;
-  if (props.mode === 'messages') mode = <Request />;
+  if (props.mode === 'messages') mode = <Messages messageList={props.messageList} />;
   if (props.mode === 'setup') mode = <Setup />;
 
   return (
@@ -72,12 +72,14 @@ export default function Left(props: LeftProps.Props, context?: any) {
           SERVICES & REQUESTS
         </button>
         <button
+          disabled={Object.keys(messageList).length ? false : true}
           onClick={() => props.setMode('messages')}
           className={"messages-button " + (props.mode === 'messages' ? 'selected' : '')}
         >
           MESSAGES
         </button>
         <button
+          disabled={Object.keys(messageList).length ? false : true}
           onClick={() => props.setMode('setup')}
           className={"req-setup-button " + (props.mode === 'setup' ? 'selected' : '')}
         >

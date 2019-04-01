@@ -17,9 +17,11 @@
     margin-left: 30px;
 
     button {
+      min-width: 140px;
       font-size: 0.7rem;
       font-weight: 700;
       margin-left: 25px;
+      margin-right: 20px;
       padding: 4px 20px;
       background: $primary-color;
       color: white;
@@ -37,6 +39,7 @@
     }
   
     .connection-display {
+      min-width: 130px;
       margin-left: 25px;
       border-radius: 6px;
       opacity: 0.9;

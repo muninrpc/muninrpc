@@ -1,4 +1,59 @@
 .messages {
   height: 100%;
+  width: 100%;
   padding: 10px;
+
+  .message-header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    margin: 8px 0px;
+
+    img {
+      height: auto;
+      width: 1rem;
+      border: 1px solid black;
+    }
+
+  }
+  .message-area {
+    border: 1px solid lightgrey;
+    display: flex;
+    flex-grow: 1;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+
+    p {
+      display: flex;
+      flex-flow: row nowrap;
+      border: 1px solid lighten(lightgrey, 20%);
+      width: 100%;
+      transition: 0.2s ease all;
+
+      span {
+        display: flex;
+        align-content: center;
+        align-items: center;
+        padding: 5px;
+      }
+  
+      .message-name {
+        font-size: 1.1rem;
+      }
+      .message-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+      .message-type {
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+    }
+    p:hover {
+      background: $primary-color;
+      color: white;
+    }
+
+  }
+
 }

@@ -36,17 +36,15 @@ export namespace App {
 export default class App extends React.Component<App.Props, {}> {
   constructor(props: any) {
     super(props);
-    console.log('this.props:', this.props);
-    console.log('MODE_VALUES are...', MODE_VALUES);
   }
   render() {
-    const { trail, targetIP, filePath, mode, serviceList, requestList, serverResponse, responseMetrics, selectedService, selectedRequest } = this.props.main;
+    const { trail, targetIP, filePath, mode, serviceList, messageList, serverResponse, responseMetrics, selectedService, selectedRequest, connectType} = this.props.main;
     const { handleIPInput, handleProtoUpload, setMode, handleServiceClick, handleRequestClick } = this.props.actions;
     return (
       <div className="wrapper">
-        <Header trail={trail} serviceList={serviceList} selectedService={selectedService} selectedRequest={selectedRequest}/>
+        <Header trail={trail} connectType={connectType}/>
         <div className="app">
-          <Left serviceList={serviceList} requestList={requestList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService} selectedRequest={selectedRequest}/>
+          <Left serviceList={serviceList} messageList={messageList} setMode={setMode} mode={mode} targetIP={targetIP} filePath={filePath} handleIPInput={handleIPInput} handleProtoUpload={handleProtoUpload} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService} selectedRequest={selectedRequest}/>
           <Right serverResponse={serverResponse} responseMetrics={responseMetrics}/>
         </div>
       </div>
