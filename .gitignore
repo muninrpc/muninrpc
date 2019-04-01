@@ -1,6 +1,6 @@
 # Bundle
 **/build
-/app/build
+
 
 # package.lock
 package-lock.json
@@ -94,3 +94,6 @@ typings/
 
 # Mac 
 .DS_Store
+app/build/bundle.js
+app/build/bundle.js
+app/build/bundle.js

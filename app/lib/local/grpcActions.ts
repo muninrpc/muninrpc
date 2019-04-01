@@ -29,9 +29,10 @@ export interface ClientStreamRequestBody {
 //   //
 // }
 
-// interface BidiStreamRequestBody {
-//   //
-// }
+export interface BidiStreamRequestBody {
+  action: StreamAction;
+  callback?: (a: any) => any;
+}
 
 export enum StreamAction {
   INITIATE,
@@ -46,6 +47,7 @@ export enum CallType {
   BIDI_STREAM
 }
 
+// method overloads
 export function runCall(reqConfig: BaseConfig & RequestConfig<UnaryRequestBody>): Promise<{}>;
 export function runCall(
   reqConfig: BaseConfig & RequestConfig<ClientStreamRequestBody>
@@ -53,11 +55,19 @@ export function runCall(
   writableStream: grpc.ClientWritableStream<any>;
   ender: () => void;
 };
+export function runCall(
+  reqConfig: BaseConfig & RequestConfig<BidiStreamRequestBody>
+): {
+  writableStream: grpc.ClientWritableStream<any>;
+  readableStream: grpc.ClientReadableStream<any>;
+  ender: () => void;
+};
 export function runCall(reqConfig) {
   const { grpcServerURI, packageDefinition, protoPackage, service, callType, method } = reqConfig;
 
   // declare variables to store streams using closure
-  let clientStreamCall: grpc.ClientWritableStream<any>;
+  let clientStreamCaller: grpc.ClientWritableStream<any>;
+  let bidiStreamCaller: grpc.ClientDuplexStream<any, any>;
 
   // load package
   const loadedPackage = <typeof grpc.Client>(
@@ -91,10 +101,9 @@ export function runCall(reqConfig) {
 
     const cb = ClientStreamConfig.callback;
 
-    if (!clientStreamCall) {
+    if (!clientStreamCaller) {
       if (ClientStreamConfig.action === StreamAction.INITIATE) {
-        console.log("should be first");
-        clientStreamCall = client[method]((err, response) => {
+        clientStreamCaller = client[method]((err, response) => {
           if (err) {
             throw err;
           }
@@ -106,10 +115,10 @@ export function runCall(reqConfig) {
     }
 
     return {
-      writableStream: clientStreamCall,
+      writableStream: clientStreamCaller,
       ender: () => {
-        clientStreamCall.end();
-        clientStreamCall = undefined;
+        clientStreamCaller.end();
+        clientStreamCaller = undefined;
       }
     };
   }
@@ -120,6 +129,26 @@ export function runCall(reqConfig) {
 
   function bidiStream() {
     // handle bidirectional stream
+    const ClientStreamConfig: BidiStreamRequestBody = <BidiStreamRequestBody>reqConfig.reqBody;
+
+    const cb = ClientStreamConfig.callback;
+
+    if (!bidiStreamCaller && ClientStreamConfig.action === StreamAction.INITIATE) {
+      bidiStreamCaller = client[method]((err, response) => {
+        if (err) {
+          throw err;
+        }
+        cb(response);
+      });
+    }
+
+    return {
+      writableStream: bidiStreamCaller,
+      ender: () => {
+        bidiStreamCaller.end();
+        bidiStreamCaller = undefined;
+      }
+    };
   }
 
   switch (callType) {
@@ -128,6 +157,12 @@ export function runCall(reqConfig) {
     }
     case CallType.CLIENT_STREAM: {
       return clientStream();
+    }
+    case CallType.SERVER_STREAM: {
+      return serverStream();
+    }
+    case CallType.BIDI_STREAM: {
+      return bidiStream();
     }
   }
 }
