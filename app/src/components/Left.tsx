@@ -1,6 +1,6 @@
 import * as React from 'react';
-import Service from './Service';
-import Request from './Request';
+import ServiceAndRequest from './ServiceAndRequest';
+import Request from './Messages';
 import Setup from './Setup';
 import { MainModel } from '../models/MainModel';
 
@@ -14,10 +14,14 @@ export namespace LeftProps {
     connectType?: string;
     serviceList: string[];
     requestList: string[];
+    selectedService: string;
+    selectedRequest: string;
 
     handleIPInput: any; // (value: string) => void;
     handleProtoUpload: any;
     setMode: any;
+    handleServiceClick: any;
+    handleRequestClick: any;
 
     mode: string;
   }
@@ -25,10 +29,11 @@ export namespace LeftProps {
 
 export default function Left(props: LeftProps.Props, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
-  const { serviceList, requestList } = props;
-  if (props.mode === 'service')
-    mode = <Service serviceList={serviceList} requestList={requestList} />;
-  if (props.mode === 'request') mode = <Request />;
+  const { serviceList, requestList, handleServiceClick, handleRequestClick, selectedService, selectedRequest } = props;
+  if (props.mode === 'service_and_request')
+    mode = <ServiceAndRequest serviceList={serviceList} requestList={requestList} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService}
+    selectedRequest={selectedRequest}/>;
+  if (props.mode === 'messages') mode = <Request />;
   if (props.mode === 'setup') mode = <Setup />;
 
   return (
@@ -46,13 +51,13 @@ export default function Left(props: LeftProps.Props, context?: any) {
         <div className="upload-box">
           <h3>Upload .proto file</h3>
           <div className="upload-box-contents">
-            <span className="file-path">{props.filePath}</span>
+            <div className="file-path">{props.filePath}</div>
+            <div className="file-path-spacer"></div>
             <label className="file-upload">
               UPLOAD
               <input
                 type="file"
                 className="hide-me"
-                placeholder="upload file"
                 onChange={e => props.handleProtoUpload(e.target.files)}
               />
             </label>
@@ -61,22 +66,22 @@ export default function Left(props: LeftProps.Props, context?: any) {
       </div>
       <div className="tabs">
         <button
-          onClick={() => props.setMode('service')}
-          className="service-button"
+          onClick={() => props.setMode('service_and_request')}
+          className={"service-and-request-button " + (props.mode === 'service_and_request' ? 'selected' : '')}
         >
-          Service
+          SERVICES & REQUESTS
         </button>
         <button
-          onClick={() => props.setMode('request')}
-          className="request-button"
+          onClick={() => props.setMode('messages')}
+          className={"messages-button " + (props.mode === 'messages' ? 'selected' : '')}
         >
-          Request
+          MESSAGES
         </button>
         <button
           onClick={() => props.setMode('setup')}
-          className="req-setup-button"
+          className={"req-setup-button " + (props.mode === 'setup' ? 'selected' : '')}
         >
-          Request Setup
+          REQUEST SETUP
         </button>
       </div>
       <div className='main'>

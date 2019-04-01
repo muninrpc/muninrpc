@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-export default function Request() {
+export default function Messages() {
   return (
-    <div className="request">
+    <div className="messages">
       Request!
     </div>
   );
