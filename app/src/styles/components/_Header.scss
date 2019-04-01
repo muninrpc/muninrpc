@@ -1,0 +1,86 @@
+.header {
+  display: flex;
+  flex-flow: row nowrap;
+  position: sticky;
+  height: 75px;
+  width: 100%;
+  background: black;
+  margin-bottom: 50px;
+
+  .header-left {
+    width: 70%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-content: space-around;
+    align-items: center;
+    margin-left: 30px;
+
+    button {
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-left: 25px;
+      padding: 4px 20px;
+      background: $primary-color;
+      color: white;
+      box-shadow: 5px;
+      border: none;
+      transition: 0.2s ease all;
+    }
+    button:hover {
+      color: $primary-color;
+      background: white;
+
+    }
+    button:active {
+      color: darken($primary-color, 20%);
+    }
+  
+    .connection-display {
+      margin-left: 25px;
+      border-radius: 6px;
+      opacity: 0.9;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #005AA7;
+      background: white;
+      padding: 7px 20px; 
+    }
+    .trail {
+      height: 1.7rem;
+      flex-grow: 1;
+      padding: 5px;
+      color: black;
+      background: white;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      white-space: nowrap;
+    }
+    .trail::-webkit-scrollbar {
+      width: auto;
+      height: 5px;
+    }
+    .trail::-webkit-scrollbar-thumb {
+      background: black;
+    }
+  }
+
+  .right {
+    width: 30%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 30px;
+
+    img {
+      margin-left: 30px;
+      height: 30px; 
+      width: 30px;
+    }
+  }
+}

@@ -1,13 +1,14 @@
 .left {
+  display: flex;
+  flex-flow: column nowrap;
   width: 70%;
   height: 100%;
-  margin-right: 30px;
+  margin-right: 8%;
 
   .input-header {
     display: flex;
     justify-content: space-between;
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin-bottom: 45px;
 
     .upload-box {
       width: 50%;
@@ -16,22 +17,39 @@
         display: flex;
         align-items: center;
 
+
+        .file-path-spacer {
+          border-top: 1px solid black;
+          border-bottom: 1px solid black;
+          height: 2rem;
+          width: 5px;
+          
+        }
         .file-path {
           background: white;
-          color: $secondary-color;
-          overflow-y: scroll;
-          margin-left: 10px;
-          padding: 5px;
-          font-size: 0.85rem;
-          border-radius: 6px;
+          color: darken($primary-color, 20%);
+          overflow-x: scroll;
+          padding: 5px 7px;
+          padding-right: 20px;
+          font-size: 0.7rem;
+          border-top-left-radius: 6px;
+          border-bottom-left-radius: 6px;
+          border: 1px solid black;
+          border-right: none;
           flex-grow: 1;
-          height: 1.5rem;
+          height: 2rem;
           white-space: nowrap;
+          display: flex;
+          align-items: center;
+          align-content: center;
         }
 
         .file-path::-webkit-scrollbar {
-          width:0;
-          height:0;
+          width: auto;
+          height: 5px;
+        }
+        .file-path::-webkit-scrollbar-thumb {
+          background: black;
         }
 
         .hide-me {
@@ -42,21 +60,27 @@
         }
 
         label {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 2rem;
+          padding: 5px 15px;
+          background: $primary-color;
           border: 1px solid $secondary-color;
-          border-radius: 6px;
-          padding: 5px 10px;
+          border-top-right-radius: 6px;
+          border-bottom-right-radius: 6px;
           font-size: 0.7rem;
-          background: white;
-          height: 1.5rem;
-          color: $secondary-color;
+          font-weight: 700;
+          color: white;
           text-align: center;
+          vertical-align: middle;
           transition: all ease 0.2s;
-
+          z-index: 1;
         }
         label:hover {
           border: 1px solid #2699FB;
-          background: #2699FB;
-          color: white;
+          background: white;
+          color: $primary-color;
           cursor: pointer;
         }
       }
@@ -67,13 +91,13 @@
 
       input {
         width: 80%;
-        border: 1px solid #BCE0FD;
+        border: 1px solid black;
         border-radius: 6px;
-        padding: 5px;
+        padding: 5px 7px;
         font-size: 0.7rem;
         background: white;
-        height: 1.5rem;
-        color: $secondary-color;
+        height: 2rem;
+        color: darken($primary-color, 20%);
       }
 
     }
@@ -84,79 +108,57 @@
 
     button {
       height: 2rem;
-      border: 0px;
-      border-top-left-radius: 6px;
-      border-top-right-radius: 6px;
-      margin-right: 10px;
-      margin-bottom: -5px;
       padding: 0 30px;
-      border: 1px solid black;
+      background: white;
+      color: darken($primary-color, 20%);
+      border: 1px solid darken($primary-color, 20%);
+      border-bottom: none;
+      font-weight: 700;
       z-index: 1;
-      transition: 0.3s ease all;
+      transition: 0.2s ease all;
+    }
+    button:hover {
+      background: darken($primary-color, 20%);
+      color: white;
+      border-right: 1px solid white;
+      border-left: 1px solid white;}
+
+    .selected {
+      background: darken($primary-color, 20%);
+      color: white;
     }
   
-    .service-button{
-      border-bottom: 1px solid #ACC4D8;
-      background: #ACC4D8;
-      color: #392323;
+    .service-and-request-button{
+
     }
-    .request-button{
-      border-bottom: 1px solid #BCE0FD;
-      background: #BCE0FD;
-      color: #602121;
+    .messages-button{
+
     }
     .req-setup-button{
-      border-bottom: 1px solid white;
-      background: white;
-      color: #602121;
+
     }
   }
 
   .main {
-    height: 82%;
+    flex-grow: 1;
+    display: flex;
     width: 100%;
-    margin-bottom: 16px;
     background: white;
     border: 1px solid black;
-    box-shadow: black;
-  }
+    border-bottom-color: white;
+    border-right-color: white;
 
-  .footer-left {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-around;
-
-    button {
-      height: 1.6rem;
-      flex-grow: 1;
-      margin-left: 10px;
-      background: #2699FB;
-      color: white;
+    h2 {
+      margin-bottom: 2px;
     }
 
-    .connection-display {
-      height: 1.6rem;
-      flex-grow: 0.6;
-      margin-left: 10px;
-      background: white;
-      border-radius: 6px;
-      opacity: 0.9;
-      display: flex;
-      justify-content: center;
-      text-align: center;
-      align-items: center;
+    input {
+      border: 1px solid lighten($primary-color, 30%);
+      font-weight: 400;
       font-size: 0.8rem;
-      font-weight: 800;
-      color: #005AA7;  
-    }
-
-    .trail {
-      height: 1.6rem;
-      flex-grow: 6;
-      padding: 5px;
-      background: white;
-      color: darkgrey;
+      height: 1.5rem;
+      flex-grow: 1;
+      padding-left: 8px;
     }
   }
-
 }

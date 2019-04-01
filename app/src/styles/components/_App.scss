@@ -13,16 +13,12 @@
 .app {
   height: 100%;
   width: 100%;
+  padding: 0 30px 30px 30px;
   display: flex;
   flex-flow: row nowrap;
 }
 
-.header {
-  position: sticky;
-  height: 50px;
-  width: 100%;
-  background: black
-}
+
 
 .wrapper {
   display: flex;

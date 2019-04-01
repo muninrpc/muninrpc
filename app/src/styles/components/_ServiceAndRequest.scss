@@ -1,0 +1,87 @@
+.service-request {
+  display: flex;
+  width: 100%;
+  padding: 22px 0px 0px 70px;
+  background: white;
+
+  p {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    transition: 0.2s ease all;
+    height: 2rem;
+    border-bottom: 1px solid lightgrey;
+    padding-left: 5px;
+  }
+
+  p:hover {
+    background: $primary-color;
+    color: white;
+    cursor: pointer;
+  }
+  p:active {
+    background: darken($primary-color, 20%); 
+  }
+  .selected {
+    border-top-color: black;
+    border-bottom-color: black;
+    background: $primary-color;
+    color: white;
+  }
+
+  .service-request-left {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+    margin-right: 88px;
+
+    .service-header {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      margin: 8px 0px;
+
+      img {
+        height: auto;
+        width: 1rem;
+        border: 1px solid black;
+      }
+    }
+    .service-area {
+      border: 1px solid lightgrey;
+      display: flex;
+      flex-grow: 1;
+      flex-flow: column nowrap;
+      align-items: flex-start;
+    }
+  }
+
+  .service-request-right {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+
+    .request-header {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      margin: 8px 0px;
+
+      img {
+        height: 1rem;
+        width: 1rem;
+      }
+    }
+    .request-area {
+      border: 1px solid lightgrey;
+      flex-grow: 1;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: flex-start;
+    }
+  }
+
+}

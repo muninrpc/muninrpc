@@ -1,32 +1,17 @@
-.right {
+.right-half {
   height: 100%;
   width: 30%;
-
-  span {
-    width: 100%;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-  }
+  display: flex;
+  flex-flow: column nowrap;
 
   .response-display {
     margin: 10px 0;
     padding: 7px;
     background: white;
-    border: 1px solid #7FC4FD;
-    height: 80%;
+    border: 1px solid black;
+    height: 100%;
     width: 100%;
-  }
-
-  img {
-   margin: 0 10px;
-   height: 30px; 
-   width: 30px;
-  }
-
-  h2 {
-
+    
   }
 
   .response-metrics {
@@ -35,9 +20,8 @@
     padding: 5px;
     background: white;
     text-align: right;
-    border: 1px solid #7FC4FD;
+    border: 1px solid black;
     color: darkgrey;
-    
   }
 
 }
