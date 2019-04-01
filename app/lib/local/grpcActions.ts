@@ -8,12 +8,16 @@ export interface BaseConfig {
   service: string;
 }
 
-export interface RequestConfig<T extends UnaryRequestBody | ClientStreamRequestBody> {
+export interface RequestConfig<
+  T extends
+    | UnaryRequestBody
+    | ClientStreamRequestBody
+    | ServerStreamRequestBody
+    | BidiStreamRequestBody
+> {
   method: string;
   callType: CallType;
   reqBody: T;
-  // | ServerStreamRequestBody
-  // | BidiStreamRequestBody;
 }
 export interface UnaryRequestBody {
   argument: object;
@@ -25,12 +29,15 @@ export interface ClientStreamRequestBody {
   callback?: (a: any) => any;
 }
 
-// interface ServerStreamRequestBody {
-//   //
-// }
+export interface ServerStreamRequestBody {
+  action: StreamAction;
+  arguments?: object;
+  callback?: (a: any) => any;
+}
 
 export interface BidiStreamRequestBody {
   action: StreamAction;
+  arguments?: object;
   callback?: (a: any) => any;
 }
 
@@ -55,6 +62,7 @@ export function runCall(
   writableStream: grpc.ClientWritableStream<any>;
   ender: () => void;
 };
+export function runCall(reqConfig: BaseConfig & RequestConfig<ServerStreamRequestBody>): void;
 export function runCall(
   reqConfig: BaseConfig & RequestConfig<BidiStreamRequestBody>
 ): {
@@ -67,6 +75,7 @@ export function runCall(reqConfig) {
 
   // declare variables to store streams using closure
   let clientStreamCaller: grpc.ClientWritableStream<any>;
+  let serverStreamCaller: grpc.ClientReadableStream<any>;
   let bidiStreamCaller: grpc.ClientDuplexStream<any, any>;
 
   // load package
@@ -123,8 +132,20 @@ export function runCall(reqConfig) {
     };
   }
 
-  function serverStream() {
-    // handle serverStream
+  function serverStream(): void {
+    const ServerStreamConfig: ServerStreamRequestBody = <ServerStreamRequestBody>reqConfig.reqBody;
+    const cb = ServerStreamConfig.callback;
+
+    if (!serverStreamCaller && ServerStreamConfig.action === StreamAction.INITIATE) {
+      // to do: check to ensure that arguments are the proper shape
+      serverStreamCaller = client[method]([ServerStreamConfig.arguments]);
+    }
+
+    serverStreamCaller.on("data", data => {
+      console.log(data);
+    });
+
+    serverStreamCaller.on("end", cb);
   }
 
   function bidiStream() {
@@ -134,13 +155,10 @@ export function runCall(reqConfig) {
     const cb = ClientStreamConfig.callback;
 
     if (!bidiStreamCaller && ClientStreamConfig.action === StreamAction.INITIATE) {
-      bidiStreamCaller = client[method]((err, response) => {
-        if (err) {
-          throw err;
-        }
-        cb(response);
-      });
+      bidiStreamCaller = client[method];
     }
+
+    bidiStreamCaller.end(cb);
 
     return {
       writableStream: bidiStreamCaller,
