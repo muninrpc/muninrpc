@@ -15,7 +15,7 @@ export interface RequestConfig<
     | ServerStreamRequestBody
     | BidiStreamRequestBody
 > {
-  method: string;
+  requestName: string;
   callType: CallType;
   reqBody: T;
 }
@@ -81,6 +81,7 @@ abstract class GrpcHandler<
     this.packageName = config.packageName;
     this.serviceName = config.serviceName;
     this.requestConfig = config.reqBody;
+    this.requestName = config.requestName;
     this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[
       this.packageName
     ] as typeof grpc.Client;
