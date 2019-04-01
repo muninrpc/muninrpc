@@ -34,7 +34,7 @@ export default function Left(props: LeftProps.Props, context?: any) {
     mode = <ServiceAndRequest serviceList={serviceList} messageList={messageList} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService}
     selectedRequest={selectedRequest}/>;
   if (props.mode === 'messages') mode = <Messages messageList={props.messageList} />;
-  if (props.mode === 'setup') mode = <Setup />;
+  if (props.mode === 'setup') mode = <Setup serviceList={serviceList} messageList={messageList} selectedService={selectedService} selectedRequest={selectedRequest}/>;
 
   return (
     <div className="left">
@@ -79,7 +79,7 @@ export default function Left(props: LeftProps.Props, context?: any) {
           MESSAGES
         </button>
         <button
-          disabled={Object.keys(messageList).length ? false : true}
+          disabled={selectedRequest ? false : true}
           onClick={() => props.setMode('setup')}
           className={"req-setup-button " + (props.mode === 'setup' ? 'selected' : '')}
         >
