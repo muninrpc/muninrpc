@@ -12,7 +12,7 @@ service ListActions {
 message GetListParams {}
 
 message Item {
-  optional string item = 1;
+  repeated string item = 1;
 }
 
 message ItemList {

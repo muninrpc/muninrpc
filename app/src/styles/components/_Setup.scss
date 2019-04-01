@@ -1,5 +1,25 @@
 .setup {
   height: 100%;
-  padding: 10px;
+  width: 100%;
   background: white;
+  padding: 22px 0px 0px 10%;
 } 
+
+p {
+  display: flex
+}
+
+.setup-area {
+  display: flex;
+  flex-flow: column nowrap;
+
+  ul {
+    display: flex;
+    flex-flow: column nowrap;
+  }
+
+  li {
+    display: flex;
+    flex-flow: row nowrap;
+  }
+}

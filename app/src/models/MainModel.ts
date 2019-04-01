@@ -2,7 +2,6 @@ import { ReactComponentElement } from "react";
 import { ServerResponse } from "http";
 
 export interface MainModel {
-  responseDisplay: string,
   responseMetrics: string,
   targetIP: string,
   filePath: string,
@@ -10,7 +9,7 @@ export interface MainModel {
   connectType: string,
   mode: MainModel.Mode,
   serviceList: string[],
-  requestList: string[],
+  messageList: any,
   serverResponse: string[],
   selectedService: string,
   selectedRequest: string

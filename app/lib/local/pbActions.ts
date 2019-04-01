@@ -16,7 +16,7 @@ export function loadProtoFile(
     defaults: true,
     oneofs: true
   });
-  console.log(packageDefinition);
+  // console.log(packageDefinition);
   return packageDefinition;
 }
 

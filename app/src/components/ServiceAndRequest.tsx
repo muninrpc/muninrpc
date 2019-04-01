@@ -3,7 +3,7 @@ import * as React from 'react';
 export namespace ServiceAndRequestProps {
   export interface Props {
     serviceList?: string[];
-    requestList?: string[];
+    messageList: any;
     selectedService?: string;
     selectedRequest?: string;
     handleServiceClick: any;
