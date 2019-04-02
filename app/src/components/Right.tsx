@@ -1,9 +1,9 @@
-import * as React from 'react';
+import * as React from "react";
 
 export namespace RightProps {
   export interface Props {
     serverResponse: string[];
-    responseMetrics: string
+    responseMetrics: string;
   }
 }
 

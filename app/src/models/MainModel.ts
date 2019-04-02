@@ -1,13 +1,14 @@
 import { ReactComponentElement } from "react";
 import { ServerResponse } from "http";
 import * as protoLoader from "@grpc/proto-loader";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
 
 export interface MainModel {
   responseMetrics: string;
   targetIP: string;
   filePath: string;
   trail: string;
-  connectType: string;
+  connectType: CallType | string;
   mode: MainModel.Mode;
   serviceList: string[];
   messageList: any;

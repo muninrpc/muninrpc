@@ -22,7 +22,7 @@ const initialState: RootState.mainState = {
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
   {
-    [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string }) => {
+    [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string) => {
       let newTrail: string;
       if (action.payload === "") {
         newTrail = ` `;
@@ -35,7 +35,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         trail: newTrail
       };
     },
-    [mainActions.Type.HANDLE_SERVICE_CLICK]: (state, action: { payload: string }) => {
+    [mainActions.Type.HANDLE_SERVICE_CLICK]: (state, action: { payload: { service: string } }) => {
       let writtenIP = "IP";
       if (state.targetIP) {
         writtenIP = state.targetIP;
@@ -55,7 +55,9 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       //else add just request string
       let newTrail: string;
       let writtenIP = "IP";
-      if (state.targetIP) writtenIP = state.targetIP;
+      if (state.targetIP) {
+        writtenIP = state.targetIP;
+      }
       if (state.selectedService) {
         //let regexedString = action.payload.match(/(?<=→\ ).+/)
         newTrail = `${writtenIP} → ${state.selectedService} → ${action.payload.request}`;
