@@ -1,4 +1,4 @@
-import { MainModel } from '../models/MainModel';
+import { MainModel } from "../models/MainModel";
 
 export interface RootState {
   main: RootState.mainState;

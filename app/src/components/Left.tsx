@@ -1,8 +1,8 @@
-import * as React from 'react';
-import ServiceAndRequest from './ServiceAndRequest';
-import Messages from './Messages';
-import Setup from './Setup';
-import { MainModel } from '../models/MainModel';
+import * as React from "react";
+import ServiceAndRequest from "./ServiceAndRequest";
+import Messages from "./Messages";
+import Setup from "./Setup";
+import { MainModel } from "../models/MainModel";
 
 export namespace LeftProps {
   export interface Props {
@@ -29,12 +29,39 @@ export namespace LeftProps {
 
 export default function Left(props: LeftProps.Props, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
-  const { serviceList, messageList, handleServiceClick, handleRequestClick, selectedService, selectedRequest } = props;
-  if (props.mode === 'service_and_request')
-    mode = <ServiceAndRequest serviceList={serviceList} messageList={messageList} handleServiceClick={handleServiceClick} handleRequestClick={handleRequestClick} selectedService={selectedService}
-    selectedRequest={selectedRequest}/>;
-  if (props.mode === 'messages') mode = <Messages messageList={props.messageList} />;
-  if (props.mode === 'setup') mode = <Setup serviceList={serviceList} messageList={messageList} selectedService={selectedService} selectedRequest={selectedRequest}/>;
+  const {
+    serviceList,
+    messageList,
+    handleServiceClick,
+    handleRequestClick,
+    selectedService,
+    selectedRequest
+  } = props;
+  if (props.mode === MainModel.Mode.SHOW_SERVICE) {
+    mode = (
+      <ServiceAndRequest
+        serviceList={serviceList}
+        messageList={messageList}
+        handleServiceClick={handleServiceClick}
+        handleRequestClick={handleRequestClick}
+        selectedService={selectedService}
+        selectedRequest={selectedRequest}
+      />
+    );
+  }
+  if (props.mode === MainModel.Mode.SHOW_MESSAGES) {
+    mode = <Messages messageList={props.messageList} />;
+  }
+  if (props.mode === MainModel.Mode.SHOW_SETUP) {
+    mode = (
+      <Setup
+        serviceList={serviceList}
+        messageList={messageList}
+        selectedService={selectedService}
+        selectedRequest={selectedRequest}
+      />
+    );
+  }
 
   return (
     <div className="left">
@@ -52,7 +79,7 @@ export default function Left(props: LeftProps.Props, context?: any) {
           <h3>Upload .proto file</h3>
           <div className="upload-box-contents">
             <div className="file-path">{props.filePath}</div>
-            <div className="file-path-spacer"></div>
+            <div className="file-path-spacer" />
             <label className="file-upload">
               UPLOAD
               <input
@@ -66,29 +93,34 @@ export default function Left(props: LeftProps.Props, context?: any) {
       </div>
       <div className="tabs">
         <button
-          onClick={() => props.setMode('service_and_request')}
-          className={"service-and-request-button " + (props.mode === 'service_and_request' ? 'selected' : '')}
+          onClick={() => props.setMode(MainModel.Mode.SHOW_SERVICE)}
+          className={
+            "service-and-request-button " +
+            (props.mode === MainModel.Mode.SHOW_SERVICE ? "selected" : "")
+          }
         >
           SERVICES & REQUESTS
         </button>
         <button
           disabled={Object.keys(messageList).length ? false : true}
-          onClick={() => props.setMode('messages')}
-          className={"messages-button " + (props.mode === 'messages' ? 'selected' : '')}
+          onClick={() => props.setMode(MainModel.Mode.SHOW_MESSAGES)}
+          className={
+            "messages-button " + (props.mode === MainModel.Mode.SHOW_MESSAGES ? "selected" : "")
+          }
         >
           MESSAGES
         </button>
         <button
           disabled={selectedRequest ? false : true}
-          onClick={() => props.setMode('setup')}
-          className={"req-setup-button " + (props.mode === 'setup' ? 'selected' : '')}
+          onClick={() => props.setMode(MainModel.Mode.SHOW_SETUP)}
+          className={
+            "req-setup-button " + (props.mode === MainModel.Mode.SHOW_SETUP ? "selected" : "")
+          }
         >
           REQUEST SETUP
         </button>
       </div>
-      <div className='main'>
-        {mode}
-      </div>
+      <div className="main">{mode}</div>
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import * as React from 'react';
-import { MainModel } from '../models/MainModel';
+import * as React from "react";
+import { MainModel } from "../models/MainModel";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
 
 export namespace HeaderProps {
   export interface Props {
     trail: string;
-    connectType: string;
+    connectType: CallType;
     serviceList: any;
     selectedService: string;
     selectedRequest: string;
@@ -12,13 +13,37 @@ export namespace HeaderProps {
 }
 
 export default function Header(props: HeaderProps.Props, context?: any) {
-  const { trail, connectType } = props
-  
-  return(
+  const { trail, connectType } = props;
+
+  let userConnectType;
+
+  switch (connectType) {
+    case CallType.UNARY_CALL: {
+      userConnectType = "UNARY";
+      break;
+    }
+    case CallType.SERVER_STREAM: {
+      userConnectType = "SERVER STREAM";
+      break;
+    }
+    case CallType.CLIENT_STREAM: {
+      userConnectType = "CLIENT STREAM";
+      break;
+    }
+    case CallType.BIDI_STREAM: {
+      userConnectType = "BIDIRECTIONAL";
+      break;
+    }
+    default: {
+      userConnectType = "Select an RPC";
+    }
+  }
+
+  return (
     <div className="header">
       <div className="header-left">
         <div className="trail">{trail}</div>
-        <div className="connection-display">{connectType}</div>
+        <div className="connection-display">{userConnectType}</div>
         <button className="send-button">SEND REQUEST</button>
       </div>
       <div className="right">
@@ -26,5 +51,5 @@ export default function Header(props: HeaderProps.Props, context?: any) {
         <img className="logo" src="./src/assets/raven.png" />
       </div>
     </div>
-  )
+  );
 }
