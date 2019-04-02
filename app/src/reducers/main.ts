@@ -4,6 +4,7 @@ import { mainActions } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as pbActions from "../../lib/local/pbActions";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { Trie } from "../utils/trieClass";
 
 const initialState: RootState.mainState = {
   responseMetrics: "got2go fast",
@@ -17,12 +18,14 @@ const initialState: RootState.mainState = {
   serverResponse: ["response from server will go here"],
   packageDefinition: null,
   selectedService: null,
-  selectedRequest: null
+  selectedRequest: null,
+  serviceTrie: new Trie(),
+  requestTrie: new Trie(),
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
   {
-    [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string) => {
+    [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string }) => {
       let newTrail: string;
       if (action.payload === "") {
         newTrail = ` `;
@@ -32,7 +35,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       return {
         ...state,
         targetIP: action.payload,
-        trail: newTrail
+        trail: newTrail,
       };
     },
     [mainActions.Type.HANDLE_SERVICE_CLICK]: (state, action: { payload: { service: string } }) => {
@@ -44,12 +47,12 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       return {
         ...state,
         selectedService: action.payload.service,
-        trail: newTrail
+        trail: newTrail,
       };
     },
     [mainActions.Type.HANDLE_REQUEST_CLICK]: (
       state,
-      action: { payload: { request: string; service: string } }
+      action: { payload: { request: string; service: string } },
     ) => {
       //if there is a selectedservice, then add service + regex'd request string
       //else add just request string
@@ -87,28 +90,43 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
         connectType: newConnectType,
-        trail: newTrail
+        trail: newTrail,
       };
     },
 
     [mainActions.Type.HANDLE_PROTO_UPLOAD]: (state, action) => {
       const filePath = action.payload[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
-      //console.log('from reducer, parsed Package Definition:', pbActions.parsePackageDefinition(packageDefinition))
+
       const { protoServices, protoMessages } = pbActions.parsePackageDefinition(packageDefinition);
+
+      console.log("protoservices", protoServices, "protomessages", protoMessages);
+
+      const newServiceTrie = new Trie();
+      newServiceTrie.insertArrayOfWords(Object.keys(protoServices));
+
+      let requestWordsArr: string[] = [];
+      Object.keys(protoServices).forEach(service => {
+        requestWordsArr = [...requestWordsArr, ...Object.keys(protoServices[service])];
+      });
+
+      const newRequestTrie = new Trie();
+      newRequestTrie.insertArrayOfWords(requestWordsArr);
 
       return {
         ...state,
         filePath: filePath,
         packageDefinition: packageDefinition,
         serviceList: protoServices,
-        messageList: protoMessages
+        serviceTrie: newServiceTrie,
+        requestTrie: newRequestTrie,
+        messageList: protoMessages,
       };
     },
     [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
       ...state,
-      mode: action.payload
-    })
+      mode: action.payload,
+    }),
   },
-  initialState
+  initialState,
 );

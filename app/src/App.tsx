@@ -1,14 +1,11 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
-// import { RouteComponentProps } from 'react-router';
 import { mainActions } from "./actions";
 import { RootState } from "./reducers";
 import { MainModel } from "./models";
 import { omit } from "./utils";
-import Left from "./components/Left";
-import Right from "./components/Right";
-import Header from "./components/Header";
+import { Left, Right, Header } from "./components";
 
 const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
   key => MainModel.Mode[key]

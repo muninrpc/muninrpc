@@ -7,7 +7,7 @@ export namespace RightProps {
   }
 }
 
-export default function Right(props: RightProps.Props, context?: any) {
+export function Right(props: RightProps.Props, context?: any) {
   return (
     <div className="right-half">
       <h2>Server Response</h2>

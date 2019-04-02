@@ -2,6 +2,7 @@ import { ReactComponentElement } from "react";
 import { ServerResponse } from "http";
 import * as protoLoader from "@grpc/proto-loader";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { Trie } from "../utils/trieClass";
 
 export interface MainModel {
   responseMetrics: string;
@@ -16,12 +17,14 @@ export interface MainModel {
   packageDefinition: protoLoader.PackageDefinition;
   selectedService: string;
   selectedRequest: string;
+  serviceTrie: Trie;
+  requestTrie: Trie;
 }
 
 export namespace MainModel {
   export enum Mode {
     SHOW_SERVICE = "SERVICE_AND_REQUEST",
     SHOW_MESSAGES = "MESSAGES",
-    SHOW_SETUP = "SETUP"
+    SHOW_SETUP = "SETUP",
   }
 }

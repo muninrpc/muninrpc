@@ -9,7 +9,7 @@ export namespace HeaderProps {
   }
 }
 
-export default function Header(props: HeaderProps.Props, context?: any) {
+export function Header(props: HeaderProps.Props, context?: any) {
   const { trail, connectType } = props;
 
   let userConnectType;
