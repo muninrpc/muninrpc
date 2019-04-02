@@ -32,9 +32,9 @@ export default function Setup(props:  SetupProps.Props, context?: any) {
                 {/* <h3>{messageName}</h3> */}
                 <li className="first">
                   <button className="setup-button repeated">{label === 'REPEATED' ? '+' : ''}</button>
-                  <div className="setup-name">{name }</div>
-                  <div className="setup-label">{label }</div>
-                  <div className="setup-type">{type }</div>
+                  <div className="setup-name">{name}</div>
+                  <div className="setup-label">{label}</div>
+                  <div className="setup-type">{type}</div>
                   
                 </li>
                 <span style={ {marginLeft: 20 * depth + 'px'} }>
