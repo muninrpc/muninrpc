@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { MainModel } from '../models/MainModel';
+import * as React from "react";
+import { MainModel } from "../models/MainModel";
 
 export namespace HeaderProps {
   export interface Props {
@@ -12,9 +12,9 @@ export namespace HeaderProps {
 }
 
 export default function Header(props: HeaderProps.Props, context?: any) {
-  const { trail, connectType } = props
-  
-  return(
+  const { trail, connectType } = props;
+
+  return (
     <div className="header">
       <div className="header-left">
         <div className="trail">{trail}</div>
@@ -26,5 +26,5 @@ export default function Header(props: HeaderProps.Props, context?: any) {
         <img className="logo" src="./src/assets/raven.png" />
       </div>
     </div>
-  )
+  );
 }

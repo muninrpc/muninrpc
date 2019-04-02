@@ -1,6 +1,6 @@
-import { combineReducers } from 'redux';
-import { RootState } from './state';
-import { mainReducer } from './main';
+import { combineReducers } from "redux";
+import { RootState } from "./state";
+import { mainReducer } from "./main";
 
 export { RootState };
 
