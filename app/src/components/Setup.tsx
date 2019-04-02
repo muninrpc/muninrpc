@@ -13,12 +13,12 @@ export namespace SetupProps {
 export default function Setup(props:  SetupProps.Props, context?: any) {
   let { serviceList, selectedService, selectedRequest } = props;
 
-  function generateFields(field, messageName){
+  function generateFields(field, messageName, depth = 1){
     if (field.length === 0) {
-      return (<p>This message has no fields.</p>)
+      return (<p className="no-fields">This message has no fields.</p>)
     } else {
       let elementsArray = [];
-      elementsArray.push()
+      elementsArray.push(<h2>{messageName}</h2>)
       field.forEach( value => {
         if (typeof value === 'object' && !Array.isArray(value)) {
           let name = value.name;
@@ -26,28 +26,28 @@ export default function Setup(props:  SetupProps.Props, context?: any) {
           let type = value.type.replace('TYPE_', '');
           if (type === "MESSAGE") type = value.typeName;
           if (label === "REPEATED" && type === value.typeName) {
-            let repeatedElement = generateFields(props.messageList[type].type.field, type)
+            let repeatedElement = generateFields(props.messageList[type].type.field, type, depth + 1)
             elementsArray.push(
               <ul>
-                <h3>{messageName}</h3>
+                {/* <h3>{messageName}</h3> */}
                 <li className="first">
-                  <button className="setup-button">{label === 'REPEATED' ? '+' : ''}</button>
+                  <button className="setup-button repeated">{label === 'REPEATED' ? '+' : ''}</button>
                   <div className="setup-name">{name }</div>
                   <div className="setup-label">{label }</div>
                   <div className="setup-type">{type }</div>
                   
                 </li>
-                <div>
+                <span style={ {marginLeft: 20 * depth + 'px'} }>
                     {repeatedElement}
-                  </div>
+                  </span>
               </ul>
             )
           } else {
             elementsArray.push(
               <ul>
-                <h3>{messageName}</h3>
+                {/* <h3>{messageName}</h3> */}
                 <li className="first">
-                  <button className="setup-button">{label === 'REPEATED' ? '+' : ''}</button>
+                  <button className="setup-button singular" disabled={label === 'REPEATED' ? false : true}>{label === 'REPEATED' ? '+' : ''}</button>
                   <div className="setup-name">{name}</div>
                   <div className="setup-label">{label}</div>
                   <div className="setup-type">{type}</div>

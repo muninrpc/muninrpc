@@ -3,23 +3,60 @@
   width: 100%;
   background: white;
   padding: 22px 0px 0px 10%;
-} 
 
-p {
-  display: flex
-}
+  button {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    height: 1.5rem;
+    width: 1.5rem;
+  }
 
-.setup-area {
-  display: flex;
-  flex-flow: column nowrap;
-
-  ul {
+  .setup-area {
     display: flex;
     flex-flow: column nowrap;
+  
+    div {
+      margin-left: 6px;
+    }
+  
+    p {
+      display: flex
+    }
+  
+    ul {
+      display: flex;
+      flex-flow: column nowrap;
+    }
+  
+    h2 {
+      border-top: 1px solid darken($primary-color, 20%);
+      padding-top: 8px;
+    }
+  
+    li {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    input {
+      margin-left: 16px;
+    }
+
+    .no-fields {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid darken($primary-color, 20%);
+    }
+
   }
 
-  li {
-    display: flex;
-    flex-flow: row nowrap;
-  }
-}
+} 
+
