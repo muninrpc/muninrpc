@@ -48,10 +48,10 @@ export enum StreamAction {
 }
 
 export enum CallType {
-  UNARY_CALL,
-  CLIENT_STREAM,
-  SERVER_STREAM,
-  BIDI_STREAM
+  UNARY_CALL = "UNARY_CALL",
+  CLIENT_STREAM = "CLIENT_STREAM",
+  SERVER_STREAM = "SERVER_STREAM",
+  BIDI_STREAM = "BIDI_STREAM"
 }
 
 abstract class GrpcHandler<
@@ -61,13 +61,13 @@ abstract class GrpcHandler<
     | ServerStreamRequestBody
     | BidiStreamRequestBody
 > {
-  public grpcServerURI: string;
-  public packageDefinition: protoLoader.PackageDefinition;
-  public packageName: string;
-  public serviceName: string;
-  public requestName: string;
-  public callType: string;
-  public requestConfig:
+  protected grpcServerURI: string;
+  protected packageDefinition: protoLoader.PackageDefinition;
+  protected packageName: string;
+  protected serviceName: string;
+  protected requestName: string;
+  protected callType: string;
+  protected requestConfig:
     | UnaryRequestBody
     | ClientStreamRequestBody
     | ServerStreamRequestBody
@@ -89,24 +89,31 @@ abstract class GrpcHandler<
       this.grpcServerURI,
       grpc.credentials.createInsecure()
     ) as grpc.Client;
-    // console.log(this.loadedPackage);
   }
+
   abstract initiateRequest();
+
+  closeConnection() {
+    this.client.close();
+  }
 }
 
 class UnaryHandler extends GrpcHandler<UnaryRequestBody> {
-  public args: object;
+  private args: object;
   constructor(config: BaseConfig & RequestConfig<UnaryRequestBody>) {
     super(config);
     this.args = this.requestConfig.argument;
   }
 
+  /**
+   * InitiateRequest will send the unary request to the gRPC server.
+   * The argument sent is located in the configuration file
+   */
+
   initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
-      console.log(this.client);
       this.client[this.requestName](this.args, (err, response) => {
         if (err) {
-          console.log(err);
           reject(err);
         }
         resolve(response);
@@ -116,8 +123,8 @@ class UnaryHandler extends GrpcHandler<UnaryRequestBody> {
 }
 
 class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
-  public cb: (a: any) => any;
-  public writableStream: grpc.ClientWritableStream<any>;
+  private cb: (a: any) => any;
+  private writableStream: grpc.ClientWritableStream<any>;
 
   constructor(config: BaseConfig & RequestConfig<ClientStreamRequestBody>) {
     super(config);
@@ -179,6 +186,11 @@ class BidiStreamHandler extends GrpcHandler<BidiStreamRequestBody> {
     this.bidiStream.on("end", () => {
       console.log("Connection Closed");
     });
+  }
+  returnHandler() {
+    return {
+      bidiStream: this.bidiStream
+    };
   }
 }
 

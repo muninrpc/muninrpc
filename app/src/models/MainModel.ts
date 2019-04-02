@@ -1,24 +1,26 @@
 import { ReactComponentElement } from "react";
 import { ServerResponse } from "http";
+import * as protoLoader from "@grpc/proto-loader";
 
 export interface MainModel {
-  responseMetrics: string,
-  targetIP: string,
-  filePath: string,
-  trail: string,
-  connectType: string,
-  mode: MainModel.Mode,
-  serviceList: string[],
-  messageList: any,
-  serverResponse: string[],
-  selectedService: string,
-  selectedRequest: string
+  responseMetrics: string;
+  targetIP: string;
+  filePath: string;
+  trail: string;
+  connectType: string;
+  mode: MainModel.Mode;
+  serviceList: string[];
+  messageList: any;
+  serverResponse: string[];
+  packageDefinition: protoLoader.PackageDefinition;
+  selectedService: string;
+  selectedRequest: string;
 }
 
 export namespace MainModel {
   export enum Mode {
-    SHOW_SERVICE = 'service_and_request',
-    SHOW_MESSAGES = 'messages',
-    SHOW_SETUP = 'setup'
+    SHOW_SERVICE = "SERVICE_AND_REQUEST",
+    SHOW_MESSAGES = "MESSAGES",
+    SHOW_SETUP = "SETUP"
   }
 }
