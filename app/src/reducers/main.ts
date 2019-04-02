@@ -4,6 +4,7 @@ import { mainActions } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as pbActions from "../../lib/local/pbActions";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { rpc } from "protobufjs";
 
 const initialState: RootState.mainState = {
   responseMetrics: "got2go fast",
@@ -17,7 +18,9 @@ const initialState: RootState.mainState = {
   serverResponse: ["response from server will go here"],
   packageDefinition: null,
   selectedService: null,
-  selectedRequest: null
+  selectedRequest: null,
+  configArguments: { arguments: {} },
+  configElements: []
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -80,12 +83,54 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         newConnectType = "ERROR";
       }
 
+      // logic for assembling the arguments object
+      const newConfigElements = [];
+
+      function parseService(typeArray, configArguments) {
+        // 5 possible cases:
+        // case: fields array is empty
+        newConfigElements.push(typeArray.name)
+        if (typeArray.field.length === 0) {
+          configArguments = null;
+        } else {
+          typeArray.field.forEach( f => {
+            console.log('f',f)
+            // case: not a message and not repeating
+            if(f.type !== "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+              configArguments[f.name] = null;
+            }
+            // case: not a message and repeating
+            if(f.type !== "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
+              configArguments[f.name] = [null];
+            }
+            // case: message and not repeating
+            if(f.type === "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+              configArguments[f.name] = {};
+              parseService(state.messageList[f.typeName].type, configArguments[f.name])
+            }
+            // case: message and repeating
+            if(f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
+              configArguments[f.name] = [{}]
+              parseService(state.messageList[f.typeName].type, configArguments[f.name][0])
+              
+              
+            }
+          })
+        }
+      }
+      let newConfigArguments = { arguments: {} }
+      parseService(state.serviceList[action.payload.service][action.payload.request].requestType.type, newConfigArguments.arguments) 
+
+
+
       return {
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
         connectType: newConnectType,
-        trail: newTrail
+        trail: newTrail,
+        configArguments: newConfigArguments,
+        configElements: newConfigElements
       };
     },
 
@@ -106,7 +151,20 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
     [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
       ...state,
       mode: action.payload
+    }),
+
+    [mainActions.Type.HANDLE_CONFIG_INPUT]: (state, action) => {
+
+      return {
+      ...state,
+      configElements: action.payload
+      }
+    },
+    [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({
+      ...state,
+      arguments: action.payload
     })
+
   },
   initialState
 );

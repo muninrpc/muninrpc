@@ -7,9 +7,34 @@ service ListActions {
   rpc GetList(GetListParams) returns (ItemList) {}
   rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
   rpc CalculateAverage(stream Numbers) returns (Average) {}
+  rpc Test(MessageRepeating) returns (MessageRepeating) {}
+  rpc SingleTest(MessageOfMessageSingular) returns (Item) {}
 }
 
+message MessageOfMessageSingular {
+  required MessageSingular single = 1;
+}
+
+message MessageRepeating {
+  repeated DeepMessageRepeating mess_deep = 1;
+}
+
+message MessageSingular {
+ repeated string string_repeat = 1;
+ required string string_single = 2;
+ optional NoFields no_fields = 3;
+}
+
+message DeepMessageRepeating {
+  repeated MessageSingular mess_sing = 1;
+  required NoFields no_fields = 2;
+}
+
+message NoFields {}
+
 message GetListParams {}
+
+
 
 message Item {
   optional string item = 1;

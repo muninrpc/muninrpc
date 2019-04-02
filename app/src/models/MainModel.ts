@@ -15,6 +15,8 @@ export interface MainModel {
   packageDefinition: protoLoader.PackageDefinition;
   selectedService: string;
   selectedRequest: string;
+  configArguments: any;
+  configElements: any[];
 }
 
 export namespace MainModel {

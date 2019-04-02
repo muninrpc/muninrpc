@@ -1,5 +1,6 @@
 import * as React from "react";
 import { element } from "prop-types";
+import { JSXSpreadChild } from "@babel/types";
 
 export namespace SetupProps {
   export interface Props {
@@ -7,13 +8,23 @@ export namespace SetupProps {
     messageList: any;
     selectedService: string;
     selectedRequest: string;
+    argumentsArray: any[];
+
+    handleRepeatedClick: any;
+    handleConfigInput: any;
   }
 }
 
 export default function Setup(props: SetupProps.Props, context?: any) {
-  let { serviceList, selectedService, selectedRequest } = props;
+  let { handleConfigInput, handleRepeatedClick, serviceList, selectedService, selectedRequest } = props;
 
-  function generateFields(field, messageName, depth = 1) {
+  function createListItem(name, label, type, depth) {
+
+  }
+
+  function generateFields(field: any[], messageName: string, path = '', depth = 1): JSX.Element[] | JSX.Element  {
+    const [ignored, forceUpdate] = React.useReducer(x => x + 1, 0);
+
     if (field.length === 0) {
       return <p className="no-fields">This message has no fields.</p>;
     } else {
@@ -29,12 +40,13 @@ export default function Setup(props: SetupProps.Props, context?: any) {
             let repeatedElement = generateFields(
               props.messageList[type].type.field,
               type,
+              path + '/' + name + '@0',
               depth + 1
             );
             elementsArray.push(
               <ul>
                 {/* <h3>{messageName}</h3> */}
-                <li className="first">
+                <li className="">
                   <button className="setup-button repeated">
                     {label === "REPEATED" ? "+" : ""}
                   </button>
@@ -59,7 +71,7 @@ export default function Setup(props: SetupProps.Props, context?: any) {
                   <div className="setup-name">{name}</div>
                   <div className="setup-label">{label}</div>
                   <div className="setup-type">{type}</div>
-                  <input type="text" />
+                  <input onChange={() => handleConfigInput(`${path}/${name}`) } id={`${path}/${name}`} type="text" />
                 </li>
               </ul>
             );
@@ -71,11 +83,10 @@ export default function Setup(props: SetupProps.Props, context?: any) {
   }
 
   const requestFields = serviceList[selectedService][selectedRequest].requestType.type.field;
-  const additionalMessages: JSX.Element[] = generateFields(
+  const additionalMessages: JSX.Element[] | JSX.Element = generateFields(
     requestFields,
     serviceList[selectedService][selectedRequest].requestType.type.name
   );
-  console.log("requestFields:", requestFields);
 
   return (
     <div className="setup">

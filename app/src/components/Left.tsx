@@ -16,12 +16,15 @@ export namespace LeftProps {
     messageList: any;
     selectedService: string;
     selectedRequest: string;
+    argumentsArray: any[];
 
     handleIPInput: any; // (value: string) => void;
     handleProtoUpload: any;
     setMode: any;
     handleServiceClick: any;
     handleRequestClick: any;
+    handleRepeatedClick: any;
+    handleConfigInput: any;
 
     mode: string;
   }
@@ -35,7 +38,10 @@ export default function Left(props: LeftProps.Props, context?: any) {
     handleServiceClick,
     handleRequestClick,
     selectedService,
-    selectedRequest
+    selectedRequest,
+    argumentsArray,
+    handleConfigInput,
+    handleRepeatedClick
   } = props;
   if (props.mode === MainModel.Mode.SHOW_SERVICE) {
     mode = (
@@ -59,6 +65,9 @@ export default function Left(props: LeftProps.Props, context?: any) {
         messageList={messageList}
         selectedService={selectedService}
         selectedRequest={selectedRequest}
+        argumentsArray={argumentsArray}
+        handleConfigInput={handleConfigInput}
+        handleRepeatedClick={handleRepeatedClick}
       />
     );
   }
