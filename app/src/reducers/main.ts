@@ -10,15 +10,14 @@ const initialState: RootState.mainState =
     targetIP: '',
     filePath: '',
     trail: '',
-    connectType: 'lol',
+    connectType: 'Select an RPC',
     mode: 'service_and_request',
     serviceList: [],
-    requestList: [],
+    messageList: {},
     serverResponse: ['response from server will go here'],
     packageDefinition: null,
     selectedService: null,
     selectedRequest: null,
-
   }
 ;
 
@@ -57,13 +56,35 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         //let regexedString = action.payload.match(/(?<=→\ ).+/)
         newTrail = `${writtenIP} → ${state.selectedService} → ${action.payload.request}`
       } else {
-        console.log('action.payload:', action.payload)
         newTrail = `${writtenIP} → ${action.payload.service} → ${action.payload.request}` 
       }
+
+      let reqInfo = state.serviceList[action.payload.service][action.payload.request];
+      let newConnectType: string;
+
+      switch (`${reqInfo.requestStream}, ${reqInfo.responseStream}`) {
+        case (`true, true`):
+          newConnectType = 'BI-DIRECTIONAL'
+          break;
+        case (`false, false`):
+          newConnectType = 'UNARY'
+          break;
+        case (`false, true`):
+          newConnectType = 'SERVER-STREAM'
+          break;
+        case (`true, false`):
+          newConnectType = 'CLIENT-STREAM'
+          break;
+        default:
+          newConnectType = 'ERROR'
+          break;
+      }
+
       return {
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request, 
+        connectType: newConnectType,
         trail: newTrail
       }
     },
@@ -80,7 +101,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         filePath: filePath,
         packageDefinition: packageDefinition,
         serviceList: protoServices,
-        requestList: protoMessages
+        messageList: protoMessages
       };
     },
     [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
