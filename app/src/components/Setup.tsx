@@ -11,29 +11,30 @@ export namespace SetupProps {
 }
 
 export default function Setup(props: SetupProps.Props, context?: any) {
-  let { serviceList, selectedService, selectedRequest } = props;
+  const { serviceList, selectedService, selectedRequest } = props;
 
   function generateFields(field, messageName, depth = 1) {
     if (field.length === 0) {
       return <p className="no-fields">This message has no fields.</p>;
     } else {
-      let elementsArray = [];
+      const elementsArray: JSX.Element[] = [];
       elementsArray.push(<h2>{messageName}</h2>);
       field.forEach(value => {
         if (typeof value === "object" && !Array.isArray(value)) {
-          let name = value.name;
-          let label = value.label.replace("LABEL_", "");
+          const name = value.name;
+          const label = value.label.replace("LABEL_", "");
           let type = value.type.replace("TYPE_", "");
-          if (type === "MESSAGE") type = value.typeName;
+          if (type === "MESSAGE") {
+            type = value.typeName;
+          }
           if (label === "REPEATED" && type === value.typeName) {
-            let repeatedElement = generateFields(
+            const repeatedElement = generateFields(
               props.messageList[type].type.field,
               type,
               depth + 1
             );
             elementsArray.push(
               <ul>
-                {/* <h3>{messageName}</h3> */}
                 <li className="first">
                   <button className="setup-button repeated">
                     {label === "REPEATED" ? "+" : ""}
@@ -48,7 +49,6 @@ export default function Setup(props: SetupProps.Props, context?: any) {
           } else {
             elementsArray.push(
               <ul>
-                {/* <h3>{messageName}</h3> */}
                 <li className="first">
                   <button
                     className="setup-button singular"
@@ -71,7 +71,7 @@ export default function Setup(props: SetupProps.Props, context?: any) {
   }
 
   const requestFields = serviceList[selectedService][selectedRequest].requestType.type.field;
-  const additionalMessages: JSX.Element[] = generateFields(
+  const additionalMessages = generateFields(
     requestFields,
     serviceList[selectedService][selectedRequest].requestType.type.name
   );

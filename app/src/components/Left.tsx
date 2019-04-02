@@ -27,7 +27,7 @@ export namespace LeftProps {
   }
 }
 
-export default function Left(props: LeftProps.Props, context?: any) {
+export function Left(props: LeftProps.Props, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
   const {
     serviceList,

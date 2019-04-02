@@ -19,13 +19,7 @@
     "no-unreachable": true,
     "no-use-before-declare": true,
     "no-var-requires": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
+    "one-line": [true, "check-open-brace", "check-catch", "check-else", "check-whitespace"],
     "semicolon": [true, "always"],
     "triple-equals": [true, "allow-null-check"],
     "use-strict": true,

@@ -1,13 +1,13 @@
-import * as React from 'react';
+import * as React from "react";
 
 export namespace RightProps {
   export interface Props {
     serverResponse: string[];
-    responseMetrics: string
+    responseMetrics: string;
   }
 }
 
-export default function Right(props: RightProps.Props, context?: any) {
+export function Right(props: RightProps.Props, context?: any) {
   return (
     <div className="right-half">
       <h2>Server Response</h2>
