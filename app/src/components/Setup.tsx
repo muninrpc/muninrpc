@@ -35,20 +35,12 @@ export default function Setup(props: SetupProps.Props, context?: any) {
               <ul>
                 {/* <h3>{messageName}</h3> */}
                 <li className="first">
-<<<<<<< HEAD
-                  <button className="setup-button repeated">{label === 'REPEATED' ? '+' : ''}</button>
-                  <div className="setup-name">{name}</div>
-                  <div className="setup-label">{label}</div>
-                  <div className="setup-type">{type}</div>
-                  
-=======
                   <button className="setup-button repeated">
                     {label === "REPEATED" ? "+" : ""}
                   </button>
                   <div className="setup-name">{name}</div>
                   <div className="setup-label">{label}</div>
                   <div className="setup-type">{type}</div>
->>>>>>> 0a4595991c4b18a053f506b8097aa4a22ebc8de2
                 </li>
                 <span style={{ marginLeft: 20 * depth + "px" }}>{repeatedElement}</span>
               </ul>

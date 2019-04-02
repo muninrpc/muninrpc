@@ -87,6 +87,178 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
+/***/ "./app/lib/local/grpcHandlerFactory.ts":
+/*!*********************************************!*\
+  !*** ./app/lib/local/grpcHandlerFactory.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var grpc = __webpack_require__(/*! grpc */ "grpc");
+var StreamAction;
+(function (StreamAction) {
+    StreamAction[StreamAction["INITIATE"] = 0] = "INITIATE";
+    StreamAction[StreamAction["SEND"] = 1] = "SEND";
+    StreamAction[StreamAction["KILL"] = 2] = "KILL";
+})(StreamAction = exports.StreamAction || (exports.StreamAction = {}));
+var CallType;
+(function (CallType) {
+    CallType["UNARY_CALL"] = "UNARY_CALL";
+    CallType["CLIENT_STREAM"] = "CLIENT_STREAM";
+    CallType["SERVER_STREAM"] = "SERVER_STREAM";
+    CallType["BIDI_STREAM"] = "BIDI_STREAM";
+})(CallType = exports.CallType || (exports.CallType = {}));
+var GrpcHandler = /** @class */ (function () {
+    function GrpcHandler(config) {
+        this.grpcServerURI = config.grpcServerURI;
+        this.packageDefinition = config.packageDefinition;
+        this.packageName = config.packageName;
+        this.serviceName = config.serviceName;
+        this.requestConfig = config.reqBody;
+        this.requestName = config.requestName;
+        this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName];
+        this.client = new this.loadedPackage[this.serviceName](this.grpcServerURI, grpc.credentials.createInsecure());
+    }
+    GrpcHandler.prototype.closeConnection = function () {
+        this.client.close();
+    };
+    return GrpcHandler;
+}());
+var UnaryHandler = /** @class */ (function (_super) {
+    __extends(UnaryHandler, _super);
+    function UnaryHandler(config) {
+        var _this = _super.call(this, config) || this;
+        _this.args = _this.requestConfig.argument;
+        return _this;
+    }
+    /**
+     * InitiateRequest will send the unary request to the gRPC server.
+     * The argument sent is located in the configuration file
+     */
+    UnaryHandler.prototype.initiateRequest = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.client[_this.requestName](_this.args, function (err, response) {
+                if (err) {
+                    reject(err);
+                }
+                resolve(response);
+            });
+        });
+    };
+    return UnaryHandler;
+}(GrpcHandler));
+var ClientStreamHandler = /** @class */ (function (_super) {
+    __extends(ClientStreamHandler, _super);
+    function ClientStreamHandler(config) {
+        var _this = _super.call(this, config) || this;
+        _this.cb = config.reqBody.callback;
+        _this.initiateRequest();
+        return _this;
+    }
+    ClientStreamHandler.prototype.initiateRequest = function () {
+        var _this = this;
+        this.writableStream = this.client[this.requestName](function (err, response) {
+            if (err) {
+                throw err;
+            }
+            _this.cb(response);
+        });
+    };
+    ClientStreamHandler.prototype.returnHandler = function () {
+        return {
+            writableStream: this.writableStream
+        };
+    };
+    return ClientStreamHandler;
+}(GrpcHandler));
+var ServerStreamHandler = /** @class */ (function (_super) {
+    __extends(ServerStreamHandler, _super);
+    function ServerStreamHandler(config) {
+        var _this = _super.call(this, config) || this;
+        _this.cb = config.reqBody.callback;
+        _this.initiateRequest();
+        return _this;
+    }
+    ServerStreamHandler.prototype.initiateRequest = function () {
+        var _this = this;
+        this.readableStream = this.client[this.requestName](this.requestConfig.argument);
+        this.readableStream.on("data", function (data) {
+            _this.cb(data);
+        });
+        this.readableStream.on("end", function () {
+            console.log("Connection Closed");
+        });
+    };
+    return ServerStreamHandler;
+}(GrpcHandler));
+var BidiStreamHandler = /** @class */ (function (_super) {
+    __extends(BidiStreamHandler, _super);
+    function BidiStreamHandler(config) {
+        var _this = _super.call(this, config) || this;
+        _this.cb = config.reqBody.callback;
+        _this.initiateRequest();
+        return _this;
+    }
+    BidiStreamHandler.prototype.initiateRequest = function () {
+        var _this = this;
+        this.bidiStream = this.client[this.requestName];
+        this.bidiStream.on("data", function (data) {
+            _this.cb(data);
+        });
+        this.bidiStream.on("end", function () {
+            console.log("Connection Closed");
+        });
+    };
+    BidiStreamHandler.prototype.returnHandler = function () {
+        return {
+            bidiStream: this.bidiStream
+        };
+    };
+    return BidiStreamHandler;
+}(GrpcHandler));
+var GrpcHandlerFactory = /** @class */ (function () {
+    function GrpcHandlerFactory() {
+    }
+    GrpcHandlerFactory.createHandler = function (config) {
+        switch (config.callType) {
+            case CallType.UNARY_CALL: {
+                return new UnaryHandler(config);
+            }
+            case CallType.CLIENT_STREAM: {
+                return new ClientStreamHandler(config);
+            }
+            case CallType.SERVER_STREAM: {
+                return new ServerStreamHandler(config);
+            }
+            case CallType.BIDI_STREAM: {
+                return new BidiStreamHandler(config);
+            }
+        }
+    };
+    return GrpcHandlerFactory;
+}());
+exports.GrpcHandlerFactory = GrpcHandlerFactory;
+
+
+/***/ }),
+
 /***/ "./app/lib/local/pbActions.ts":
 /*!************************************!*\
   !*** ./app/lib/local/pbActions.ts ***!
@@ -285,12 +457,35 @@ sendRequest - func
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var grpcHandlerFactory_1 = __webpack_require__(/*! ../../lib/local/grpcHandlerFactory */ "./app/lib/local/grpcHandlerFactory.ts");
 function Header(props, context) {
     var trail = props.trail, connectType = props.connectType;
+    var userConnectType;
+    switch (connectType) {
+        case grpcHandlerFactory_1.CallType.UNARY_CALL: {
+            userConnectType = "UNARY";
+            break;
+        }
+        case grpcHandlerFactory_1.CallType.SERVER_STREAM: {
+            userConnectType = "SERVER STREAM";
+            break;
+        }
+        case grpcHandlerFactory_1.CallType.CLIENT_STREAM: {
+            userConnectType = "CLIENT STREAM";
+            break;
+        }
+        case grpcHandlerFactory_1.CallType.BIDI_STREAM: {
+            userConnectType = "BIDIRECTIONAL";
+            break;
+        }
+        default: {
+            userConnectType = "Select an RPC";
+        }
+    }
     return (React.createElement("div", { className: "header" },
         React.createElement("div", { className: "header-left" },
             React.createElement("div", { className: "trail" }, trail),
-            React.createElement("div", { className: "connection-display" }, connectType),
+            React.createElement("div", { className: "connection-display" }, userConnectType),
             React.createElement("button", { className: "send-button" }, "SEND REQUEST")),
         React.createElement("div", { className: "right" },
             React.createElement("h1", null, "MuninRPC"),
@@ -315,15 +510,19 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ServiceAndRequest_1 = __webpack_require__(/*! ./ServiceAndRequest */ "./app/src/components/ServiceAndRequest.tsx");
 var Messages_1 = __webpack_require__(/*! ./Messages */ "./app/src/components/Messages.tsx");
 var Setup_1 = __webpack_require__(/*! ./Setup */ "./app/src/components/Setup.tsx");
+var MainModel_1 = __webpack_require__(/*! ../models/MainModel */ "./app/src/models/MainModel.ts");
 function Left(props, context) {
     var mode;
     var serviceList = props.serviceList, messageList = props.messageList, handleServiceClick = props.handleServiceClick, handleRequestClick = props.handleRequestClick, selectedService = props.selectedService, selectedRequest = props.selectedRequest;
-    if (props.mode === 'service_and_request')
-        mode = React.createElement(ServiceAndRequest_1.default, { serviceList: serviceList, messageList: messageList, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest });
-    if (props.mode === 'messages')
+    if (props.mode === MainModel_1.MainModel.Mode.SHOW_SERVICE) {
+        mode = (React.createElement(ServiceAndRequest_1.default, { serviceList: serviceList, messageList: messageList, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest }));
+    }
+    if (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES) {
         mode = React.createElement(Messages_1.default, { messageList: props.messageList });
-    if (props.mode === 'setup')
-        mode = React.createElement(Setup_1.default, { serviceList: serviceList, messageList: messageList, selectedService: selectedService, selectedRequest: selectedRequest });
+    }
+    if (props.mode === MainModel_1.MainModel.Mode.SHOW_SETUP) {
+        mode = (React.createElement(Setup_1.default, { serviceList: serviceList, messageList: messageList, selectedService: selectedService, selectedRequest: selectedRequest }));
+    }
     return (React.createElement("div", { className: "left" },
         React.createElement("div", { className: "input-header" },
             React.createElement("div", { className: "address-box" },
@@ -338,10 +537,11 @@ function Left(props, context) {
                         "UPLOAD",
                         React.createElement("input", { type: "file", className: "hide-me", onChange: function (e) { return props.handleProtoUpload(e.target.files); } }))))),
         React.createElement("div", { className: "tabs" },
-            React.createElement("button", { onClick: function () { return props.setMode('service_and_request'); }, className: "service-and-request-button " + (props.mode === 'service_and_request' ? 'selected' : '') }, "SERVICES & REQUESTS"),
-            React.createElement("button", { disabled: Object.keys(messageList).length ? false : true, onClick: function () { return props.setMode('messages'); }, className: "messages-button " + (props.mode === 'messages' ? 'selected' : '') }, "MESSAGES"),
-            React.createElement("button", { disabled: selectedRequest ? false : true, onClick: function () { return props.setMode('setup'); }, className: "req-setup-button " + (props.mode === 'setup' ? 'selected' : '') }, "REQUEST SETUP")),
-        React.createElement("div", { className: 'main' }, mode)));
+            React.createElement("button", { onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_SERVICE); }, className: "service-and-request-button " +
+                    (props.mode === MainModel_1.MainModel.Mode.SHOW_SERVICE ? "selected" : "") }, "SERVICES & REQUESTS"),
+            React.createElement("button", { disabled: Object.keys(messageList).length ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_MESSAGES); }, className: "messages-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES ? "selected" : "") }, "MESSAGES"),
+            React.createElement("button", { disabled: selectedRequest ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_SETUP); }, className: "req-setup-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_SETUP ? "selected" : "") }, "REQUEST SETUP")),
+        React.createElement("div", { className: "main" }, mode)));
 }
 exports.default = Left;
 
@@ -361,39 +561,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 function Messages(props, context) {
     var messageArray = [];
-    // React.useEffect(() => {
-    console.log('props:', props);
+    console.log("props:", props);
     if (props.messageList) {
         Object.keys(props.messageList).forEach(function (name, nameidx) {
-            var type = '';
-            var label = '';
+            var type = "";
+            var label = "";
             if (props.messageList[name].type.field.length === 0) {
-                type = 'This message has no fields.';
+                type = "This message has no fields.";
             }
             else {
                 props.messageList[name].type.field.forEach(function (field) {
-                    label = field.label.replace('LABEL_', '');
-                    type = field.type.replace('TYPE_', '');
-                    if (type === 'MESSAGE')
-                        type += ': ' + field.typeName;
+                    label = field.label.replace("LABEL_", "");
+                    type = field.type.replace("TYPE_", "");
+                    if (type === "MESSAGE") {
+                        type += ": " + field.typeName;
+                    }
                 });
             }
-            console.log('name:', name);
-            if (label === '') {
+            console.log("name:", name);
+            if (label === "") {
                 messageArray.push(React.createElement("p", { key: nameidx },
-                    React.createElement("span", { className: 'message-name' }, name),
-                    React.createElement("span", { className: 'message-type' }, type)));
+                    React.createElement("span", { className: "message-name" }, name),
+                    React.createElement("span", { className: "message-type" }, type)));
             }
             else {
                 messageArray.push(React.createElement("p", { key: nameidx },
-                    React.createElement("span", { className: 'message-name' }, name),
-                    React.createElement("span", { className: 'message-label' }, label),
-                    React.createElement("span", { className: 'message-type' }, type)));
+                    React.createElement("span", { className: "message-name" }, name),
+                    React.createElement("span", { className: "message-label" }, label),
+                    React.createElement("span", { className: "message-type" }, type)));
             }
         });
     }
-    // })
-    console.log('messageArray', messageArray);
+    console.log("messageArray", messageArray);
     return (React.createElement("div", { className: "messages" },
         React.createElement("h2", null, "Messages"),
         React.createElement("div", { className: "message-header" },
@@ -486,32 +685,32 @@ function Setup(props, context) {
     function generateFields(field, messageName, depth) {
         if (depth === void 0) { depth = 1; }
         if (field.length === 0) {
-            return (React.createElement("p", { className: "no-fields" }, "This message has no fields."));
+            return React.createElement("p", { className: "no-fields" }, "This message has no fields.");
         }
         else {
             var elementsArray_1 = [];
             elementsArray_1.push(React.createElement("h2", null, messageName));
             field.forEach(function (value) {
-                if (typeof value === 'object' && !Array.isArray(value)) {
+                if (typeof value === "object" && !Array.isArray(value)) {
                     var name_1 = value.name;
-                    var label = value.label.replace('LABEL_', '');
-                    var type = value.type.replace('TYPE_', '');
+                    var label = value.label.replace("LABEL_", "");
+                    var type = value.type.replace("TYPE_", "");
                     if (type === "MESSAGE")
                         type = value.typeName;
                     if (label === "REPEATED" && type === value.typeName) {
                         var repeatedElement = generateFields(props.messageList[type].type.field, type, depth + 1);
                         elementsArray_1.push(React.createElement("ul", null,
                             React.createElement("li", { className: "first" },
-                                React.createElement("button", { className: "setup-button repeated" }, label === 'REPEATED' ? '+' : ''),
+                                React.createElement("button", { className: "setup-button repeated" }, label === "REPEATED" ? "+" : ""),
                                 React.createElement("div", { className: "setup-name" }, name_1),
                                 React.createElement("div", { className: "setup-label" }, label),
                                 React.createElement("div", { className: "setup-type" }, type)),
-                            React.createElement("span", { style: { marginLeft: 20 * depth + 'px' } }, repeatedElement)));
+                            React.createElement("span", { style: { marginLeft: 20 * depth + "px" } }, repeatedElement)));
                     }
                     else {
                         elementsArray_1.push(React.createElement("ul", null,
                             React.createElement("li", { className: "first" },
-                                React.createElement("button", { className: "setup-button singular", disabled: label === 'REPEATED' ? false : true }, label === 'REPEATED' ? '+' : ''),
+                                React.createElement("button", { className: "setup-button singular", disabled: label === "REPEATED" ? false : true }, label === "REPEATED" ? "+" : ""),
                                 React.createElement("div", { className: "setup-name" }, name_1),
                                 React.createElement("div", { className: "setup-label" }, label),
                                 React.createElement("div", { className: "setup-type" }, type),
@@ -524,7 +723,7 @@ function Setup(props, context) {
     }
     var requestFields = serviceList[selectedService][selectedRequest].requestType.type.field;
     var additionalMessages = generateFields(requestFields, serviceList[selectedService][selectedRequest].requestType.type.name);
-    console.log('requestFields:', requestFields);
+    console.log("requestFields:", requestFields);
     return (React.createElement("div", { className: "setup" },
         React.createElement("h2", null, "Setup"),
         React.createElement("div", { className: "setup-header" },
@@ -550,9 +749,9 @@ var MainModel;
 (function (MainModel) {
     var Mode;
     (function (Mode) {
-        Mode["SHOW_SERVICE"] = "service_and_request";
-        Mode["SHOW_MESSAGES"] = "messages";
-        Mode["SHOW_SETUP"] = "setup";
+        Mode["SHOW_SERVICE"] = "SERVICE_AND_REQUEST";
+        Mode["SHOW_MESSAGES"] = "MESSAGES";
+        Mode["SHOW_SETUP"] = "SETUP";
     })(Mode = MainModel.Mode || (MainModel.Mode = {}));
 })(MainModel = exports.MainModel || (exports.MainModel = {}));
 
@@ -622,25 +821,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _a;
 var redux_actions_1 = __webpack_require__(/*! redux-actions */ "./node_modules/redux-actions/es/index.js");
 var actions_1 = __webpack_require__(/*! ../actions */ "./app/src/actions/index.ts");
+var MainModel_1 = __webpack_require__(/*! ../models/MainModel */ "./app/src/models/MainModel.ts");
 var pbActions = __webpack_require__(/*! ../../lib/local/pbActions */ "./app/lib/local/pbActions.ts");
+var grpcHandlerFactory_1 = __webpack_require__(/*! ../../lib/local/grpcHandlerFactory */ "./app/lib/local/grpcHandlerFactory.ts");
 var initialState = {
-    responseMetrics: 'got2go fast',
-    targetIP: '',
-    filePath: '',
-    trail: '',
-    connectType: 'Select an RPC',
-    mode: 'service_and_request',
+    responseMetrics: "got2go fast",
+    targetIP: "",
+    filePath: "",
+    trail: "",
+    connectType: "Select an RPC",
+    mode: MainModel_1.MainModel.Mode.SHOW_SERVICE,
     serviceList: [],
     messageList: {},
-    serverResponse: ['response from server will go here'],
+    serverResponse: ["response from server will go here"],
     packageDefinition: null,
     selectedService: null,
-    selectedRequest: null,
+    selectedRequest: null
 };
 exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_IP_INPUT] = function (state, action) {
         var newTrail;
-        if (action.payload === '') {
+        if (action.payload === "") {
             newTrail = " ";
         }
         else {
@@ -649,17 +850,18 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
         return __assign({}, state, { targetIP: action.payload, trail: newTrail });
     },
     _a[actions_1.mainActions.Type.HANDLE_SERVICE_CLICK] = function (state, action) {
-        var writtenIP = 'IP';
-        if (state.targetIP)
+        var writtenIP = "IP";
+        if (state.targetIP) {
             writtenIP = state.targetIP;
-        var newTrail = writtenIP + ' → ' + action.payload.service;
+        }
+        var newTrail = writtenIP + " → " + action.payload.service;
         return __assign({}, state, { selectedService: action.payload.service, trail: newTrail });
     },
     _a[actions_1.mainActions.Type.HANDLE_REQUEST_CLICK] = function (state, action) {
         //if there is a selectedservice, then add service + regex'd request string
         //else add just request string
         var newTrail;
-        var writtenIP = 'IP';
+        var writtenIP = "IP";
         if (state.targetIP)
             writtenIP = state.targetIP;
         if (state.selectedService) {
@@ -669,24 +871,22 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
         else {
             newTrail = writtenIP + " \u2192 " + action.payload.service + " \u2192 " + action.payload.request;
         }
-        var reqInfo = state.serviceList[action.payload.service][action.payload.request];
+        var _a = state.serviceList[action.payload.service][action.payload.request], requestStream = _a.requestStream, responseStream = _a.responseStream;
         var newConnectType;
-        switch (reqInfo.requestStream + ", " + reqInfo.responseStream) {
-            case ("true, true"):
-                newConnectType = 'BI-DIRECTIONAL';
-                break;
-            case ("false, false"):
-                newConnectType = 'UNARY';
-                break;
-            case ("false, true"):
-                newConnectType = 'SERVER-STREAM';
-                break;
-            case ("true, false"):
-                newConnectType = 'CLIENT-STREAM';
-                break;
-            default:
-                newConnectType = 'ERROR';
-                break;
+        if (requestStream && responseStream) {
+            newConnectType = grpcHandlerFactory_1.CallType.BIDI_STREAM;
+        }
+        else if (!requestStream && !responseStream) {
+            newConnectType = grpcHandlerFactory_1.CallType.UNARY_CALL;
+        }
+        else if (requestStream && !responseStream) {
+            newConnectType = grpcHandlerFactory_1.CallType.CLIENT_STREAM;
+        }
+        else if (!requestStream && responseStream) {
+            newConnectType = grpcHandlerFactory_1.CallType.SERVER_STREAM;
+        }
+        else {
+            newConnectType = "ERROR";
         }
         return __assign({}, state, { selectedService: action.payload.service, selectedRequest: action.payload.request, connectType: newConnectType, trail: newTrail });
     },
@@ -41156,6 +41356,17 @@ module.exports = function(originalModule) {
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ "grpc":
+/*!***********************!*\
+  !*** external "grpc" ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("grpc");
 
 /***/ }),
 
