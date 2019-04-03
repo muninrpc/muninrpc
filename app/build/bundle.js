@@ -428,11 +428,15 @@ var mainActions;
         Type["HANDLE_REQUEST_CLICK"] = "HANDLE_REQUEST_CLICK";
         Type["HANDLE_SERVICE_TRIE"] = "HANDLE_SERVICE_TRIE";
         Type["HANDLE_MESSAGE_TRIE"] = "HANDLE_MESSAGE_TRIE";
+        Type["HANDLE_CONFIG_INPUT"] = "HANDLE_CONFIG_INPUT";
+        Type["HANDLE_REPEATED_CLICK"] = "HANDLE_REPEATED_CLICK";
     })(Type = mainActions.Type || (mainActions.Type = {}));
     mainActions.handleIPInput = redux_actions_1.createAction(Type.HANDLE_IP_INPUT);
+    mainActions.handleConfigInput = redux_actions_1.createAction(Type.HANDLE_CONFIG_INPUT);
     mainActions.handleProtoUpload = redux_actions_1.createAction(Type.HANDLE_PROTO_UPLOAD);
     mainActions.handleServiceClick = redux_actions_1.createAction(Type.HANDLE_SERVICE_CLICK);
     mainActions.handleRequestClick = redux_actions_1.createAction(Type.HANDLE_REQUEST_CLICK);
+    mainActions.handleRepeatedClick = redux_actions_1.createAction(Type.HANDLE_REPEATED_CLICK);
     mainActions.sendRequest = redux_actions_1.createAction(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
     mainActions.setMode = redux_actions_1.createAction(Type.HANDLE_SET_MODE);
     mainActions.handleServiceTrie = redux_actions_1.createAction(Type.HANDLE_SERVICE_TRIE);
@@ -748,50 +752,83 @@ exports.ServiceOrRequestList = ServiceOrRequestList;
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 function Setup(props, context) {
-    var serviceList = props.serviceList, selectedService = props.selectedService, selectedRequest = props.selectedRequest;
-    function generateFields(field, messageName, depth) {
-        if (depth === void 0) { depth = 1; }
-        if (field.length === 0) {
-            return React.createElement("p", { className: "no-fields" }, "This message has no fields.");
-        }
-        else {
-            var elementsArray_1 = [];
-            elementsArray_1.push(React.createElement("h2", null, messageName));
-            field.forEach(function (value) {
-                if (typeof value === "object" && !Array.isArray(value)) {
-                    var name_1 = value.name;
-                    var label = value.label.replace("LABEL_", "");
-                    var type = value.type.replace("TYPE_", "");
-                    if (type === "MESSAGE") {
-                        type = value.typeName;
-                    }
-                    if (label === "REPEATED" && type === value.typeName) {
-                        var repeatedElement = generateFields(props.messageList[type].type.field, type, depth + 1);
-                        elementsArray_1.push(React.createElement("ul", null,
-                            React.createElement("li", { className: "first" },
-                                React.createElement("button", { className: "setup-button repeated" }, label === "REPEATED" ? "+" : ""),
-                                React.createElement("div", { className: "setup-name" }, name_1),
-                                React.createElement("div", { className: "setup-label" }, label),
-                                React.createElement("div", { className: "setup-type" }, type)),
-                            React.createElement("span", { style: { marginLeft: 20 * depth + "px" } }, repeatedElement)));
+    var handleConfigInput = props.handleConfigInput, handleRepeatedClick = props.handleRepeatedClick, serviceList = props.serviceList, selectedService = props.selectedService, selectedRequest = props.selectedRequest;
+    function generateFields(cfgArgs, cfgEle, depth, path) {
+        // logic for constructing elements
+        if (depth === void 0) { depth = 0; }
+        if (path === void 0) { path = ''; }
+        if (cfgArgs) {
+            if ((Object.keys(cfgArgs).length === 0) || (cfgArgs.length === 0)) {
+                // additionalMessages.push(<p className="no-fields">This message has no fields.</p>);
+            }
+            else {
+                Object.keys(cfgArgs).forEach(function (field) {
+                    // case: is repeating
+                    if (Array.isArray(cfgEle[field])) {
+                        // is a repeating message
+                        if (cfgEle[field][0].type === 'TYPE_MESSAGE') {
+                            var pos = additionalMessages.length;
+                            cfgArgs[field].forEach(function (ele, idx) {
+                                additionalMessages.push(React.createElement("li", { style: { marginLeft: (depth - 1) * 20 + 'px' } },
+                                    React.createElement("button", { onClick: function (e) { return handleRepeatedClick({ id: path + '.' + field, value: e.target.value }); } }, "+"),
+                                    cfgEle[field][0].messageName,
+                                    ":",
+                                    field,
+                                    " ",
+                                    cfgEle[field][0].type,
+                                    " ",
+                                    cfgEle[field][0].label));
+                                generateFields(cfgArgs[field][idx], cfgEle[field][0], depth + 1, path + '.' + field + '@' + idx);
+                            });
+                        }
+                        // case: is non-repeating
                     }
                     else {
-                        elementsArray_1.push(React.createElement("ul", null,
-                            React.createElement("li", { className: "first" },
-                                React.createElement("button", { className: "setup-button singular", disabled: label === "REPEATED" ? false : true }, label === "REPEATED" ? "+" : ""),
-                                React.createElement("div", { className: "setup-name" }, name_1),
-                                React.createElement("div", { className: "setup-label" }, label),
-                                React.createElement("div", { className: "setup-type" }, type),
-                                React.createElement("input", { type: "text" }))));
+                        // is a non-repeating message
+                        if (cfgEle[field].type === 'TYPE_MESSAGE') {
+                            var pos = additionalMessages.length;
+                            additionalMessages.push(React.createElement("li", { style: { marginLeft: (depth) * 20 + 'px' } },
+                                cfgEle[field].typeName,
+                                ": ",
+                                field,
+                                " ",
+                                cfgEle[field].type,
+                                " ",
+                                cfgEle[field].label));
+                            generateFields(cfgArgs[field], cfgEle[field], depth + 1, path + '.' + field);
+                            // is a repeating non-message
+                        }
+                        else if (cfgEle[field].label === 'LABEL_REPEATED') {
+                            var pos_1 = additionalMessages.length;
+                            cfgArgs[field].forEach(function (ele, idx) {
+                                additionalMessages.push(React.createElement("li", { style: { marginLeft: (depth - 1) * 20 + 'px' } },
+                                    React.createElement("button", null, "+"),
+                                    field,
+                                    " ",
+                                    cfgEle[field].type,
+                                    " ",
+                                    cfgEle[field].label,
+                                    React.createElement("input", { id: path + '.' + field, className: pos_1, onChange: function (e) { return handleConfigInput({ id: path + '.' + field + '@' + idx, value: e.target.value }); } })));
+                            });
+                            // is a non-repeating non-message
+                        }
+                        else {
+                            var pos = additionalMessages.length;
+                            additionalMessages.push(React.createElement("li", { style: { marginLeft: (depth) * 20 + 'px' } },
+                                field,
+                                " ",
+                                cfgEle[field].type,
+                                " ",
+                                cfgEle[field].label,
+                                React.createElement("input", { id: path + '.' + field, className: pos, onChange: function (e) { return handleConfigInput({ id: path + '.' + field, value: e.target.value }); } })));
+                        }
                     }
-                }
-            });
-            return elementsArray_1;
+                });
+            }
         }
     }
-    var requestFields = serviceList[selectedService][selectedRequest].requestType.type.field;
-    var additionalMessages = generateFields(requestFields, serviceList[selectedService][selectedRequest].requestType.type.name);
-    console.log("requestFields:", requestFields);
+    var additionalMessages = [];
+    generateFields(props.configArguments.arguments, props.configElements.arguments);
     return (React.createElement("div", { className: "setup" },
         React.createElement("h2", null, "Setup"),
         React.createElement("div", { className: "setup-header" },
@@ -933,6 +970,8 @@ var initialState = {
     messageTrie: new trieClass_1.Trie(),
     messageRecommendations: [],
     messageTrieInput: "",
+    configArguments: { arguments: {} },
+    configElements: { arguments: {} }
 };
 exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_IP_INPUT] = function (state, action) {
@@ -988,7 +1027,73 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
         else {
             newConnectType = "ERROR";
         }
-        return __assign({}, state, { selectedService: action.payload.service, selectedRequest: action.payload.request, connectType: newConnectType, trail: newTrail });
+        // logic for assembling the arguments object
+        function parseService(typeArray, configArguments, configElements) {
+            // console.log(configElements)
+            // console.log(typeArray)
+            // 5 possible cases:
+            // case: fields array is empty
+            if (typeArray.field.length === 0) {
+                configArguments = null;
+                configElements[typeArray.name] = {
+                    name: typeArray.name,
+                    type: 'TYPE_MESSAGE',
+                    label: 'LABEL_OPTIONAL'
+                };
+            }
+            else {
+                typeArray.field.forEach(function (f) {
+                    // case: not a message and not repeating
+                    if (f.type !== "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+                        configArguments[f.name] = null;
+                        // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+                        configElements[f.name] = {
+                            messageName: typeArray.name,
+                            type: f.type,
+                            label: f.label
+                        };
+                    }
+                    // case: not a message and repeating
+                    if (f.type !== "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
+                        configArguments[f.name] = [null];
+                        // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+                        configElements[f.name] = {
+                            name: f.name,
+                            messageName: typeArray.name,
+                            type: f.type,
+                            label: f.label
+                        };
+                    }
+                    // case: message and not repeating
+                    if (f.type === "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+                        configArguments[f.name] = {};
+                        // if(!configElements[f.name]) configElements[f.name] = {}
+                        configElements[f.name] = {
+                            name: f.name,
+                            label: f.label,
+                            type: f.type,
+                            typeName: f.typeName
+                        };
+                        parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name]);
+                    }
+                    // case: message and repeating
+                    if (f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
+                        configArguments[f.name] = [{}];
+                        configElements[f.name] = [{
+                                messageName: typeArray.name,
+                                label: f.label,
+                                type: f.type,
+                                typeName: f.typeName
+                            }];
+                        parseService(state.messageList[f.typeName].type, configArguments[f.name][0], configElements[f.name][0]);
+                    }
+                });
+            }
+        }
+        var newConfigArguments = { arguments: {} };
+        var newConfigElements = { arguments: {} };
+        parseService(state.serviceList[action.payload.service][action.payload.request].requestType.type, newConfigArguments.arguments, newConfigElements.arguments);
+        return __assign({}, state, { selectedService: action.payload.service, selectedRequest: action.payload.request, connectType: newConnectType, trail: newTrail, configArguments: newConfigArguments, configElements: newConfigElements });
     },
     _a[actions_1.mainActions.Type.HANDLE_PROTO_UPLOAD] = function (state, action) {
         var filePath = action.payload[0].path;
@@ -1014,6 +1119,37 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_MESSAGE_TRIE] = function (state, action) {
         return __assign({}, state, { messageTrieInput: action.payload, messageRecommendations: state.messageTrie.recommend(action.payload) });
     },
+    _a[actions_1.mainActions.Type.HANDLE_CONFIG_INPUT] = function (state, action) {
+        var keys = action.payload.id.split('.').slice(1);
+        function findNestedValue(context, keyArray) {
+            // base case
+            if (keyArray.length === 1) {
+                return context;
+            }
+            // recu case
+            if (keyArray[0].match('@')) {
+                var loc = Number(keyArray[0].match(/\d+$/)[0]);
+                var con = keyArray[0];
+                con = con.match(/(.+)@/)[1];
+                return findNestedValue(context[con][loc], keyArray.slice(1));
+            }
+            else {
+                return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+            }
+        }
+        // find the correct location
+        var context = findNestedValue(state.configArguments.arguments, keys);
+        if (keys[keys.length - 1].includes('@')) {
+            var key = keys[keys.length - 1].match(/(.+)@/)[1];
+            var pos = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+            context[key][pos] = action.payload.value;
+        }
+        else {
+            context[keys[keys.length - 1]] = action.payload.value;
+        }
+        return __assign({}, state);
+    },
+    _a[actions_1.mainActions.Type.HANDLE_REPEATED_CLICK] = function (state, action) { return (__assign({}, state, { arguments: action.payload })); },
     _a), initialState);
 
 
@@ -11811,7 +11947,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Open+Sans);", ""]);
 
 // module
-exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n  #app .wrapper {\n    height: 100%;\n    display: flex;\n    flex-flow: column nowrap; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  padding: 0 30px 30px 30px;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.header {\n  display: flex;\n  flex-flow: row nowrap;\n  position: sticky;\n  height: 75px;\n  width: 100%;\n  background: black;\n  margin-bottom: 50px; }\n  .header .header-left {\n    width: 70%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-start;\n    align-content: space-around;\n    align-items: center;\n    margin-left: 30px; }\n    .header .header-left button {\n      min-width: 140px;\n      font-size: 0.7rem;\n      font-weight: 700;\n      margin-left: 25px;\n      margin-right: 20px;\n      padding: 4px 20px;\n      background: #2699FB;\n      color: white;\n      box-shadow: 5px;\n      border: none;\n      transition: 0.2s ease all; }\n    .header .header-left button:hover {\n      color: #2699FB;\n      background: white; }\n    .header .header-left button:active {\n      color: #0365b8; }\n    .header .header-left .connection-display {\n      min-width: 130px;\n      margin-left: 25px;\n      border-radius: 6px;\n      opacity: 0.9;\n      display: flex;\n      justify-content: center;\n      text-align: center;\n      align-items: center;\n      font-size: 0.7rem;\n      font-weight: 800;\n      color: #005AA7;\n      background: white;\n      padding: 7px 20px; }\n    .header .header-left .trail {\n      height: 1.7rem;\n      flex-grow: 1;\n      padding: 5px;\n      color: black;\n      background: white;\n      overflow-x: scroll;\n      overflow-y: hidden;\n      white-space: nowrap; }\n    .header .header-left .trail::-webkit-scrollbar {\n      width: auto;\n      height: 5px; }\n    .header .header-left .trail::-webkit-scrollbar-thumb {\n      background: black; }\n  .header .right {\n    width: 30%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-end;\n    align-items: center;\n    margin-right: 30px; }\n    .header .right img {\n      margin-left: 30px;\n      height: 30px;\n      width: 30px; }\n\n.left {\n  display: flex;\n  flex-flow: column nowrap;\n  width: 70%;\n  height: 100%;\n  margin-right: 8%; }\n  .left .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-bottom: 45px; }\n    .left .input-header .upload-box {\n      width: 50%; }\n      .left .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path-spacer {\n          border-top: 1px solid black;\n          border-bottom: 1px solid black;\n          height: 2rem;\n          width: 5px; }\n        .left .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #0365b8;\n          overflow-x: scroll;\n          padding: 5px 7px;\n          padding-right: 20px;\n          font-size: 0.7rem;\n          border-top-left-radius: 6px;\n          border-bottom-left-radius: 6px;\n          border: 1px solid black;\n          border-right: none;\n          flex-grow: 1;\n          height: 2rem;\n          white-space: nowrap;\n          display: flex;\n          align-items: center;\n          align-content: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: auto;\n          height: 5px; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar-thumb {\n          background: black; }\n        .left .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left .input-header .upload-box .upload-box-contents label {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          height: 2rem;\n          padding: 5px 15px;\n          background: #2699FB;\n          border: 1px solid #96CDD5;\n          border-top-right-radius: 6px;\n          border-bottom-right-radius: 6px;\n          font-size: 0.7rem;\n          font-weight: 700;\n          color: white;\n          text-align: center;\n          vertical-align: middle;\n          transition: all ease 0.2s;\n          z-index: 1; }\n        .left .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: white;\n          color: #2699FB;\n          cursor: pointer; }\n    .left .input-header .address-box {\n      width: 50%; }\n      .left .input-header .address-box input {\n        width: 80%;\n        border: 1px solid black;\n        border-radius: 6px;\n        padding: 5px 7px;\n        font-size: 0.7rem;\n        background: white;\n        height: 2rem;\n        color: #0365b8; }\n  .left .tabs button {\n    height: 2rem;\n    padding: 0 30px;\n    background: white;\n    color: #0365b8;\n    border: 1px solid #0365b8;\n    border-bottom: none;\n    font-weight: 700;\n    z-index: 1;\n    transition: 0.2s ease all; }\n  .left .tabs button:hover {\n    background: #0365b8;\n    color: white;\n    border-right: 1px solid white;\n    border-left: 1px solid white; }\n  .left .tabs button:disabled {\n    background: white;\n    border: 1px solid grey;\n    color: darkgrey; }\n  .left .tabs button:disabled:hover {\n    cursor: auto; }\n  .left .tabs .selected {\n    background: #0365b8;\n    color: white; }\n  .left .main {\n    flex-grow: 1;\n    display: flex;\n    width: 100%;\n    background: white;\n    border: 1px solid black;\n    border-bottom-color: white;\n    border-right-color: white; }\n    .left .main h2 {\n      margin-bottom: 2px; }\n    .left .main input {\n      border: 1px solid #bce0fe;\n      font-weight: 400;\n      font-size: 0.8rem;\n      height: 1.5rem;\n      flex-grow: 1;\n      padding-left: 8px; }\n\n.right-half {\n  height: 100%;\n  width: 30%;\n  display: flex;\n  flex-flow: column nowrap; }\n  .right-half .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid black;\n    height: 100%;\n    width: 100%; }\n  .right-half .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid black;\n    color: darkgrey; }\n\n.service-request {\n  display: flex;\n  width: 100%;\n  padding: 22px 0px 0px 10%;\n  background: white; }\n  .service-request p {\n    display: flex;\n    align-items: center;\n    text-align: left;\n    width: 100%;\n    transition: 0.2s ease all;\n    height: 2rem;\n    border-bottom: 1px solid lightgrey;\n    padding: 10px 0;\n    padding-left: 5px; }\n  .service-request p:hover {\n    background: #2699FB;\n    color: white;\n    cursor: pointer; }\n  .service-request p:active {\n    background: #0365b8; }\n  .service-request .selected {\n    border-top-color: black;\n    border-bottom-color: black;\n    background: #2699FB;\n    color: white; }\n  .service-request .service-request-left {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap;\n    margin-right: 10%; }\n    .service-request .service-request-left .service-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-left .service-header img {\n        height: auto;\n        width: 1rem;\n        border: 1px solid black; }\n    .service-request .service-request-left .service-area {\n      border: 1px solid lightgrey;\n      display: flex;\n      flex-grow: 1;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n  .service-request .service-request-right {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap; }\n    .service-request .service-request-right .request-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-right .request-header img {\n        height: 1rem;\n        width: 1rem; }\n    .service-request .service-request-right .request-area {\n      border: 1px solid lightgrey;\n      flex-grow: 1;\n      display: flex;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n\n.messages {\n  height: 100%;\n  width: 100%;\n  padding: 10px;\n  padding: 22px 0px 0px 10%; }\n  .messages .message-header {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: center;\n    margin: 8px 0px; }\n    .messages .message-header img {\n      height: auto;\n      width: 1rem;\n      border: 1px solid black; }\n  .messages .message-area {\n    border: 1px solid lightgrey;\n    display: flex;\n    flex-grow: 1;\n    flex-flow: column nowrap;\n    align-items: flex-start; }\n    .messages .message-area p {\n      display: flex;\n      flex-flow: row nowrap;\n      border: 1px solid white;\n      width: 100%;\n      transition: 0.2s ease all; }\n      .messages .message-area p span {\n        display: flex;\n        align-content: center;\n        align-items: center;\n        padding: 5px; }\n      .messages .message-area p .message-name {\n        font-size: 1.1rem; }\n      .messages .message-area p .message-label {\n        font-size: 0.7rem;\n        font-weight: 700; }\n      .messages .message-area p .message-type {\n        font-size: 0.7rem;\n        font-weight: 700; }\n    .messages .message-area p:hover {\n      background: #2699FB;\n      color: white; }\n\n.setup {\n  height: 100%;\n  width: 100%;\n  background: white;\n  padding: 22px 0px 0px 10%; }\n  .setup button {\n    display: flex;\n    align-items: center;\n    align-content: center;\n    justify-content: center;\n    height: 1.5rem;\n    width: 1.5rem; }\n  .setup .setup-area {\n    display: flex;\n    flex-flow: column nowrap; }\n    .setup .setup-area div {\n      margin-left: 6px; }\n    .setup .setup-area p {\n      display: flex; }\n    .setup .setup-area ul {\n      display: flex;\n      flex-flow: column nowrap; }\n    .setup .setup-area h2 {\n      border-top: 1px solid #0365b8;\n      padding-top: 8px; }\n    .setup .setup-area li {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-items: center;\n      margin-bottom: 8px; }\n    .setup .setup-area input {\n      margin-left: 16px; }\n    .setup .setup-area .no-fields {\n      display: flex;\n      justify-content: center;\n      margin-top: 2rem;\n      margin-bottom: 1rem;\n      padding-bottom: 1rem;\n      border-bottom: 1px solid #0365b8; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  background: white;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%;\n  width: 100%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  margin: 30px 0;\n  color: white; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.0rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
+exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n  #app .wrapper {\n    height: 100%;\n    display: flex;\n    flex-flow: column nowrap; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  padding: 0 30px 30px 30px;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.header {\n  display: flex;\n  flex-flow: row nowrap;\n  position: sticky;\n  height: 75px;\n  width: 100%;\n  background: black;\n  margin-bottom: 50px; }\n  .header .header-left {\n    width: 70%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-start;\n    align-content: space-around;\n    align-items: center;\n    margin-left: 30px; }\n    .header .header-left button {\n      min-width: 140px;\n      font-size: 0.7rem;\n      font-weight: 700;\n      margin-left: 25px;\n      margin-right: 20px;\n      padding: 4px 20px;\n      background: #2699FB;\n      color: white;\n      box-shadow: 5px;\n      border: none;\n      transition: 0.2s ease all; }\n    .header .header-left button:hover {\n      color: #2699FB;\n      background: white; }\n    .header .header-left button:active {\n      color: #0365b8; }\n    .header .header-left .connection-display {\n      min-width: 130px;\n      margin-left: 25px;\n      border-radius: 6px;\n      opacity: 0.9;\n      display: flex;\n      justify-content: center;\n      text-align: center;\n      align-items: center;\n      font-size: 0.7rem;\n      font-weight: 800;\n      color: #005AA7;\n      background: white;\n      padding: 7px 20px; }\n    .header .header-left .trail {\n      height: 1.7rem;\n      flex-grow: 1;\n      padding: 5px;\n      color: black;\n      background: white;\n      overflow-x: scroll;\n      overflow-y: hidden;\n      white-space: nowrap; }\n    .header .header-left .trail::-webkit-scrollbar {\n      width: auto;\n      height: 5px; }\n    .header .header-left .trail::-webkit-scrollbar-thumb {\n      background: black; }\n  .header .right {\n    width: 30%;\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: flex-end;\n    align-items: center;\n    margin-right: 30px; }\n    .header .right img {\n      margin-left: 30px;\n      height: 30px;\n      width: 30px; }\n\n.left {\n  display: flex;\n  flex-flow: column nowrap;\n  width: 70%;\n  height: 100%;\n  margin-right: 8%; }\n  .left .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-bottom: 45px; }\n    .left .input-header .upload-box {\n      width: 50%; }\n      .left .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path-spacer {\n          border-top: 1px solid black;\n          border-bottom: 1px solid black;\n          height: 2rem;\n          width: 5px; }\n        .left .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #0365b8;\n          overflow-x: scroll;\n          padding: 5px 7px;\n          padding-right: 20px;\n          font-size: 0.7rem;\n          border-top-left-radius: 6px;\n          border-bottom-left-radius: 6px;\n          border: 1px solid black;\n          border-right: none;\n          flex-grow: 1;\n          height: 2rem;\n          white-space: nowrap;\n          display: flex;\n          align-items: center;\n          align-content: center; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: auto;\n          height: 5px; }\n        .left .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar-thumb {\n          background: black; }\n        .left .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left .input-header .upload-box .upload-box-contents label {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          height: 2rem;\n          padding: 5px 15px;\n          background: #2699FB;\n          border: 1px solid #96CDD5;\n          border-top-right-radius: 6px;\n          border-bottom-right-radius: 6px;\n          font-size: 0.7rem;\n          font-weight: 700;\n          color: white;\n          text-align: center;\n          vertical-align: middle;\n          transition: all ease 0.2s;\n          z-index: 1; }\n        .left .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: white;\n          color: #2699FB;\n          cursor: pointer; }\n    .left .input-header .address-box {\n      width: 50%; }\n      .left .input-header .address-box input {\n        width: 80%;\n        border: 1px solid black;\n        border-radius: 6px;\n        padding: 5px 7px;\n        font-size: 0.7rem;\n        background: white;\n        height: 2rem;\n        color: #0365b8; }\n  .left .tabs button {\n    height: 2rem;\n    padding: 0 30px;\n    background: white;\n    color: #0365b8;\n    border: 1px solid #0365b8;\n    border-bottom: none;\n    font-weight: 700;\n    z-index: 1;\n    transition: 0.2s ease all; }\n  .left .tabs button:hover {\n    background: #0365b8;\n    color: white;\n    border-right: 1px solid white;\n    border-left: 1px solid white; }\n  .left .tabs button:disabled {\n    background: white;\n    border: 1px solid grey;\n    color: darkgrey; }\n  .left .tabs button:disabled:hover {\n    cursor: auto; }\n  .left .tabs .selected {\n    background: #0365b8;\n    color: white; }\n  .left .main {\n    flex-grow: 1;\n    display: flex;\n    width: 100%;\n    background: white;\n    border: 1px solid black;\n    border-bottom-color: white;\n    border-right-color: white; }\n    .left .main h2 {\n      margin-bottom: 2px; }\n    .left .main input {\n      border: 1px solid #bce0fe;\n      font-weight: 400;\n      font-size: 0.8rem;\n      height: 1.5rem;\n      flex-grow: 1;\n      padding-left: 8px; }\n\n.right-half {\n  height: 100%;\n  width: 30%;\n  display: flex;\n  flex-flow: column nowrap; }\n  .right-half .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid black;\n    height: 100%;\n    width: 100%; }\n  .right-half .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid black;\n    color: darkgrey; }\n\n.service-request {\n  display: flex;\n  width: 100%;\n  padding: 22px 0px 0px 10%;\n  background: white; }\n  .service-request p {\n    display: flex;\n    align-items: center;\n    text-align: left;\n    width: 100%;\n    transition: 0.2s ease all;\n    height: 2rem;\n    border-bottom: 1px solid lightgrey;\n    padding: 10px 0;\n    padding-left: 5px; }\n  .service-request p:hover {\n    background: #2699FB;\n    color: white;\n    cursor: pointer; }\n  .service-request p:active {\n    background: #0365b8; }\n  .service-request .selected {\n    border-top-color: black;\n    border-bottom-color: black;\n    background: #2699FB;\n    color: white; }\n  .service-request .service-request-left {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap;\n    margin-right: 10%; }\n    .service-request .service-request-left .service-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-left .service-header img {\n        height: auto;\n        width: 1rem;\n        border: 1px solid black; }\n    .service-request .service-request-left .service-area {\n      border: 1px solid lightgrey;\n      display: flex;\n      flex-grow: 1;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n  .service-request .service-request-right {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap; }\n    .service-request .service-request-right .request-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-right .request-header img {\n        height: 1rem;\n        width: 1rem; }\n    .service-request .service-request-right .request-area {\n      border: 1px solid lightgrey;\n      flex-grow: 1;\n      display: flex;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n\n.messages {\n  height: 100%;\n  width: 100%;\n  padding: 10px;\n  padding: 22px 0px 0px 10%; }\n  .messages .message-header {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: center;\n    margin: 8px 0px; }\n    .messages .message-header img {\n      height: auto;\n      width: 1rem;\n      border: 1px solid black; }\n  .messages .message-area {\n    border: 1px solid lightgrey;\n    display: flex;\n    flex-grow: 1;\n    flex-flow: column nowrap;\n    align-items: flex-start; }\n    .messages .message-area p {\n      display: flex;\n      flex-flow: row nowrap;\n      border: 1px solid white;\n      width: 100%;\n      transition: 0.2s ease all; }\n      .messages .message-area p span {\n        display: flex;\n        align-content: center;\n        align-items: center;\n        padding: 5px; }\n      .messages .message-area p .message-name {\n        font-size: 1.1rem; }\n      .messages .message-area p .message-label {\n        font-size: 0.7rem;\n        font-weight: 700; }\n      .messages .message-area p .message-type {\n        font-size: 0.7rem;\n        font-weight: 700; }\n    .messages .message-area p:hover {\n      background: #2699FB;\n      color: white; }\n\n.setup {\n  height: 100%;\n  width: 100%;\n  background: white;\n  padding: 22px 0px 0px 10%; }\n  .setup button {\n    display: flex;\n    align-items: center;\n    align-content: center;\n    justify-content: center;\n    height: 20px;\n    width: 20px; }\n  .setup .first {\n    margin-top: 8px; }\n  .setup .setup-area {\n    display: flex;\n    flex-flow: column nowrap; }\n    .setup .setup-area div {\n      margin-left: 6px; }\n    .setup .setup-area p {\n      display: flex; }\n    .setup .setup-area ul {\n      display: flex;\n      flex-flow: column nowrap; }\n    .setup .setup-area h2 {\n      border-top: 1px solid #0365b8;\n      padding-top: 8px; }\n    .setup .setup-area li {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-items: center;\n      margin-bottom: 8px; }\n    .setup .setup-area input {\n      margin-left: 16px; }\n    .setup .setup-area .no-fields {\n      display: flex;\n      justify-content: center;\n      margin-top: 2rem;\n      margin-bottom: 1rem;\n      padding-bottom: 1rem;\n      border-bottom: 1px solid #0365b8; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  background: white;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%;\n  width: 100%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  margin: 30px 0;\n  color: white; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.0rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
 
 // exports
 

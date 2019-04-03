@@ -26,6 +26,8 @@ const initialState: RootState.mainState = {
   messageTrie: new Trie(),
   messageRecommendations: [],
   messageTrieInput: "",
+  configArguments: { arguments: {} },
+  configElements: { arguments: {} }
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -99,12 +101,85 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         newConnectType = "ERROR";
       }
 
+      // logic for assembling the arguments object
+      function parseService(typeArray, configArguments, configElements) {
+
+        // console.log(configElements)
+        // console.log(typeArray)
+        // 5 possible cases:
+        // case: fields array is empty
+        if (typeArray.field.length === 0) {
+          configArguments = null;
+          configElements[typeArray.name] = {
+            name: typeArray.name,
+            type: 'TYPE_MESSAGE',
+            label:'LABEL_OPTIONAL'
+          }
+        } else {
+          typeArray.field.forEach( f => {
+            // case: not a message and not repeating
+            if(f.type !== "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+              configArguments[f.name] = null;
+              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+              configElements[f.name] = {
+                messageName: typeArray.name,
+                type: f.type,
+                label: f.label
+              };
+            }
+            // case: not a message and repeating
+            if(f.type !== "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
+              configArguments[f.name] = [null];
+              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+              configElements[f.name] = {
+                name: f.name,
+                messageName: typeArray.name,
+                type: f.type,
+                label: f.label
+              }
+            }
+            // case: message and not repeating
+            if(f.type === "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
+              configArguments[f.name] = {};
+              // if(!configElements[f.name]) configElements[f.name] = {}
+              configElements[f.name] = {
+                name: f.name,
+                label: f.label,
+                type: f.type,
+                typeName: f.typeName
+              }
+              parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name])
+            }
+            // case: message and repeating
+            if(f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
+              configArguments[f.name] = [{}]
+              configElements[f.name] = [{
+                messageName: typeArray.name,
+                label: f.label,
+                type: f.type,
+                typeName: f.typeName
+              }]
+              parseService(state.messageList[f.typeName].type, configArguments[f.name][0], configElements[f.name][0])
+            }
+          })
+        }
+      }
+      let newConfigArguments = { arguments: {} }
+      let newConfigElements = { arguments : {} }
+      parseService(
+        state.serviceList[action.payload.service][action.payload.request].requestType.type, 
+        newConfigArguments.arguments, 
+        newConfigElements.arguments
+      ) 
+
       return {
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
         connectType: newConnectType,
         trail: newTrail,
+        configArguments: newConfigArguments,
+        configElements: newConfigElements
       };
     },
 
@@ -162,6 +237,45 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         messageRecommendations: state.messageTrie.recommend(action.payload),
       };
     },
+
+    [mainActions.Type.HANDLE_CONFIG_INPUT]: (state, action: {payload: {id: string, value: string}) => {
+      let keys = action.payload.id.split('.').slice(1)
+      function findNestedValue(context, keyArray) {
+        // base case
+        if (keyArray.length === 1) {
+          return context;
+        }
+        // recu case
+        if(keyArray[0].match('@')) {
+          let loc = Number(keyArray[0].match(/\d+$/)[0])
+          let con = keyArray[0]
+          con = con.match(/(.+)@/)[1]
+          return findNestedValue(context[con][loc], keyArray.slice(1))
+        } else {
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1))
+        }
+      }
+
+      // find the correct location
+      let context = findNestedValue(state.configArguments.arguments, keys)
+
+      if( keys[keys.length-1].includes('@') ) {
+        let key = keys[keys.length-1].match(/(.+)@/)[1] 
+        let pos = Number(keys[keys.length-1].match(/\d+$/)[0])
+        context[key][pos] = action.payload.value;
+      } else {
+        context[keys[keys.length-1]] = action.payload.value
+      }
+
+      return {
+        ...state
+      }
+    },
+    [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({
+      ...state,
+      arguments: action.payload
+    })
+
   },
   initialState,
 );

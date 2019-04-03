@@ -27,6 +27,8 @@ export interface MainModel {
   messageTrie: Trie;
   messageRecommendations: string[];
   messageTrieInput: string;
+  configArguments: any;
+  configElements: any;
 }
 
 export namespace MainModel {

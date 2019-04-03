@@ -18,11 +18,17 @@ export namespace LeftProps {
     selectedService: string;
     selectedRequest: string;
     mode: string;
+    
+    configElements: any;
+    configArguments: any;
+
     handleIPInput: any; // (value: string) => void;
     handleProtoUpload: any;
     setMode: any;
     handleServiceClick: any;
     handleRequestClick: any;
+    handleRepeatedClick: any;
+    handleConfigInput: any;
 
     handleServiceTrie: any;
     serviceRecommendations: string[];
