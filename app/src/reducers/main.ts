@@ -188,17 +188,34 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
     [mainActions.Type.HANDLE_CONFIG_INPUT]: (state, action: {payload: {id: string, value: string}) => {
       let keys = action.payload.id.split('.').slice(1)
       function findNestedValue(context, keyArray) {
-        if(keyArray.length === 1) return context
-        return findNestedValue(context[keyArray[0]], keyArray.slice(1))
+        // base case
+        if (keyArray.length === 1) {
+          return context;
+        }
+        // recu case
+        if(keyArray[0].match('@')) {
+          let loc = Number(keyArray[0].match(/\d+$/)[0])
+          let con = keyArray[0]
+          con = con.match(/(.+)@/)[1]
+          return findNestedValue(context[con][loc], keyArray.slice(1))
+        } else {
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1))
+        }
       }
+
+      // find the correct location
       let context = findNestedValue(state.configArguments.arguments, keys)
-      if(Array.isArray(context)) {
-        context[keys[keys.length-1]] = [action.payload.value]
+
+      if( keys[keys.length-1].includes('@') ) {
+        let key = keys[keys.length-1].match(/(.+)@/)[1] 
+        let pos = Number(keys[keys.length-1].match(/\d+$/)[0])
+        context[key][pos] = action.payload.value;
       } else {
         context[keys[keys.length-1]] = action.payload.value
       }
+
       return {
-      ...state
+        ...state
       }
     },
     [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({
