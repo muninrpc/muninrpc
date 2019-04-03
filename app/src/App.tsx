@@ -8,7 +8,7 @@ import { omit } from "./utils";
 import { Left, Right, Header } from "./components";
 
 const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
-  key => MainModel.Mode[key]
+  key => MainModel.Mode[key],
 );
 
 export namespace App {
@@ -26,37 +26,14 @@ export namespace App {
     return { main: state.main, mode };
   },
   (dispatch: Dispatch): Pick<App.Props, "actions"> => ({
-    actions: bindActionCreators(omit(mainActions, "Type"), dispatch)
-  })
+    actions: bindActionCreators(omit(mainActions, "Type"), dispatch),
+  }),
 )
 export default class App extends React.Component<App.Props, {}> {
-  constructor(props: any) {
+  constructor(props: App.Props) {
     super(props);
   }
   render() {
-    // const {
-    //   trail,
-    //   targetIP,
-    //   filePath,
-    //   mode,
-    //   serviceList,
-    //   messageList,
-    //   serverResponse,
-    //   responseMetrics,
-    //   selectedService,
-    //   selectedRequest,
-    //   connectType,
-    //   serviceRecommendations,
-    //   serviceTrieInput
-    // } = this.props.main;
-    // const {
-    //   handleIPInput,
-    //   handleProtoUpload,
-    //   setMode,
-    //   handleServiceClick,
-    //   handleRequestClick,
-    //   handleServiceTrie,
-    // } = this.props.actions;
     return (
       <div className="wrapper">
         <Header {...this.props.main} />

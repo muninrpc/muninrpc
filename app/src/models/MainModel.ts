@@ -17,10 +17,16 @@ export interface MainModel {
   packageDefinition: protoLoader.PackageDefinition;
   selectedService: string;
   selectedRequest: string;
+
   serviceTrie: Trie;
   serviceTrieInput: string;
+  serviceRecommendations: string[];
+
   requestTrie: Trie;
-  serviceRecommendations: string[]
+
+  messageTrie: Trie;
+  messageRecommendations: string[];
+  messageTrieInput: string;
 }
 
 export namespace MainModel {

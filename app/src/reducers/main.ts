@@ -20,9 +20,12 @@ const initialState: RootState.mainState = {
   selectedService: null,
   selectedRequest: null,
   serviceTrie: new Trie(),
-  requestTrie: new Trie(),
   serviceRecommendations: [],
-  serviceTrieInput: ""
+  serviceTrieInput: "",
+  requestTrie: new Trie(),
+  messageTrie: new Trie(),
+  messageRecommendations: [],
+  messageTrieInput: "",
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -45,16 +48,16 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       if (state.targetIP) {
         writtenIP = state.targetIP;
       }
-      if (action.payload.service === '') {
+      if (action.payload.service === "") {
         return {
           ...state,
-          selectedService: '',
-          selectedRequest: ''
-          trail: writtenIP
-        }
+          selectedService: "",
+          selectedRequest: "",
+          trail: writtenIP,
+        };
       }
       const newTrail = writtenIP + " → " + action.payload.service;
-      
+
       return {
         ...state,
         selectedService: action.payload.service,
@@ -65,7 +68,6 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       state,
       action: { payload: { request: string; service: string } },
     ) => {
-
       //if there is a selectedservice, then add service + regex'd request string
       //else add just request string
       let newTrail: string;
@@ -125,6 +127,9 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       const newRequestTrie = new Trie();
       newRequestTrie.insertArrayOfWords(requestWordsArr);
 
+      const newMessageTrie = new Trie();
+      newMessageTrie.insertArrayOfWords(Object.keys(protoMessages));
+
       return {
         ...state,
         filePath: filePath,
@@ -132,20 +137,31 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         serviceList: protoServices,
         serviceTrie: newServiceTrie,
         requestTrie: newRequestTrie,
+        messageTrie: newMessageTrie,
         messageList: protoMessages,
       };
     },
+
     [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
       ...state,
       mode: action.payload,
     }),
-    [mainActions.Type.HANDLE_SERVICE_TRIE] : (state, action) => {
+
+    [mainActions.Type.HANDLE_SERVICE_TRIE]: (state, action) => {
       return {
         ...state,
         serviceTrieInput: action.payload,
-        serviceRecommendations: state.serviceTrie.recommend(action.payload)
-      }
-    }
+        serviceRecommendations: state.serviceTrie.recommend(action.payload),
+      };
+    },
+
+    [mainActions.Type.HANDLE_MESSAGE_TRIE]: (state, action) => {
+      return {
+        ...state,
+        messageTrieInput: action.payload,
+        messageRecommendations: state.messageTrie.recommend(action.payload),
+      };
+    },
   },
   initialState,
 );

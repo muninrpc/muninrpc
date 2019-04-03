@@ -6,6 +6,21 @@ export function omit<T extends object, K extends keyof T>(target: T, ...omitKeys
       }
       return res;
     },
-    {} as any
+    {} as any,
   );
+}
+
+export function filterObject(o: object, recommendations: string[]): object {
+  let filtered = {};
+  if (recommendations.length) {
+    Object.entries(o).forEach(kv => {
+      const [key, value] = kv;
+      if (recommendations.includes(key)) {
+        filtered[key] = value;
+      }
+    });
+  } else {
+    filtered = { ...o };
+  }
+  return o;
 }

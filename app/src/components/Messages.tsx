@@ -1,14 +1,18 @@
 import * as React from "react";
+import { filterObject } from "../utils";
+import { Trie } from "../utils/trieClass";
 
 export namespace MessageProps {
   export interface Props {
     messageList: any;
+    handleMessageTrie: any;
+    messageRecommendations: string[];
   }
 }
 
-export default function Messages(props: MessageProps.Props, context?: any) {
+export default function Messages(props: MessageProps.Props) {
   const messageArray: JSX.Element[] = [];
-  console.log("props:", props);
+
   if (props.messageList) {
     Object.keys(props.messageList).forEach((name, nameidx) => {
       let type: string = "";
@@ -25,13 +29,12 @@ export default function Messages(props: MessageProps.Props, context?: any) {
         });
       }
 
-      console.log("name:", name);
       if (label === "") {
         messageArray.push(
           <p key={nameidx}>
             <span className="message-name">{name}</span>
             <span className="message-type">{type}</span>
-          </p>
+          </p>,
         );
       } else {
         messageArray.push(
@@ -39,19 +42,21 @@ export default function Messages(props: MessageProps.Props, context?: any) {
             <span className="message-name">{name}</span>
             <span className="message-label">{label}</span>
             <span className="message-type">{type}</span>
-          </p>
+          </p>,
         );
       }
     });
   }
 
-  console.log("messageArray", messageArray);
-
   return (
     <div className="messages">
       <h2>Messages</h2>
       <div className="message-header">
-        <input type="text" placeholder="search for messages" />
+        <input
+          type="text"
+          placeholder="search for messages"
+          onChange={e => props.handleMessageTrie(e.target.value)}
+        />
       </div>
       <div className="message-area">{messageArray}</div>
     </div>

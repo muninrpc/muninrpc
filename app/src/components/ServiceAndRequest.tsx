@@ -1,5 +1,7 @@
 import * as React from "react";
 import * as _ from "lodash";
+import { ServiceOrRequestList } from "./ServiceOrRequestList";
+import { filterObject } from "../utils";
 
 export namespace ServiceAndRequestProps {
   export interface Props {
@@ -16,62 +18,52 @@ export namespace ServiceAndRequestProps {
 }
 
 export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, context?: any) {
-  //console.log('props of ServiceAndRequest', props)
-  const serviceListJSX: JSX.Element[] = [];
   const requestListJSX: JSX.Element[] = [];
 
   // first filter based on service recommendations
-  // console.log("shape of serviceRecommendations", props.serviceList);
-  let filteredServices = {};
-  if (props.serviceRecommendations) {
-    Object.entries(props.serviceList).forEach(kv => {
-      const [key, value] = kv;
-      if (props.serviceRecommendations.includes(key)) {
-        filteredServices[key] = value;
-      }
+  const filteredServices = filterObject(props.serviceList, props.serviceRecommendations);
+
+  /*
+   * if we did not select a service, display all requests
+   * based on available services (filteredServices)
+   */
+  if (!props.selectedService) {
+    Object.entries(filteredServices).forEach(kv => {
+      const [service, request] = kv;
+      requestListJSX.push(
+        <ServiceOrRequestList
+          List={Object.keys(request)}
+          ListType="request"
+          onClickHandler={props.handleRequestClick}
+          selectedService={service} //??
+          selectedRequest={props.selectedRequest}
+        />,
+      );
     });
-  } else {
-    filteredServices = { ...props.serviceList };
-  }
-
-  console.log("filtered services", filteredServices);
-
-  Object.keys(filteredServices).forEach((service, idx) => {
-    serviceListJSX.push(
-      <p
-        key={"servItem" + idx}
-        onClick={() => props.handleServiceClick({ service })}
-        className={props.selectedService === service ? "selected" : ""}
-      >
-        {service}
-      </p>,
+  } else if (Object.hasOwnProperty.call(filteredServices, props.selectedService)) {
+    /*
+     * if we did select a service, show the available requests for that particular service
+     */
+    requestListJSX.push(
+      <ServiceOrRequestList
+        List={Object.keys(filteredServices[props.selectedService])}
+        ListType="request"
+        onClickHandler={props.handleRequestClick}
+        selectedService={props.selectedService}
+        selectedRequest={props.selectedRequest}
+      />,
     );
-    if (service === props.selectedService) {
-      Object.keys(props.serviceList[props.selectedService]).forEach((request, idx2) => {
-        requestListJSX.push(
-          <p
-            key={"reqItem" + idx + idx2}
-            onClick={() => props.handleRequestClick({ request, service })}
-            className={props.selectedRequest === request ? "selected" : ""}
-          >
-            {service} → {request}
-          </p>,
-        );
-      });
-    } else if (!props.selectedService) {
-      Object.keys(props.serviceList[service]).forEach((request, idx2) => {
-        requestListJSX.push(
-          <p
-            key={"reqItem" + idx + idx2}
-            onClick={() => props.handleRequestClick({ request, service })}
-            className={props.selectedRequest === request ? "selected" : ""}
-          >
-            {service} → {request}
-          </p>,
-        );
-      });
-    }
-  });
+  } else {
+    requestListJSX.push(
+      <ServiceOrRequestList
+        List={Object.keys(props.serviceList[props.selectedService])}
+        ListType="request"
+        onClickHandler={props.handleRequestClick}
+        selectedService={props.selectedService}
+        selectedRequest={props.selectedRequest}
+      />,
+    );
+  }
 
   return (
     <div className="service-request">
@@ -93,7 +85,12 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
             }
           }}
         >
-          {serviceListJSX}
+          <ServiceOrRequestList
+            List={Object.keys(filteredServices)}
+            onClickHandler={props.handleServiceClick}
+            selectedService={props.selectedService}
+            ListType={"service"}
+          />
         </div>
       </div>
       <div className="service-request-right">
@@ -106,6 +103,3 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
     </div>
   );
 }
-
-// flexbox row: div with rune and searchbar
-// flexbox col: renders services array. each element in array will be a p tag
