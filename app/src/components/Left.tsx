@@ -28,7 +28,7 @@ export namespace LeftProps {
     serviceRecommendations: string[];
     serviceTrieInput: string;
 
-    // messageTrie: Trie;
+    handleMessageTrie: any;
     messageTrieInput: string;
     messageRecommendations: string[];
   }

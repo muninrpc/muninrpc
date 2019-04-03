@@ -365,29 +365,6 @@ var App = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     App.prototype.render = function () {
-        // const {
-        //   trail,
-        //   targetIP,
-        //   filePath,
-        //   mode,
-        //   serviceList,
-        //   messageList,
-        //   serverResponse,
-        //   responseMetrics,
-        //   selectedService,
-        //   selectedRequest,
-        //   connectType,
-        //   serviceRecommendations,
-        //   serviceTrieInput
-        // } = this.props.main;
-        // const {
-        //   handleIPInput,
-        //   handleProtoUpload,
-        //   setMode,
-        //   handleServiceClick,
-        //   handleRequestClick,
-        //   handleServiceTrie,
-        // } = this.props.actions;
         return (React.createElement("div", { className: "wrapper" },
             React.createElement(components_1.Header, __assign({}, this.props.main)),
             React.createElement("div", { className: "app" },
@@ -400,7 +377,7 @@ var App = /** @class */ (function (_super) {
             var mode = MODE_VALUES.find(function (value) { return value === hash; }) || models_1.MainModel.Mode.SHOW_SERVICE;
             return { main: state.main, mode: mode };
         }, function (dispatch) { return ({
-            actions: redux_1.bindActionCreators(utils_1.omit(actions_1.mainActions, "Type"), dispatch)
+            actions: redux_1.bindActionCreators(utils_1.omit(actions_1.mainActions, "Type"), dispatch),
         }); })
     ], App);
     return App;
@@ -450,6 +427,7 @@ var mainActions;
         Type["HANDLE_SERVICE_CLICK"] = "HANDLE_SERVICE_CLICK";
         Type["HANDLE_REQUEST_CLICK"] = "HANDLE_REQUEST_CLICK";
         Type["HANDLE_SERVICE_TRIE"] = "HANDLE_SERVICE_TRIE";
+        Type["HANDLE_MESSAGE_TRIE"] = "HANDLE_MESSAGE_TRIE";
     })(Type = mainActions.Type || (mainActions.Type = {}));
     mainActions.handleIPInput = redux_actions_1.createAction(Type.HANDLE_IP_INPUT);
     mainActions.handleProtoUpload = redux_actions_1.createAction(Type.HANDLE_PROTO_UPLOAD);
@@ -458,6 +436,7 @@ var mainActions;
     mainActions.sendRequest = redux_actions_1.createAction(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
     mainActions.setMode = redux_actions_1.createAction(Type.HANDLE_SET_MODE);
     mainActions.handleServiceTrie = redux_actions_1.createAction(Type.HANDLE_SERVICE_TRIE);
+    mainActions.handleMessageTrie = redux_actions_1.createAction(Type.HANDLE_MESSAGE_TRIE);
 })(mainActions = exports.mainActions || (exports.mainActions = {}));
 /*
 
@@ -536,6 +515,17 @@ exports.Header = Header;
 
 "use strict";
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ServiceAndRequest_1 = __webpack_require__(/*! ./ServiceAndRequest */ "./app/src/components/ServiceAndRequest.tsx");
@@ -544,15 +534,14 @@ var Setup_1 = __webpack_require__(/*! ./Setup */ "./app/src/components/Setup.tsx
 var MainModel_1 = __webpack_require__(/*! ../models/MainModel */ "./app/src/models/MainModel.ts");
 function Left(props, context) {
     var mode;
-    var serviceList = props.serviceList, messageList = props.messageList, handleServiceClick = props.handleServiceClick, handleRequestClick = props.handleRequestClick, selectedService = props.selectedService, selectedRequest = props.selectedRequest, handleServiceTrie = props.handleServiceTrie, serviceRecommendations = props.serviceRecommendations, serviceTrieInput = props.serviceTrieInput;
     if (props.mode === MainModel_1.MainModel.Mode.SHOW_SERVICE) {
-        mode = (React.createElement(ServiceAndRequest_1.default, { serviceList: serviceList, messageList: messageList, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest, handleServiceTrie: handleServiceTrie, serviceRecommendations: serviceRecommendations, serviceTrieInput: serviceTrieInput }));
+        mode = React.createElement(ServiceAndRequest_1.default, __assign({}, props));
     }
     if (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES) {
-        mode = React.createElement(Messages_1.default, { messageList: props.messageList });
+        mode = React.createElement(Messages_1.default, __assign({}, props));
     }
     if (props.mode === MainModel_1.MainModel.Mode.SHOW_SETUP) {
-        mode = (React.createElement(Setup_1.default, { serviceList: serviceList, messageList: messageList, selectedService: selectedService, selectedRequest: selectedRequest }));
+        mode = React.createElement(Setup_1.default, __assign({}, props));
     }
     return (React.createElement("div", { className: "left" },
         React.createElement("div", { className: "input-header" },
@@ -570,8 +559,8 @@ function Left(props, context) {
         React.createElement("div", { className: "tabs" },
             React.createElement("button", { onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_SERVICE); }, className: "service-and-request-button " +
                     (props.mode === MainModel_1.MainModel.Mode.SHOW_SERVICE ? "selected" : "") }, "SERVICES & REQUESTS"),
-            React.createElement("button", { disabled: Object.keys(messageList).length ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_MESSAGES); }, className: "messages-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES ? "selected" : "") }, "MESSAGES"),
-            React.createElement("button", { disabled: selectedRequest ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_SETUP); }, className: "req-setup-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_SETUP ? "selected" : "") }, "REQUEST SETUP")),
+            React.createElement("button", { disabled: Object.keys(props.messageList).length ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_MESSAGES); }, className: "messages-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES ? "selected" : "") }, "MESSAGES"),
+            React.createElement("button", { disabled: props.selectedRequest ? false : true, onClick: function () { return props.setMode(MainModel_1.MainModel.Mode.SHOW_SETUP); }, className: "req-setup-button " + (props.mode === MainModel_1.MainModel.Mode.SHOW_SETUP ? "selected" : "") }, "REQUEST SETUP")),
         React.createElement("div", { className: "main" }, mode)));
 }
 exports.Left = Left;
@@ -590,18 +579,20 @@ exports.Left = Left;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-function Messages(props, context) {
+var utils_1 = __webpack_require__(/*! ../utils */ "./app/src/utils/index.ts");
+function Messages(props) {
     var messageArray = [];
-    console.log("props:", props);
-    if (props.messageList) {
-        Object.keys(props.messageList).forEach(function (name, nameidx) {
+    var filteredMessageList = utils_1.filterObject(props.messageList, props.messageRecommendations, props.messageTrieInput);
+    //console.log('filteredMessageList', filteredMessageList)
+    if (filteredMessageList) {
+        Object.keys(filteredMessageList).forEach(function (name, nameidx) {
             var type = "";
             var label = "";
-            if (props.messageList[name].type.field.length === 0) {
+            if (filteredMessageList[name].type.field.length === 0) {
                 type = "This message has no fields.";
             }
             else {
-                props.messageList[name].type.field.forEach(function (field) {
+                filteredMessageList[name].type.field.forEach(function (field) {
                     label = field.label.replace("LABEL_", "");
                     type = field.type.replace("TYPE_", "");
                     if (type === "MESSAGE") {
@@ -609,7 +600,6 @@ function Messages(props, context) {
                     }
                 });
             }
-            console.log("name:", name);
             if (label === "") {
                 messageArray.push(React.createElement("p", { key: nameidx },
                     React.createElement("span", { className: "message-name" }, name),
@@ -623,11 +613,10 @@ function Messages(props, context) {
             }
         });
     }
-    console.log("messageArray", messageArray);
     return (React.createElement("div", { className: "messages" },
         React.createElement("h2", null, "Messages"),
         React.createElement("div", { className: "message-header" },
-            React.createElement("input", { type: "text", placeholder: "search for messages" })),
+            React.createElement("input", { type: "text", placeholder: "search for messages", onChange: function (e) { return props.handleMessageTrie(e.target.value); } })),
         React.createElement("div", { className: "message-area" }, messageArray)));
 }
 exports.default = Messages;
@@ -668,44 +657,31 @@ exports.Right = Right;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ServiceOrRequestList_1 = __webpack_require__(/*! ./ServiceOrRequestList */ "./app/src/components/ServiceOrRequestList.tsx");
+var utils_1 = __webpack_require__(/*! ../utils */ "./app/src/utils/index.ts");
 function ServiceAndRequest(props, context) {
-    //console.log('props of ServiceAndRequest', props)
-    var serviceListJSX = [];
     var requestListJSX = [];
-    Object.keys(props.serviceList).filter(function (servicename) {
-        if (props.serviceRecommendations.length === 0) {
-            if (props.serviceTrieInput === "") {
-                return true;
-            }
-            else
-                return false;
-        }
-        else {
-            if (props.serviceRecommendations.includes(servicename)) {
-                return true;
-            }
-            else
-                return false;
-        }
-    }).forEach(function (service, idx) {
-        serviceListJSX.push(React.createElement("p", { key: "servItem" + idx, onClick: function () { return props.handleServiceClick({ service: service }); }, className: props.selectedService === service ? "selected" : "" }, service));
-        if (service === props.selectedService) {
-            Object.keys(props.serviceList[props.selectedService]).forEach(function (request, idx2) {
-                requestListJSX.push(React.createElement("p", { key: "reqItem" + idx + idx2, onClick: function () { return props.handleRequestClick({ request: request, service: service }); }, className: props.selectedRequest === request ? "selected" : "" },
-                    service,
-                    " \u2192 ",
-                    request));
-            });
-        }
-        else if (!props.selectedService) {
-            Object.keys(props.serviceList[service]).forEach(function (request, idx2) {
-                requestListJSX.push(React.createElement("p", { key: "reqItem" + idx + idx2, onClick: function () { return props.handleRequestClick({ request: request, service: service }); }, className: props.selectedRequest === request ? "selected" : "" },
-                    service,
-                    " \u2192 ",
-                    request));
-            });
-        }
-    });
+    // first filter based on service recommendations
+    var filteredServices = utils_1.filterObject(props.serviceList, props.serviceRecommendations, props.serviceTrieInput);
+    /*
+     * if we did not select a service, display all requests
+     * based on available services (filteredServices)
+     */
+    if (!props.selectedService) {
+        Object.entries(filteredServices).forEach(function (kv) {
+            var service = kv[0], request = kv[1];
+            requestListJSX.push(React.createElement(ServiceOrRequestList_1.ServiceOrRequestList, { List: Object.keys(request), ListType: "request", onClickHandler: props.handleRequestClick, selectedService: service, selectedRequest: props.selectedRequest }));
+        });
+    }
+    else if (Object.hasOwnProperty.call(filteredServices, props.selectedService)) {
+        /*
+         * if we did select a service, show the available requests for that particular service
+         */
+        requestListJSX.push(React.createElement(ServiceOrRequestList_1.ServiceOrRequestList, { List: Object.keys(filteredServices[props.selectedService]), ListType: "request", onClickHandler: props.handleRequestClick, selectedService: props.selectedService, selectedRequest: props.selectedRequest }));
+    }
+    else {
+        requestListJSX.push(React.createElement(ServiceOrRequestList_1.ServiceOrRequestList, { List: Object.keys(props.serviceList[props.selectedService]), ListType: "request", onClickHandler: props.handleRequestClick, selectedService: props.selectedService, selectedRequest: props.selectedRequest }));
+    }
     return (React.createElement("div", { className: "service-request" },
         React.createElement("div", { className: "service-request-left" },
             React.createElement("h2", null, "Service"),
@@ -713,10 +689,11 @@ function ServiceAndRequest(props, context) {
                 React.createElement("img", { src: "rune" }),
                 React.createElement("input", { type: "text", placeholder: "type a service", onChange: function (e) { return props.handleServiceTrie(e.target.value); } })),
             React.createElement("div", { className: "service-area", onClick: function (e) {
-                    if (e.target.className === 'service-area') {
+                    if (e.target.className === "service-area") {
                         props.handleServiceClick({ service: "" });
                     }
-                } }, serviceListJSX)),
+                } },
+                React.createElement(ServiceOrRequestList_1.ServiceOrRequestList, { List: Object.keys(filteredServices), onClickHandler: props.handleServiceClick, selectedService: props.selectedService, ListType: "service" }))),
         React.createElement("div", { className: "service-request-right" },
             React.createElement("h2", null, "Request"),
             React.createElement("div", { className: "request-header" },
@@ -724,8 +701,37 @@ function ServiceAndRequest(props, context) {
             React.createElement("div", { className: "request-area" }, requestListJSX))));
 }
 exports.default = ServiceAndRequest;
-// flexbox row: div with rune and searchbar
-// flexbox col: renders services array. each element in array will be a p tag
+
+
+/***/ }),
+
+/***/ "./app/src/components/ServiceOrRequestList.tsx":
+/*!*****************************************************!*\
+  !*** ./app/src/components/ServiceOrRequestList.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+function ServiceOrRequestList(props) {
+    var ListJSX = [];
+    props.List.forEach(function (item, idx) {
+        if (props.ListType === "service") {
+            ListJSX.push(React.createElement("p", { key: item + idx, onClick: function () { return props.onClickHandler({ service: item }); }, className: props.selectedService === item ? "selected" : "" }, item));
+        }
+        else if (props.ListType === "request") {
+            ListJSX.push(React.createElement("p", { key: item + idx, onClick: function () { return props.onClickHandler({ request: item, service: props.selectedService }); }, className: props.selectedRequest === item ? "selected" : "" },
+                props.selectedService,
+                " \u2192 ",
+                item));
+        }
+    });
+    return React.createElement(React.Fragment, null, ListJSX);
+}
+exports.ServiceOrRequestList = ServiceOrRequestList;
 
 
 /***/ }),
@@ -921,9 +927,12 @@ var initialState = {
     selectedService: null,
     selectedRequest: null,
     serviceTrie: new trieClass_1.Trie(),
-    requestTrie: new trieClass_1.Trie(),
     serviceRecommendations: [],
-    serviceTrieInput: ""
+    serviceTrieInput: "",
+    requestTrie: new trieClass_1.Trie(),
+    messageTrie: new trieClass_1.Trie(),
+    messageRecommendations: [],
+    messageTrieInput: "",
 };
 exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_IP_INPUT] = function (state, action) {
@@ -941,8 +950,8 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
         if (state.targetIP) {
             writtenIP = state.targetIP;
         }
-        if (action.payload.service === '') {
-            return __assign({}, state, { selectedService: '', selectedRequest: '', trail: writtenIP });
+        if (action.payload.service === "") {
+            return __assign({}, state, { selectedService: "", selectedRequest: "", trail: writtenIP });
         }
         var newTrail = writtenIP + " → " + action.payload.service;
         return __assign({}, state, { selectedService: action.payload.service, trail: newTrail });
@@ -994,11 +1003,16 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
         });
         var newRequestTrie = new trieClass_1.Trie();
         newRequestTrie.insertArrayOfWords(requestWordsArr);
-        return __assign({}, state, { filePath: filePath, packageDefinition: packageDefinition, serviceList: protoServices, serviceTrie: newServiceTrie, requestTrie: newRequestTrie, messageList: protoMessages });
+        var newMessageTrie = new trieClass_1.Trie();
+        newMessageTrie.insertArrayOfWords(Object.keys(protoMessages));
+        return __assign({}, state, { filePath: filePath, packageDefinition: packageDefinition, serviceList: protoServices, serviceTrie: newServiceTrie, requestTrie: newRequestTrie, messageTrie: newMessageTrie, messageList: protoMessages });
     },
     _a[actions_1.mainActions.Type.HANDLE_SET_MODE] = function (state, action) { return (__assign({}, state, { mode: action.payload })); },
     _a[actions_1.mainActions.Type.HANDLE_SERVICE_TRIE] = function (state, action) {
         return __assign({}, state, { serviceTrieInput: action.payload, serviceRecommendations: state.serviceTrie.recommend(action.payload) });
+    },
+    _a[actions_1.mainActions.Type.HANDLE_MESSAGE_TRIE] = function (state, action) {
+        return __assign({}, state, { messageTrieInput: action.payload, messageRecommendations: state.messageTrie.recommend(action.payload) });
     },
     _a), initialState);
 
@@ -1093,6 +1107,17 @@ if(false) {}
 
 "use strict";
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 function omit(target) {
     var omitKeys = [];
@@ -1107,6 +1132,28 @@ function omit(target) {
     }, {});
 }
 exports.omit = omit;
+function filterObject(o, recommendations, search) {
+    var filtered = {};
+    if (recommendations.length) {
+        Object.entries(o).forEach(function (kv) {
+            var key = kv[0], value = kv[1];
+            if (recommendations.includes(key)) {
+                filtered[key] = value;
+            }
+        });
+    }
+    else {
+        //if inputbox is empty, show everything
+        if (search.length === 0) {
+            filtered = __assign({}, o);
+        }
+        else { //else show nothing
+            return {};
+        }
+    }
+    return filtered;
+}
+exports.filterObject = filterObject;
 
 
 /***/ }),

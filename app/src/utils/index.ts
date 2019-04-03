@@ -10,7 +10,7 @@ export function omit<T extends object, K extends keyof T>(target: T, ...omitKeys
   );
 }
 
-export function filterObject(o: object, recommendations: string[]): object {
+export function filterObject(o: object, recommendations: string[], search: string): object {
   let filtered = {};
   if (recommendations.length) {
     Object.entries(o).forEach(kv => {
@@ -20,7 +20,12 @@ export function filterObject(o: object, recommendations: string[]): object {
       }
     });
   } else {
-    filtered = { ...o };
+    //if inputbox is empty, show everything
+    if (search.length === 0) {
+      filtered = { ...o }
+    } else { //else show nothing
+      return {};
+    }
   }
-  return o;
+  return filtered;
 }

@@ -1,11 +1,11 @@
 import * as React from "react";
 import { filterObject } from "../utils";
-import { Trie } from "../utils/trieClass";
 
 export namespace MessageProps {
   export interface Props {
     messageList: any;
     handleMessageTrie: any;
+    messageTrieInput: string;
     messageRecommendations: string[];
   }
 }
@@ -13,14 +13,17 @@ export namespace MessageProps {
 export default function Messages(props: MessageProps.Props) {
   const messageArray: JSX.Element[] = [];
 
-  if (props.messageList) {
-    Object.keys(props.messageList).forEach((name, nameidx) => {
+  let filteredMessageList = filterObject(props.messageList, props.messageRecommendations, props.messageTrieInput);
+  //console.log('filteredMessageList', filteredMessageList)
+
+  if (filteredMessageList) {
+    Object.keys(filteredMessageList).forEach((name, nameidx) => {
       let type: string = "";
       let label: string = "";
-      if (props.messageList[name].type.field.length === 0) {
+      if (filteredMessageList[name].type.field.length === 0) {
         type = "This message has no fields.";
       } else {
-        props.messageList[name].type.field.forEach(field => {
+        filteredMessageList[name].type.field.forEach(field => {
           label = field.label.replace("LABEL_", "");
           type = field.type.replace("TYPE_", "");
           if (type === "MESSAGE") {

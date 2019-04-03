@@ -13,10 +13,10 @@ export namespace ServiceOrRequestListProps {
 
 export function ServiceOrRequestList(props: ServiceOrRequestListProps.Props) {
   const ListJSX: JSX.Element[] = [];
-  props.List.forEach(item => {
+  props.List.forEach((item, idx) => {
     if (props.ListType === "service") {
       ListJSX.push(
-        <p
+        <p key={item + idx}
           onClick={() => props.onClickHandler({ service: item })}
           className={props.selectedService === item ? "selected" : ""}
         >
@@ -25,7 +25,7 @@ export function ServiceOrRequestList(props: ServiceOrRequestListProps.Props) {
       );
     } else if (props.ListType === "request") {
       ListJSX.push(
-        <p
+        <p key={item + idx}
           onClick={() => props.onClickHandler({ request: item, service: props.selectedService })}
           className={props.selectedRequest === item ? "selected" : ""}
         >
