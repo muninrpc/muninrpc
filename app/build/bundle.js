@@ -333,6 +333,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -354,13 +365,34 @@ var App = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     App.prototype.render = function () {
-        var _a = this.props.main, trail = _a.trail, targetIP = _a.targetIP, filePath = _a.filePath, mode = _a.mode, serviceList = _a.serviceList, messageList = _a.messageList, serverResponse = _a.serverResponse, responseMetrics = _a.responseMetrics, selectedService = _a.selectedService, selectedRequest = _a.selectedRequest, connectType = _a.connectType, serviceRecommendations = _a.serviceRecommendations;
-        var _b = this.props.actions, handleIPInput = _b.handleIPInput, handleProtoUpload = _b.handleProtoUpload, setMode = _b.setMode, handleServiceClick = _b.handleServiceClick, handleRequestClick = _b.handleRequestClick, handleServiceTrie = _b.handleServiceTrie;
+        // const {
+        //   trail,
+        //   targetIP,
+        //   filePath,
+        //   mode,
+        //   serviceList,
+        //   messageList,
+        //   serverResponse,
+        //   responseMetrics,
+        //   selectedService,
+        //   selectedRequest,
+        //   connectType,
+        //   serviceRecommendations,
+        //   serviceTrieInput
+        // } = this.props.main;
+        // const {
+        //   handleIPInput,
+        //   handleProtoUpload,
+        //   setMode,
+        //   handleServiceClick,
+        //   handleRequestClick,
+        //   handleServiceTrie,
+        // } = this.props.actions;
         return (React.createElement("div", { className: "wrapper" },
-            React.createElement(components_1.Header, { trail: trail, connectType: connectType }),
+            React.createElement(components_1.Header, __assign({}, this.props.main)),
             React.createElement("div", { className: "app" },
-                React.createElement(components_1.Left, { serviceList: serviceList, messageList: messageList, setMode: setMode, mode: mode, targetIP: targetIP, filePath: filePath, handleIPInput: handleIPInput, handleProtoUpload: handleProtoUpload, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest, handleServiceTrie: handleServiceTrie, serviceRecommendations: serviceRecommendations }),
-                React.createElement(components_1.Right, { serverResponse: serverResponse, responseMetrics: responseMetrics }))));
+                React.createElement(components_1.Left, __assign({}, this.props.main, this.props.actions)),
+                React.createElement(components_1.Right, __assign({}, this.props.main)))));
     };
     App = __decorate([
         react_redux_1.connect(function (state, ownProps) {
@@ -512,9 +544,9 @@ var Setup_1 = __webpack_require__(/*! ./Setup */ "./app/src/components/Setup.tsx
 var MainModel_1 = __webpack_require__(/*! ../models/MainModel */ "./app/src/models/MainModel.ts");
 function Left(props, context) {
     var mode;
-    var serviceList = props.serviceList, messageList = props.messageList, handleServiceClick = props.handleServiceClick, handleRequestClick = props.handleRequestClick, selectedService = props.selectedService, selectedRequest = props.selectedRequest, handleServiceTrie = props.handleServiceTrie, serviceRecommendations = props.serviceRecommendations;
+    var serviceList = props.serviceList, messageList = props.messageList, handleServiceClick = props.handleServiceClick, handleRequestClick = props.handleRequestClick, selectedService = props.selectedService, selectedRequest = props.selectedRequest, handleServiceTrie = props.handleServiceTrie, serviceRecommendations = props.serviceRecommendations, serviceTrieInput = props.serviceTrieInput;
     if (props.mode === MainModel_1.MainModel.Mode.SHOW_SERVICE) {
-        mode = (React.createElement(ServiceAndRequest_1.default, { serviceList: serviceList, messageList: messageList, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest, handleServiceTrie: handleServiceTrie, serviceRecommendations: serviceRecommendations }));
+        mode = (React.createElement(ServiceAndRequest_1.default, { serviceList: serviceList, messageList: messageList, handleServiceClick: handleServiceClick, handleRequestClick: handleRequestClick, selectedService: selectedService, selectedRequest: selectedRequest, handleServiceTrie: handleServiceTrie, serviceRecommendations: serviceRecommendations, serviceTrieInput: serviceTrieInput }));
     }
     if (props.mode === MainModel_1.MainModel.Mode.SHOW_MESSAGES) {
         mode = React.createElement(Messages_1.default, { messageList: props.messageList });
@@ -640,9 +672,22 @@ function ServiceAndRequest(props, context) {
     //console.log('props of ServiceAndRequest', props)
     var serviceListJSX = [];
     var requestListJSX = [];
-    //if servicerecs is empty, then show everything. else, filter.
-    // if (props.serviceRecommendations === "") throw .filter(servicename => props.serviceRecommendations.includes(servicename)) before the forEach
-    Object.keys(props.serviceList).forEach(function (service, idx) {
+    Object.keys(props.serviceList).filter(function (servicename) {
+        if (props.serviceRecommendations.length === 0) {
+            if (props.serviceTrieInput === "") {
+                return true;
+            }
+            else
+                return false;
+        }
+        else {
+            if (props.serviceRecommendations.includes(servicename)) {
+                return true;
+            }
+            else
+                return false;
+        }
+    }).forEach(function (service, idx) {
         serviceListJSX.push(React.createElement("p", { key: "servItem" + idx, onClick: function () { return props.handleServiceClick({ service: service }); }, className: props.selectedService === service ? "selected" : "" }, service));
         if (service === props.selectedService) {
             Object.keys(props.serviceList[props.selectedService]).forEach(function (request, idx2) {
@@ -877,7 +922,8 @@ var initialState = {
     selectedRequest: null,
     serviceTrie: new trieClass_1.Trie(),
     requestTrie: new trieClass_1.Trie(),
-    serviceRecommendations: []
+    serviceRecommendations: [],
+    serviceTrieInput: ""
 };
 exports.mainReducer = redux_actions_1.handleActions((_a = {},
     _a[actions_1.mainActions.Type.HANDLE_IP_INPUT] = function (state, action) {
@@ -952,15 +998,7 @@ exports.mainReducer = redux_actions_1.handleActions((_a = {},
     },
     _a[actions_1.mainActions.Type.HANDLE_SET_MODE] = function (state, action) { return (__assign({}, state, { mode: action.payload })); },
     _a[actions_1.mainActions.Type.HANDLE_SERVICE_TRIE] = function (state, action) {
-        var recommendations = state.serviceTrie.recommend(action.payload);
-        console.log('recommendations', recommendations);
-        // let newServiceList = [];
-        // Object.keys(state.serviceList).forEach( service => {
-        //   if (recommendations.includes(service)) {
-        //     newServiceList.push(state.serviceList[service])
-        //   }
-        // })
-        return __assign({}, state, { serviceTrieInput: action.payload, serviceRecommendations: recommendations });
+        return __assign({}, state, { serviceTrieInput: action.payload, serviceRecommendations: state.serviceTrie.recommend(action.payload) });
     },
     _a), initialState);
 

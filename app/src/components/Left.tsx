@@ -24,6 +24,7 @@ export namespace LeftProps {
     handleRequestClick: any;
     handleServiceTrie: any;
     serviceRecommendations: string[];
+    serviceTrieInput: string;
 
     mode: string;
   }
@@ -40,6 +41,7 @@ export function Left(props: LeftProps.Props, context?: any) {
     selectedRequest,
     handleServiceTrie,
     serviceRecommendations,
+    serviceTrieInput
   } = props;
   if (props.mode === MainModel.Mode.SHOW_SERVICE) {
     mode = (
@@ -52,6 +54,7 @@ export function Left(props: LeftProps.Props, context?: any) {
         selectedRequest={selectedRequest}
         handleServiceTrie={handleServiceTrie}
         serviceRecommendations={serviceRecommendations}
+        serviceTrieInput={serviceTrieInput}
       />
     );
   }

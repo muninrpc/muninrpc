@@ -21,7 +21,8 @@ const initialState: RootState.mainState = {
   selectedRequest: null,
   serviceTrie: new Trie(),
   requestTrie: new Trie(),
-  serviceRecommendations: []
+  serviceRecommendations: [],
+  serviceTrieInput: ""
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -139,21 +140,10 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       mode: action.payload,
     }),
     [mainActions.Type.HANDLE_SERVICE_TRIE] : (state, action) => {
-      let recommendations = state.serviceTrie.recommend(action.payload);
-      console.log('recommendations', recommendations);
-      // let newServiceList = [];
-      // Object.keys(state.serviceList).forEach( service => {
-      //   if (recommendations.includes(service)) {
-      //     newServiceList.push(state.serviceList[service])
-      //   }
-      // })
-
-
-
       return {
         ...state,
         serviceTrieInput: action.payload,
-        serviceRecommendations: recommendations
+        serviceRecommendations: state.serviceTrie.recommend(action.payload)
       }
     }
   },

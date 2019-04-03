@@ -15,12 +15,12 @@ export namespace App {
   export interface Props {
     main: RootState.mainState;
     actions: mainActions;
-    mode: MainModel.Mode;
+    // mode: MainModel.Mode;
   }
 }
 
 @connect(
-  (state: RootState, ownProps): Pick<App.Props, "main" | "mode"> => {
+  (state: RootState, ownProps): Pick<App.Props, "actions" | "main"> => {
     const hash = ownProps.location && ownProps.location.hash.replace("#", ""); // ???
     const mode = MODE_VALUES.find(value => value === hash) || MainModel.Mode.SHOW_SERVICE;
     return { main: state.main, mode };
@@ -34,49 +34,35 @@ export default class App extends React.Component<App.Props, {}> {
     super(props);
   }
   render() {
-    const {
-      trail,
-      targetIP,
-      filePath,
-      mode,
-      serviceList,
-      messageList,
-      serverResponse,
-      responseMetrics,
-      selectedService,
-      selectedRequest,
-      connectType,
-      serviceRecommendations,
-    } = this.props.main;
-    const {
-      handleIPInput,
-      handleProtoUpload,
-      setMode,
-      handleServiceClick,
-      handleRequestClick,
-      handleServiceTrie,
-    } = this.props.actions;
+    // const {
+    //   trail,
+    //   targetIP,
+    //   filePath,
+    //   mode,
+    //   serviceList,
+    //   messageList,
+    //   serverResponse,
+    //   responseMetrics,
+    //   selectedService,
+    //   selectedRequest,
+    //   connectType,
+    //   serviceRecommendations,
+    //   serviceTrieInput
+    // } = this.props.main;
+    // const {
+    //   handleIPInput,
+    //   handleProtoUpload,
+    //   setMode,
+    //   handleServiceClick,
+    //   handleRequestClick,
+    //   handleServiceTrie,
+    // } = this.props.actions;
     return (
       <div className="wrapper">
-        <Header trail={trail} connectType={connectType} />
+        <Header {...this.props.main} />
         <div className="app">
-          <Left
-            serviceList={serviceList}
-            messageList={messageList}
-            setMode={setMode}
-            mode={mode}
-            targetIP={targetIP}
-            filePath={filePath}
-            handleIPInput={handleIPInput}
-            handleProtoUpload={handleProtoUpload}
-            handleServiceClick={handleServiceClick}
-            handleRequestClick={handleRequestClick}
-            selectedService={selectedService}
-            selectedRequest={selectedRequest}
-            handleServiceTrie={handleServiceTrie}
-            serviceRecommendations={serviceRecommendations}
-          />
-          <Right serverResponse={serverResponse} responseMetrics={responseMetrics} />
+          <Left {...this.props.main} {...this.props.actions} />
+          <Right {...this.props.main} />
         </div>
       </div>
     );

@@ -10,6 +10,7 @@ export namespace ServiceAndRequestProps {
     handleRequestClick: any;
     handleServiceTrie: any;
     serviceRecommendations: string[];
+    serviceTrieInput: string;
   }
 }
 
@@ -17,9 +18,17 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   //console.log('props of ServiceAndRequest', props)
   const serviceListJSX: JSX.Element[] = [];
   const requestListJSX: JSX.Element[] = [];
-  //if servicerecs is empty, then show everything. else, filter.
-  // if (props.serviceRecommendations === "") throw .filter(servicename => props.serviceRecommendations.includes(servicename)) before the forEach
-  Object.keys(props.serviceList).forEach((service, idx) => {
+  Object.keys(props.serviceList).filter(servicename => {
+    if (props.serviceRecommendations.length === 0) { 
+      if (props.serviceTrieInput === "") {
+        return true;
+      } else return false;
+    } else {
+      if (props.serviceRecommendations.includes(servicename)) {
+        return true;
+      } else return false;
+    }
+  }).forEach((service, idx) => {
     serviceListJSX.push(
       <p
         key={"servItem" + idx}
