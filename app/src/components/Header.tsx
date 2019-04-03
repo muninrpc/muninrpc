@@ -5,14 +5,11 @@ import { CallType } from "../../lib/local/grpcHandlerFactory";
 export namespace HeaderProps {
   export interface Props {
     trail: string;
-    connectType: CallType;
-    serviceList: any;
-    selectedService: string;
-    selectedRequest: string;
+    connectType: CallType | string;
   }
 }
 
-export default function Header(props: HeaderProps.Props, context?: any) {
+export function Header(props: HeaderProps.Props, context?: any) {
   const { trail, connectType } = props;
 
   let userConnectType;

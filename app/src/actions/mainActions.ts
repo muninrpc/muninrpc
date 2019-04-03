@@ -9,24 +9,26 @@ export namespace mainActions {
     HANDLE_SET_MODE = "HANDLE_SET_MODE",
     HANDLE_SERVICE_CLICK = "HANDLE_SERVICE_CLICK",
     HANDLE_REQUEST_CLICK = "HANDLE_REQUEST_CLICK",
+    HANDLE_SERVICE_TRIE = "HANDLE_SERVICE_TRIE",
+    HANDLE_MESSAGE_TRIE = "HANDLE_MESSAGE_TRIE",
     HANDLE_CONFIG_INPUT = "HANDLE_CONFIG_INPUT",
     HANDLE_REPEATED_CLICK = "HANDLE_REPEATED_CLICK"
   }
 
   export const handleIPInput = createAction<PartialPick<MainModel, "targetIP">>(
-    Type.HANDLE_IP_INPUT
+    Type.HANDLE_IP_INPUT,
   );
   export const handleConfigInput = createAction<PartialPick<MainModel, "configArguments">>(
     Type.HANDLE_CONFIG_INPUT
   );
   export const handleProtoUpload = createAction<PartialPick<MainModel, "filePath">>(
-    Type.HANDLE_PROTO_UPLOAD
+    Type.HANDLE_PROTO_UPLOAD,
   );
   export const handleServiceClick = createAction<PartialPick<MainModel, "selectedService">>(
-    Type.HANDLE_SERVICE_CLICK
+    Type.HANDLE_SERVICE_CLICK,
   );
   export const handleRequestClick = createAction<PartialPick<MainModel, "selectedRequest">>(
-    Type.HANDLE_REQUEST_CLICK
+    Type.HANDLE_REQUEST_CLICK,
   );
   export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(
     Type.HANDLE_REPEATED_CLICK
@@ -35,6 +37,12 @@ export namespace mainActions {
 
   export const sendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
   export const setMode = createAction<string>(Type.HANDLE_SET_MODE);
+  export const handleServiceTrie = createAction<PartialPick<MainModel, "serviceTrieInput">>(
+    Type.HANDLE_SERVICE_TRIE,
+  );
+  export const handleMessageTrie = createAction<PartialPick<MainModel, "messageTrieInput">>(
+    Type.HANDLE_MESSAGE_TRIE,
+  );
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;

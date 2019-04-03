@@ -3,6 +3,7 @@ import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
 import { MainModel } from "../models/MainModel";
+import { Trie } from "../utils/trieClass";
 
 export namespace LeftProps {
   export interface Props {
@@ -16,6 +17,7 @@ export namespace LeftProps {
     messageList: any;
     selectedService: string;
     selectedRequest: string;
+    mode: string;
     
     configElements: any;
     configArguments: any;
@@ -28,52 +30,26 @@ export namespace LeftProps {
     handleRepeatedClick: any;
     handleConfigInput: any;
 
-    mode: string;
+    handleServiceTrie: any;
+    serviceRecommendations: string[];
+    serviceTrieInput: string;
+
+    handleMessageTrie: any;
+    messageTrieInput: string;
+    messageRecommendations: string[];
   }
 }
 
-export default function Left(props: LeftProps.Props, context?: any) {
+export function Left(props: LeftProps.Props, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
-  const {
-    serviceList,
-    messageList,
-    handleServiceClick,
-    handleRequestClick,
-    selectedService,
-    selectedRequest,
-    configElements,
-    configArguments,
-    handleConfigInput,
-    handleRepeatedClick
-  } = props;
   if (props.mode === MainModel.Mode.SHOW_SERVICE) {
-    mode = (
-      <ServiceAndRequest
-        serviceList={serviceList}
-        messageList={messageList}
-        handleServiceClick={handleServiceClick}
-        handleRequestClick={handleRequestClick}
-        selectedService={selectedService}
-        selectedRequest={selectedRequest}
-      />
-    );
+    mode = <ServiceAndRequest {...props} />;
   }
   if (props.mode === MainModel.Mode.SHOW_MESSAGES) {
-    mode = <Messages messageList={props.messageList} />;
+    mode = <Messages {...props} />;
   }
   if (props.mode === MainModel.Mode.SHOW_SETUP) {
-    mode = (
-      <Setup
-        serviceList={serviceList}
-        messageList={messageList}
-        selectedService={selectedService}
-        selectedRequest={selectedRequest}
-        configArguments={configArguments}
-        configElements={configElements}
-        handleConfigInput={handleConfigInput}
-        handleRepeatedClick={handleRepeatedClick}
-      />
-    );
+    mode = <Setup {...props} />;
   }
 
   return (
@@ -115,7 +91,7 @@ export default function Left(props: LeftProps.Props, context?: any) {
           SERVICES & REQUESTS
         </button>
         <button
-          disabled={Object.keys(messageList).length ? false : true}
+          disabled={Object.keys(props.messageList).length ? false : true}
           onClick={() => props.setMode(MainModel.Mode.SHOW_MESSAGES)}
           className={
             "messages-button " + (props.mode === MainModel.Mode.SHOW_MESSAGES ? "selected" : "")
@@ -124,7 +100,7 @@ export default function Left(props: LeftProps.Props, context?: any) {
           MESSAGES
         </button>
         <button
-          disabled={selectedRequest ? false : true}
+          disabled={props.selectedRequest ? false : true}
           onClick={() => props.setMode(MainModel.Mode.SHOW_SETUP)}
           className={
             "req-setup-button " + (props.mode === MainModel.Mode.SHOW_SETUP ? "selected" : "")

@@ -1,4 +1,4 @@
-import * as protoLoader from '@grpc/proto-loader';
+import * as protoLoader from "@grpc/proto-loader";
 
 /**
  *
@@ -6,9 +6,7 @@ import * as protoLoader from '@grpc/proto-loader';
  * @returns {packageDefinition} returns the package definition
  */
 
-export function loadProtoFile(
-  protoPath: string
-): protoLoader.PackageDefinition {
+export function loadProtoFile(protoPath: string): protoLoader.PackageDefinition {
   const packageDefinition = protoLoader.loadSync(protoPath, {
     keepCase: true,
     longs: String,
@@ -28,7 +26,7 @@ export function parsePackageDefinition(pkgDefn: protoLoader.PackageDefinition) {
 
   Object.entries(pkgDefn).forEach(entry => {
     const [key, value] = entry;
-    if (!Object.hasOwnProperty.call(value, 'fileDescriptorProtos')) {
+    if (!Object.hasOwnProperty.call(value, "fileDescriptorProtos")) {
       // if the object lists the rpc methods
       protoServices[key] = <protoLoader.ServiceDefinition>value;
     } else {

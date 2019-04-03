@@ -8,11 +8,13 @@ service ListActions {
   rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
   rpc CalculateAverage(stream Numbers) returns (Average) {}
   rpc Test(MessageRepeating) returns (MessageRepeating) {}
-  rpc SingleTest(MessageOfMessageSingular) returns (Item) {}
 }
 
-message MessageOfMessageSingular {
-  required MessageSingular single = 1;
+service MathOperations {
+  rpc Add(NoFields) returns (NoFields) {}
+  rpc Subtract(NoFields) returns (NoFields) {}
+  rpc Multiply(NoFields) returns (NoFields) {}
+  rpc Divide(NoFields) returns (NoFields) {}
 }
 
 message MessageRepeating {
