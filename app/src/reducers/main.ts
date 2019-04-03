@@ -5,6 +5,7 @@ import { MainModel } from "../models/MainModel";
 import * as pbActions from "../../lib/local/pbActions";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { rpc } from "protobufjs";
+import { ftruncate } from "fs";
 
 const initialState: RootState.mainState = {
   responseMetrics: "got2go fast",
@@ -20,7 +21,7 @@ const initialState: RootState.mainState = {
   selectedService: null,
   selectedRequest: null,
   configArguments: { arguments: {} },
-  configElements: []
+  configElements: { arguments: {} }
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -84,44 +85,75 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       }
 
       // logic for assembling the arguments object
-      const newConfigElements = [];
+      function parseService(typeArray, configArguments, configElements) {
 
-      function parseService(typeArray, configArguments) {
+        // console.log(configElements)
+        // console.log(typeArray)
         // 5 possible cases:
         // case: fields array is empty
-        newConfigElements.push(typeArray.name)
         if (typeArray.field.length === 0) {
           configArguments = null;
+          configElements[typeArray.name] = {
+            name: typeArray.name,
+            type: 'TYPE_MESSAGE',
+            label:'LABEL_OPTIONAL'
+          }
         } else {
           typeArray.field.forEach( f => {
-            console.log('f',f)
             // case: not a message and not repeating
             if(f.type !== "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
               configArguments[f.name] = null;
+              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+              configElements[f.name] = {
+                messageName: typeArray.name,
+                type: f.type,
+                label: f.label
+              };
             }
             // case: not a message and repeating
             if(f.type !== "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
               configArguments[f.name] = [null];
+              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
+              configElements[f.name] = {
+                name: f.name,
+                messageName: typeArray.name,
+                type: f.type,
+                label: f.label
+              }
             }
             // case: message and not repeating
             if(f.type === "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
               configArguments[f.name] = {};
-              parseService(state.messageList[f.typeName].type, configArguments[f.name])
+              // if(!configElements[f.name]) configElements[f.name] = {}
+              configElements[f.name] = {
+                name: f.name,
+                label: f.label,
+                type: f.type,
+                typeName: f.typeName
+              }
+              parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name])
             }
             // case: message and repeating
             if(f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
               configArguments[f.name] = [{}]
-              parseService(state.messageList[f.typeName].type, configArguments[f.name][0])
-              
-              
+              configElements[f.name] = [{
+                messageName: typeArray.name,
+                label: f.label,
+                type: f.type,
+                typeName: f.typeName
+              }]
+              parseService(state.messageList[f.typeName].type, configArguments[f.name][0], configElements[f.name][0])
             }
           })
         }
       }
       let newConfigArguments = { arguments: {} }
-      parseService(state.serviceList[action.payload.service][action.payload.request].requestType.type, newConfigArguments.arguments) 
-
-
+      let newConfigElements = { arguments : {} }
+      parseService(
+        state.serviceList[action.payload.service][action.payload.request].requestType.type, 
+        newConfigArguments.arguments, 
+        newConfigElements.arguments
+      ) 
 
       return {
         ...state,
@@ -153,11 +185,20 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       mode: action.payload
     }),
 
-    [mainActions.Type.HANDLE_CONFIG_INPUT]: (state, action) => {
-
+    [mainActions.Type.HANDLE_CONFIG_INPUT]: (state, action: {payload: {id: string, value: string}) => {
+      let keys = action.payload.id.split('.').slice(1)
+      function findNestedValue(context, keyArray) {
+        if(keyArray.length === 1) return context
+        return findNestedValue(context[keyArray[0]], keyArray.slice(1))
+      }
+      let context = findNestedValue(state.configArguments.arguments, keys)
+      if(Array.isArray(context)) {
+        context[keys[keys.length-1]] = [action.payload.value]
+      } else {
+        context[keys[keys.length-1]] = action.payload.value
+      }
       return {
-      ...state,
-      configElements: action.payload
+      ...state
       }
     },
     [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({

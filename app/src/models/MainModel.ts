@@ -16,7 +16,7 @@ export interface MainModel {
   selectedService: string;
   selectedRequest: string;
   configArguments: any;
-  configElements: any[];
+  configElements: any;
 }
 
 export namespace MainModel {

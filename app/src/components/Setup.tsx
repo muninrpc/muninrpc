@@ -1,6 +1,7 @@
 import * as React from "react";
 import { element } from "prop-types";
 import { JSXSpreadChild } from "@babel/types";
+import { request } from "http";
 
 export namespace SetupProps {
   export interface Props {
@@ -8,7 +9,9 @@ export namespace SetupProps {
     messageList: any;
     selectedService: string;
     selectedRequest: string;
-    argumentsArray: any[];
+    
+    configElements: any;
+    configArguments: any;
 
     handleRepeatedClick: any;
     handleConfigInput: any;
@@ -22,71 +25,77 @@ export default function Setup(props: SetupProps.Props, context?: any) {
 
   }
 
-  function generateFields(field: any[], messageName: string, path = '', depth = 1): JSX.Element[] | JSX.Element  {
-    const [ignored, forceUpdate] = React.useReducer(x => x + 1, 0);
+  function generateFields(cfgArgs: any, cfgEle:any, depth = 0, path = ''): JSX.Element[] | JSX.Element  {
+    // logic for constructing elements
 
-    if (field.length === 0) {
-      return <p className="no-fields">This message has no fields.</p>;
-    } else {
-      let elementsArray = [];
-      elementsArray.push(<h2>{messageName}</h2>);
-      field.forEach(value => {
-        if (typeof value === "object" && !Array.isArray(value)) {
-          let name = value.name;
-          let label = value.label.replace("LABEL_", "");
-          let type = value.type.replace("TYPE_", "");
-          if (type === "MESSAGE") type = value.typeName;
-          if (label === "REPEATED" && type === value.typeName) {
-            let repeatedElement = generateFields(
-              props.messageList[type].type.field,
-              type,
-              path + '/' + name + '@0',
-              depth + 1
-            );
-            elementsArray.push(
-              <ul>
-                {/* <h3>{messageName}</h3> */}
-                <li className="">
-                  <button className="setup-button repeated">
-                    {label === "REPEATED" ? "+" : ""}
-                  </button>
-                  <div className="setup-name">{name}</div>
-                  <div className="setup-label">{label}</div>
-                  <div className="setup-type">{type}</div>
+    if(cfgArgs) {
+      if ( (Object.keys(cfgArgs).length === 0) || (cfgArgs.length === 0) ) {
+        // additionalMessages.push(<p className="no-fields">This message has no fields.</p>);
+      } else {
+        // repeated field & message
+        if(Array.isArray(cfgArgs) && (cfgArgs[0] !== null) ) {
+          cfgArgs.forEach( (field, idx) => {
+            additionalMessages.push(
+            <li style={ {marginLeft: (depth-1) * 20 + 'px'} }>
+              <button>+</button>
+              {cfgEle[0].typeName} - {cfgEle[0].messageName} {cfgEle[0].type} {cfgEle[0].label} 
+            </li>)
+            if(typeof field === 'object') generateFields(field, cfgEle[0], depth + 1, path + '@' + idx)    
+          })
+        // repeated field & not a message
+        } else if (Array.isArray(cfgArgs)) {
+          console.log(cfgEle)
+          cfgArgs.forEach( (field, idx) => {
+            additionalMessages.push(
+            <li style={ {marginLeft: (depth-1) * 20 + 'px'} }>
+              <button>+</button>
+              {cfgEle.name} {cfgEle.type} {cfgEle.label} 
+              <input id={path + '.' + cfgEle.name} onChange={(e) => handleConfigInput({ id: path + '.' + cfgEle.name + '@' + idx, value: e.target.value}) }/>
+            </li>)
+            if(typeof field === 'object') generateFields(field, cfgEle[0], depth + 1, path + '@' + idx)    
+          }) 
+        } else {
+          Object.keys(cfgArgs).forEach( field => {
+            // and a message
+            if( cfgEle[field].type === 'TYPE_MESSAGE' ) {
+              additionalMessages.push(
+                <li style={ {marginLeft: depth * 20 + 'px'} }>
+                  {cfgEle[field].typeName} - {cfgEle[field].name} {cfgEle[field].type} {cfgEle[field].label} 
                 </li>
-                <span style={{ marginLeft: 20 * depth + "px" }}>{repeatedElement}</span>
-              </ul>
-            );
-          } else {
-            elementsArray.push(
-              <ul>
-                {/* <h3>{messageName}</h3> */}
-                <li className="first">
-                  <button
-                    className="setup-button singular"
-                    disabled={label === "REPEATED" ? false : true}
-                  >
-                    {label === "REPEATED" ? "+" : ""}
-                  </button>
-                  <div className="setup-name">{name}</div>
-                  <div className="setup-label">{label}</div>
-                  <div className="setup-type">{type}</div>
-                  <input onChange={() => handleConfigInput(`${path}/${name}`) } id={`${path}/${name}`} type="text" />
-                </li>
-              </ul>
-            );
-          }
+              )
+            // not a message
+            } else {
+              let pos = additionalMessages.length;
+              if(cfgEle[field].label === 'LABEL_REPEATED') {
+                // additionalMessages.push(
+                //   <li style={ {marginLeft: (depth-1) * 20 + 'px'} }>
+                //     <button onClick={ () => handleRepeatedClick({ id: path + '.' + field, value: e.target.value }) }>
+                //       +
+                //     </button>
+                //     {field} {cfgEle[field].type} {cfgEle[field].label} 
+                //     <input id={path + '.' + field} className={pos} onChange={(e) => handleConfigInput({ id: path + '.' + field, value: e.target.value}) }/>
+                //   </li>
+                // )
+              } else {
+                additionalMessages.push(
+                  <li style={ {marginLeft: depth * 20 + 'px'} }>
+                    {field} {cfgEle[field].type} {cfgEle[field].label} 
+                    <input id={path + '.' + field} className={pos} onChange={(e) => handleConfigInput({ id: path + '.' + field, value: e.target.value}) }/>
+                  </li>
+                )
+              }
+            }  
+            if(typeof cfgArgs[field] === 'object') generateFields(cfgArgs[field], cfgEle[field], depth + 1, path + '.' + field)
+          })
         }
-      });
-      return elementsArray;
+      } 
     }
   }
 
-  const requestFields = serviceList[selectedService][selectedRequest].requestType.type.field;
-  const additionalMessages: JSX.Element[] | JSX.Element = generateFields(
-    requestFields,
-    serviceList[selectedService][selectedRequest].requestType.type.name
-  );
+  const additionalMessages: JSX.Element[] | JSX.Element = [] = []
+  generateFields(props.configArguments.arguments, props.configElements.arguments);
+
+  // console.log('FINAL', additionalMessages)
 
   return (
     <div className="setup">

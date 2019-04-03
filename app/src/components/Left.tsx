@@ -16,7 +16,9 @@ export namespace LeftProps {
     messageList: any;
     selectedService: string;
     selectedRequest: string;
-    argumentsArray: any[];
+    
+    configElements: any;
+    configArguments: any;
 
     handleIPInput: any; // (value: string) => void;
     handleProtoUpload: any;
@@ -39,7 +41,8 @@ export default function Left(props: LeftProps.Props, context?: any) {
     handleRequestClick,
     selectedService,
     selectedRequest,
-    argumentsArray,
+    configElements,
+    configArguments,
     handleConfigInput,
     handleRepeatedClick
   } = props;
@@ -65,7 +68,8 @@ export default function Left(props: LeftProps.Props, context?: any) {
         messageList={messageList}
         selectedService={selectedService}
         selectedRequest={selectedRequest}
-        argumentsArray={argumentsArray}
+        configArguments={configArguments}
+        configElements={configElements}
         handleConfigInput={handleConfigInput}
         handleRepeatedClick={handleRepeatedClick}
       />
