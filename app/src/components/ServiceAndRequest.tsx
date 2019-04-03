@@ -89,7 +89,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
             List={Object.keys(filteredServices)}
             onClickHandler={props.handleServiceClick}
             selectedService={props.selectedService}
-            ListType={"service"}
+            ListType="service"
           />
         </div>
       </div>
