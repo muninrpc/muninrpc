@@ -8,7 +8,8 @@ export namespace mainActions {
     HANDLE_SEND_REQUEST = "HANDLE_SEND_REQUEST",
     HANDLE_SET_MODE = "HANDLE_SET_MODE",
     HANDLE_SERVICE_CLICK = "HANDLE_SERVICE_CLICK",
-    HANDLE_REQUEST_CLICK = "HANDLE_REQUEST_CLICK"
+    HANDLE_REQUEST_CLICK = "HANDLE_REQUEST_CLICK",
+    HANDLE_SERVICE_TRIE = "HANDLE_SERVICE_TRIE"
   }
 
   export const handleIPInput = createAction<PartialPick<MainModel, "targetIP">>(
@@ -25,6 +26,9 @@ export namespace mainActions {
   );
   export const sendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
   export const setMode = createAction<string>(Type.HANDLE_SET_MODE);
+  export const handleServiceTrie = createAction<PartialPick<MainModel, "serviceTrieInput">>(
+    Type.HANDLE_SERVICE_TRIE
+  );
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;

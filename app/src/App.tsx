@@ -45,14 +45,16 @@ export default class App extends React.Component<App.Props, {}> {
       responseMetrics,
       selectedService,
       selectedRequest,
-      connectType
+      connectType,
+      serviceRecommendations,
     } = this.props.main;
     const {
       handleIPInput,
       handleProtoUpload,
       setMode,
       handleServiceClick,
-      handleRequestClick
+      handleRequestClick,
+      handleServiceTrie,
     } = this.props.actions;
     return (
       <div className="wrapper">
@@ -71,6 +73,8 @@ export default class App extends React.Component<App.Props, {}> {
             handleRequestClick={handleRequestClick}
             selectedService={selectedService}
             selectedRequest={selectedRequest}
+            handleServiceTrie={handleServiceTrie}
+            serviceRecommendations={serviceRecommendations}
           />
           <Right serverResponse={serverResponse} responseMetrics={responseMetrics} />
         </div>

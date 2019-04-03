@@ -18,7 +18,9 @@ export interface MainModel {
   selectedService: string;
   selectedRequest: string;
   serviceTrie: Trie;
+  serviceTrieInput: string;
   requestTrie: Trie;
+  serviceRecommendations: string[]
 }
 
 export namespace MainModel {

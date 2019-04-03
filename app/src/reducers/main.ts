@@ -21,6 +21,7 @@ const initialState: RootState.mainState = {
   selectedRequest: null,
   serviceTrie: new Trie(),
   requestTrie: new Trie(),
+  serviceRecommendations: []
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
@@ -43,7 +44,16 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       if (state.targetIP) {
         writtenIP = state.targetIP;
       }
+      if (action.payload.service === '') {
+        return {
+          ...state,
+          selectedService: '',
+          selectedRequest: ''
+          trail: writtenIP
+        }
+      }
       const newTrail = writtenIP + " → " + action.payload.service;
+      
       return {
         ...state,
         selectedService: action.payload.service,
@@ -54,6 +64,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       state,
       action: { payload: { request: string; service: string } },
     ) => {
+
       //if there is a selectedservice, then add service + regex'd request string
       //else add just request string
       let newTrail: string;
@@ -127,6 +138,24 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       ...state,
       mode: action.payload,
     }),
+    [mainActions.Type.HANDLE_SERVICE_TRIE] : (state, action) => {
+      let recommendations = state.serviceTrie.recommend(action.payload);
+      console.log('recommendations', recommendations);
+      // let newServiceList = [];
+      // Object.keys(state.serviceList).forEach( service => {
+      //   if (recommendations.includes(service)) {
+      //     newServiceList.push(state.serviceList[service])
+      //   }
+      // })
+
+
+
+      return {
+        ...state,
+        serviceTrieInput: action.payload,
+        serviceRecommendations: recommendations
+      }
+    }
   },
   initialState,
 );
