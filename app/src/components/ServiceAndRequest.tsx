@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as _ from "lodash";
 
 export namespace ServiceAndRequestProps {
   export interface Props {
@@ -18,17 +19,24 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   //console.log('props of ServiceAndRequest', props)
   const serviceListJSX: JSX.Element[] = [];
   const requestListJSX: JSX.Element[] = [];
-  Object.keys(props.serviceList).filter(servicename => {
-    if (props.serviceRecommendations.length === 0) { 
-      if (props.serviceTrieInput === "") {
-        return true;
-      } else return false;
-    } else {
-      if (props.serviceRecommendations.includes(servicename)) {
-        return true;
-      } else return false;
-    }
-  }).forEach((service, idx) => {
+
+  // first filter based on service recommendations
+  // console.log("shape of serviceRecommendations", props.serviceList);
+  let filteredServices = {};
+  if (props.serviceRecommendations) {
+    Object.entries(props.serviceList).forEach(kv => {
+      const [key, value] = kv;
+      if (props.serviceRecommendations.includes(key)) {
+        filteredServices[key] = value;
+      }
+    });
+  } else {
+    filteredServices = { ...props.serviceList };
+  }
+
+  console.log("filtered services", filteredServices);
+
+  Object.keys(filteredServices).forEach((service, idx) => {
     serviceListJSX.push(
       <p
         key={"servItem" + idx}
@@ -36,33 +44,34 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
         className={props.selectedService === service ? "selected" : ""}
       >
         {service}
-      </p>
+      </p>,
     );
-      if (service === props.selectedService) {
-        Object.keys(props.serviceList[props.selectedService]).forEach((request, idx2) => {
-          requestListJSX.push(
-            <p
-              key={"reqItem" + idx + idx2}
-              onClick={() => props.handleRequestClick({ request, service })}
-              className={props.selectedRequest === request ? "selected" : ""}
-            >
-              {service} → {request}
-            </p>
-          );
-        });
-      } else if (!props.selectedService) {
-        Object.keys(props.serviceList[service]).forEach((request, idx2) => {
-          requestListJSX.push(
-            <p
-              key={"reqItem" + idx + idx2}
-              onClick={() => props.handleRequestClick({ request, service })}
-              className={props.selectedRequest === request ? "selected" : ""}
-            >
-              {service} → {request}
-            </p>
-          );
-        });
-  }});
+    if (service === props.selectedService) {
+      Object.keys(props.serviceList[props.selectedService]).forEach((request, idx2) => {
+        requestListJSX.push(
+          <p
+            key={"reqItem" + idx + idx2}
+            onClick={() => props.handleRequestClick({ request, service })}
+            className={props.selectedRequest === request ? "selected" : ""}
+          >
+            {service} → {request}
+          </p>,
+        );
+      });
+    } else if (!props.selectedService) {
+      Object.keys(props.serviceList[service]).forEach((request, idx2) => {
+        requestListJSX.push(
+          <p
+            key={"reqItem" + idx + idx2}
+            onClick={() => props.handleRequestClick({ request, service })}
+            className={props.selectedRequest === request ? "selected" : ""}
+          >
+            {service} → {request}
+          </p>,
+        );
+      });
+    }
+  });
 
   return (
     <div className="service-request">
@@ -70,13 +79,22 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
         <h2>Service</h2>
         <div className="service-header">
           <img src="rune" />
-          <input type="text" placeholder="type a service" onChange={(e) => props.handleServiceTrie(e.target.value)}/>
+          <input
+            type="text"
+            placeholder="type a service"
+            onChange={e => props.handleServiceTrie(e.target.value)}
+          />
         </div>
-        <div className="service-area" onClick={(e) => {
-          if (e.target.className === 'service-area') {
-            props.handleServiceClick({ service: ""})
-          }
-          }}>{serviceListJSX}</div>
+        <div
+          className="service-area"
+          onClick={e => {
+            if (e.target.className === "service-area") {
+              props.handleServiceClick({ service: "" });
+            }
+          }}
+        >
+          {serviceListJSX}
+        </div>
       </div>
       <div className="service-request-right">
         <h2>Request</h2>
