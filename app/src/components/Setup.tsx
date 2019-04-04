@@ -36,11 +36,25 @@ export default function Setup(props: SetupProps.Props, context?: any) {
               let pos = additionalMessages.length;
               cfgArgs[field].forEach( (ele, idx) => {
                 additionalMessages.push(
-                  <li style={ {marginLeft: (depth-1) * 20 + 'px'} }>
+                  <li style={ 
+                    {
+                      marginLeft: (depth-1) * 20 + 'px',
+                      borderTop: idx === 0 ? `1px solid #2699FB` : ``,
+                      borderTopLeftRadius: idx === 0 ? '10px' : ''
+                    } 
+                  }>
                     <button onClick={ (e) => handleRepeatedClick({ id: path + '.' + field, value: e.target.value }) }>
                       +
                     </button>
-                    {cfgEle[field][0].messageName}:{field} {cfgEle[field][0].type} {cfgEle[field][0].label} 
+                    <div className="li-body">
+                      <div className="li-body-top">
+                        <div className="name">{cfgEle[field][0].messageName} : {field}</div>
+                      </div>
+                      <div className="li-body-bottom">
+                        <div className="message">{cfgEle[field][0].type} </div>
+                        <div className="type">{cfgEle[field][0].label}</div>
+                      </div>
+                    </div>
                   </li>
                 )
                 generateFields(cfgArgs[field][idx], cfgEle[field][0], depth+1, path+'.'+field+'@'+idx)
@@ -52,8 +66,20 @@ export default function Setup(props: SetupProps.Props, context?: any) {
             if( cfgEle[field].type === 'TYPE_MESSAGE') {
               let pos = additionalMessages.length;
               additionalMessages.push(
-                <li style={ {marginLeft: (depth) * 20 + 'px'} }>
-                  {cfgEle[field].typeName}: {field} {cfgEle[field].type} {cfgEle[field].label} 
+                <li style={ 
+                  {
+                    marginLeft: (depth-1) * 20 + 'px',
+                  } 
+                }>
+                  <div className="li-body">
+                    <div className="li-body-top">
+                      <div className="name">{cfgEle[field].typeName} : {field}</div>
+                    </div>
+                    <div className="li-body-bottom">
+                      <div className="message">{cfgEle[field].type} </div>
+                      <div className="type">{cfgEle[field].label}</div>
+                    </div>
+                  </div>
                 </li>
               )  
             generateFields(cfgArgs[field], cfgEle[field], depth+1, path+'.'+field)
@@ -62,10 +88,26 @@ export default function Setup(props: SetupProps.Props, context?: any) {
               let pos = additionalMessages.length;
               cfgArgs[field].forEach( (ele, idx) => {
                 additionalMessages.push(
-                  <li style={ {marginLeft: (depth-1) * 20 + 'px'} }>
-                    <button>+</button>
-                    {field} {cfgEle[field].type} {cfgEle[field].label} 
-                    <input id={path + '.' + field} className={pos} onChange={(e) => handleConfigInput({id: path+'.'+field+'@'+idx, value: e.target.value}) }/>
+                  <li style={ 
+                    {
+                      marginLeft: (depth-1) * 20 + 'px',
+                      borderTop: idx === 0 ? `1px solid #2699FB` : ``,
+                      borderTopLeftRadius: idx === 0 ? '10px' : ''
+                    } 
+                  }>
+                    <button>
+                      +
+                    </button>
+                    <div className="li-body">
+                      <div className="li-body-top">
+                        <div className="name">{field}</div>
+                      </div>
+                      <div className="li-body-bottom">
+                        <div className="message">{cfgEle[field].type}</div>
+                        <div className="type">{cfgEle[field].label}</div>
+                      </div>
+                    </div>
+                    <input id={path+'.'+field+'@'+idx} className={pos} onChange={(e) => handleConfigInput({id: path+'.'+field+'@'+idx, value: e.target.value}) }/>
                   </li>
                 )
               })  
@@ -73,9 +115,21 @@ export default function Setup(props: SetupProps.Props, context?: any) {
             } else {
               let pos = additionalMessages.length;
               additionalMessages.push(
-                <li style={ {marginLeft: (depth) * 20 + 'px'} }>
-                  {field} {cfgEle[field].type} {cfgEle[field].label} 
-                  <input id={path + '.' + field} className={pos} onChange={(e) => handleConfigInput({id: path+'.'+field , value: e.target.value}) }/>
+                <li style={ 
+                  {
+                    marginLeft: (depth-1) * 20 + 'px',
+                  } 
+                }>
+                  <div className="li-body">
+                    <div className="li-body-top">
+                      <div className="name">{field}</div>
+                    </div>
+                    <div className="li-body-bottom">
+                      <div className="message">{cfgEle[field].type}</div>
+                      <div className="type">{cfgEle[field].label}</div>
+                    </div>
+                  </div>
+                  <input id={path + '.' + field} className={pos} onChange={(e) => handleConfigInput({id: path+'.'+field, value: e.target.value}) }/>
                 </li>
               )
             }
