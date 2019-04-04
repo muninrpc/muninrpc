@@ -12,7 +12,7 @@ export function loadProtoFile(protoPath: string): protoLoader.PackageDefinition 
     longs: String,
     enums: String,
     defaults: true,
-    oneofs: true
+    oneofs: true,
   });
   // console.log(packageDefinition);
   return packageDefinition;
@@ -31,12 +31,13 @@ export function parsePackageDefinition(pkgDefn: protoLoader.PackageDefinition) {
       protoServices[key] = <protoLoader.ServiceDefinition>value;
     } else {
       // if the object is the schema of a message
+      //@ts-ignore
       protoMessages[value.type.name] = <protoLoader.MessageTypeDefinition>value;
     }
   });
 
   return {
     protoServices,
-    protoMessages
+    protoMessages,
   };
 }

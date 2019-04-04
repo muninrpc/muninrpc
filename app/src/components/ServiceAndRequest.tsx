@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as _ from "lodash";
 import { ServiceOrRequestList } from "./ServiceOrRequestList";
+import * as protoLoader from "@grpc/proto-loader";
 import { filterObject } from "../utils";
 
 export namespace ServiceAndRequestProps {
   export interface Props {
-    serviceList?: string[];
+    serviceList?: { [index: string]: protoLoader.ServiceDefinition };
     messageList: any;
     selectedService?: string;
     selectedRequest?: string;
@@ -21,7 +22,11 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   const requestListJSX: JSX.Element[] = [];
 
   // first filter based on service recommendations
-  const filteredServices = filterObject(props.serviceList, props.serviceRecommendations, props.serviceTrieInput);
+  const filteredServices = filterObject(
+    props.serviceList,
+    props.serviceRecommendations,
+    props.serviceTrieInput,
+  );
 
   /*
    * if we did not select a service, display all requests
@@ -31,7 +36,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
     Object.entries(filteredServices).forEach(kv => {
       const [service, request] = kv;
       requestListJSX.push(
-        <ServiceOrRequestList 
+        <ServiceOrRequestList
           List={Object.keys(request)}
           ListType="request"
           onClickHandler={props.handleRequestClick}

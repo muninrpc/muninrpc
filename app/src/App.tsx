@@ -19,6 +19,11 @@ export namespace App {
   }
 }
 
+type AppProps = {
+  main: RootState.mainState;
+  actions: mainActions;
+};
+
 @connect(
   (state: RootState, ownProps): Pick<App.Props, "actions" | "main"> => {
     const hash = ownProps.location && ownProps.location.hash.replace("#", ""); // ???
@@ -29,7 +34,7 @@ export namespace App {
     actions: bindActionCreators(omit(mainActions, "Type"), dispatch),
   }),
 )
-export default class App extends React.Component<App.Props, {}> {
+export default class App extends React.Component<AppProps, {}> {
   constructor(props: App.Props) {
     super(props);
   }

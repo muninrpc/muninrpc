@@ -5,6 +5,7 @@ import Setup from "./Setup";
 import { MainModel } from "../models/MainModel";
 import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
+import { BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
 export namespace LeftProps {
   export interface Props {
@@ -17,6 +18,7 @@ export namespace LeftProps {
     selectedService: string;
     selectedRequest: string;
     mode: string;
+    baseConfig: BaseConfig;
 
     configElements: any;
     configArguments: any;
@@ -58,7 +60,7 @@ export function Left(props: LeftProps.Props, context?: any) {
           <h3>Target Server IP</h3>
           <input
             type="text"
-            value={props.targetIP}
+            value={props.baseConfig.grpcServerURI}
             placeholder=""
             onChange={e => props.handleIPInput(e.target.value)}
           />

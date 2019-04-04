@@ -1,6 +1,6 @@
 import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
-import { createAsyncAction } from 'redux-actions-async';
+import { createAsyncAction } from "redux-actions-async";
 
 export namespace mainActions {
   export enum Type {
@@ -16,26 +16,26 @@ export namespace mainActions {
     HANDLE_REPEATED_CLICK = "HANDLE_REPEATED_CLICK",
   }
 
-  export const handleIPInput = (value) => ({
+  export const handleIPInput = value => ({
     type: Type.HANDLE_IP_INPUT,
-    payload: value
-  })
-  export const handleConfigInput = (value) => ({
+    payload: value,
+  });
+  export const handleConfigInput = value => ({
     type: Type.HANDLE_CONFIG_INPUT,
-    payload: value
-  })
-  export const handleProtoUpload = (filelist) => ({
+    payload: value,
+  });
+  export const handleProtoUpload = filelist => ({
     type: Type.HANDLE_PROTO_UPLOAD,
-    payload: filelist
-  })
-  export const handleServiceClick = (service) => ({
+    payload: filelist,
+  });
+  export const handleServiceClick = service => ({
     type: Type.HANDLE_SERVICE_CLICK,
-    payload: service
-  })
-  export const handleRequestClick = (request) => ({
+    payload: service,
+  });
+  export const handleRequestClick = request => ({
     type: Type.HANDLE_REQUEST_CLICK,
-    payload: request
-  })
+    payload: request,
+  });
 
   export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(
     Type.HANDLE_REPEATED_CLICK,
@@ -43,23 +43,22 @@ export namespace mainActions {
 
   // export const handleSendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST);
   export const handleSendRequest = () => ({
-    type: Type.HANDLE_SEND_REQUEST
-  })
+    type: Type.HANDLE_SEND_REQUEST,
+  });
 
-
-  export const setMode = (value) => ({
+  export const setMode = value => ({
     type: Type.HANDLE_SET_MODE,
-    payload: value
-  })
+    payload: value,
+  });
 
-  export const handleServiceTrie = (value) => ({
+  export const handleServiceTrie = value => ({
     type: Type.HANDLE_SERVICE_TRIE,
-    payload: value
-  })
-  export const handleMessageTrie = (value) => ({
+    payload: value,
+  });
+  export const handleMessageTrie = value => ({
     type: Type.HANDLE_MESSAGE_TRIE,
-    payload: value
-  })
+    payload: value,
+  });
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;
