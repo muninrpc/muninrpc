@@ -1,5 +1,5 @@
 {
-  "name": "MuninRPC",
+  "name": "munin-rpc",
   "version": "1.0.0",
   "description": "protobuf and HTTP2 testing tool",
   "main": "main_process.js",
@@ -54,6 +54,7 @@
     "react-dom": "^16.2.0",
     "react-redux": "^6.0.1",
     "redux": "^4.0.1",
-    "redux-actions": "^2.6.5"
+    "redux-actions": "^2.6.5",
+    "redux-thunk": "^2.3.0"
   }
 }

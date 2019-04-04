@@ -21,7 +21,7 @@ const initialState: RootState.mainState = {
   mode: MainModel.Mode.SHOW_SERVICE,
   serviceList: [],
   messageList: {},
-  serverResponse: ["response from server will go here"],
+  serverResponse: "",
   packageDefinition: null,
   selectedService: null,
   selectedRequest: null,
@@ -289,12 +289,13 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         ...state,
       };
     },
+
     [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({
       ...state,
       arguments: action.payload,
     }),
+
     [mainActions.Type.HANDLE_SEND_REQUEST]: (state, action) => {
-      console.log("firing");
       const baseConfig: BaseConfig = {
         grpcServerURI: state.targetIP,
         packageDefinition: state.packageDefinition,
@@ -314,7 +315,14 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         };
         console.log("merged config", mergedConfig);
         const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        handler.initiateRequest().then(response => console.log(response));
+        handler.initiateRequest()
+          .then(response => {
+            console.log('response', response)
+            return ({
+              ...state,
+              serverResponse: response
+            })
+          })
       }
     },
   },
