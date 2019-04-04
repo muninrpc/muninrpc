@@ -189,7 +189,7 @@ class BidiStreamHandler extends GrpcHandler<BidiStreamRequestBody> {
   }
   returnHandler() {
     return {
-      bidiStream: this.bidiStream,
+      writableStream: this.bidiStream,
     };
   }
 }
