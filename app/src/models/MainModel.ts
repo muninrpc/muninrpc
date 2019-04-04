@@ -7,7 +7,7 @@ export interface MainModel {
   configArguments: { arguments: {} };
   configElements: { arguments: {} };
   filePath: string;
-  messageList: any;
+  messageList: { [index: string]: protoLoader.MessageTypeDefinition };
   messageTrie: Trie;
   messageTrieInput: string;
   messageRecommendations: string[];
@@ -15,9 +15,9 @@ export interface MainModel {
   requestConfig: RequestConfig<any>;
   requestTrie: Trie;
   responseMetrics: string;
-  serverResponse: string[];
-  serviceList: string[];
+  serviceList: { [index: string]: protoLoader.ServiceDefinition };
   serviceRecommendations: string[];
+  serverResponse: object;
   selectedRequest: string;
   selectedService: string;
   serviceTrie: Trie;

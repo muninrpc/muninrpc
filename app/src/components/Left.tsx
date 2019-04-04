@@ -3,6 +3,7 @@ import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
 import { MainModel } from "../models/MainModel";
+import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
 
 export namespace LeftProps {
@@ -11,7 +12,7 @@ export namespace LeftProps {
     responseMetrics?: string;
     filePath: string;
     trail?: string;
-    serviceList: string[];
+    serviceList: { [index: string]: protoLoader.ServiceDefinition };
     messageList: any;
     selectedService: string;
     selectedRequest: string;

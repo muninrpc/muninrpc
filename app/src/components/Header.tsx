@@ -1,20 +1,19 @@
 import * as React from "react";
 import { MainModel } from "../models/MainModel";
-import { CallType, RequestConfig } from "../../lib/local/grpcHandlerFactory";
-import { ActionFunction1 } from "redux-actions";
+import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
 export namespace HeaderProps {
   export interface Props {
     trail: string;
     handleSendRequest: any;
     requestConfig: RequestConfig<any>;
+    baseConfig: BaseConfig;
   }
 }
 
 export function Header(props: HeaderProps.Props, context?: any) {
   const { trail } = props;
   const { callType } = props.requestConfig;
-  console.log("header props", props);
 
   let userConnectType;
 
@@ -45,7 +44,11 @@ export function Header(props: HeaderProps.Props, context?: any) {
       <div className="header-left">
         <div className="trail">{trail}</div>
         <div className="connection-display">{userConnectType}</div>
-        <button className="send-button" onClick={props.handleSendRequest}>
+        <button
+          className="send-button"
+          onClick={props.handleSendRequest}
+          disabled={props.baseConfig.grpcServerURI.length ? false : true}
+        >
           SEND REQUEST
         </button>
       </div>
