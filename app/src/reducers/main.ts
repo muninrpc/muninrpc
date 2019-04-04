@@ -10,12 +10,9 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
-<<<<<<< HEAD
 import * as cloneDeep from 'lodash.clonedeep'
 import { handleAsyncActions } from 'redux-actions-async';
 import { clone } from "@babel/types";
-=======
->>>>>>> b321881c0d2b55612ea3fb479194f1d6b7f75a03
 
 const initialState: RootState.mainState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
