@@ -1,5 +1,12 @@
 import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
+import {
+  CallType,
+  BaseConfig,
+  RequestConfig,
+  UnaryRequestBody,
+  GrpcHandlerFactory,
+} from "../../lib/local/grpcHandlerFactory";
 
 export namespace mainActions {
   export enum Type {
@@ -41,15 +48,39 @@ export namespace mainActions {
     Type.HANDLE_REPEATED_CLICK,
   );
 
-  // export const handleSendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST);
-  export const handleSendRequest = () => ({
-    type: Type.HANDLE_SEND_REQUEST,
-  });
+  //old
+  // export const handleSendRequest = () => ({
+  //   type: Type.HANDLE_SEND_REQUEST,
+  // });
+  
+  //new
+  export const handleSendRequest =  () => (dispatch, getState) => {
+    console.log('get state',getState())
+    const state = getState().main
+    if (state.requestConfig.callType === CallType.UNARY_CALL) {
+      const requestConfig: RequestConfig<UnaryRequestBody> = {
+        ...state.requestConfig,
+        reqBody: { argument: state.configArguments.arguments },
+      };
+      const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
+        ...state.baseConfig,
+        ...requestConfig,
+      };
+      const handler = GrpcHandlerFactory.createHandler(mergedConfig);
+      
+      handler.initiateRequest()
+      .then((response) => {
+        console.log('inside initiateResponse',response)
+        dispatch(setGRPCResponse(response))
+      })
+    }
+  }
 
-  export const setGRPCResponse = response => ({
+  export const setGRPCResponse = response => {
+    return {
     type: Type.SET_GRPC_RESPONSE,
     payload: response,
-  });
+  }};
 
   export const setMode = value => ({
     type: Type.HANDLE_SET_MODE,

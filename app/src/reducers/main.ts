@@ -24,7 +24,7 @@ const initialState: RootState.mainState = {
   mode: MainModel.Mode.SHOW_SERVICE,
   requestConfig: { requestName: "", callType: null, reqBody: {} },
   requestTrie: new Trie(),
-  responseMetrics: "got2go fast",
+  responseMetrics: "",
   serviceList: {},
   serviceRecommendations: [],
   serverResponse: {},
@@ -353,29 +353,36 @@ export const mainReducer = (state = initialState, action) => {
       };
    }
 
-    case mainActions.Type.HANDLE_SEND_REQUEST: {
-      if (state.requestConfig.callType === CallType.UNARY_CALL) {
-        const requestConfig: RequestConfig<UnaryRequestBody> = {
-          ...state.requestConfig,
-          reqBody: { argument: state.configArguments.arguments },
-        };
-        const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-          ...state.baseConfig,
-          ...requestConfig,
-        };
-        const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        handler.initiateRequest().then(response => {
-          console.log("response", response);
-          return {
-            ...state,
-            serverResponse: response,
-          };
-        });
+    // case mainActions.Type.HANDLE_SEND_REQUEST: {
+    //   if (state.requestConfig.callType === CallType.UNARY_CALL) {
+    //     const requestConfig: RequestConfig<UnaryRequestBody> = {
+    //       ...state.requestConfig,
+    //       reqBody: { argument: state.configArguments.arguments },
+    //     };
+    //     const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
+    //       ...state.baseConfig,
+    //       ...requestConfig,
+    //     };
+    //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
+    //     handler.initiateRequest().then(response => {
+    //       return {
+    //         ...state,
+    //         serverResponse: response,
+    //       };
+    //     });
+    //   }
+    // }
+    
+
+    case mainActions.Type.SET_GRPC_RESPONSE: {
+      return {
+        ...state,
+        serverResponse: action.payload
       }
     }
 
     default: {
       return state;
     }
-  }
-};
+  };
+}
