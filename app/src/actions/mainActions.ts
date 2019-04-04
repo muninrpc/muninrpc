@@ -1,6 +1,5 @@
 import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
-import { createAsyncAction } from 'redux-actions-async';
 
 export namespace mainActions {
   export enum Type {
