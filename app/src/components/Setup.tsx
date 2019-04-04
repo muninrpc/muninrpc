@@ -21,6 +21,26 @@ export namespace SetupProps {
 export default function Setup(props: SetupProps.Props, context?: any) {
   let { handleConfigInput, handleRepeatedClick, serviceList, selectedService, selectedRequest } = props;
 
+  function findNestedValue(context, keyArray) {
+    // base case
+    if (keyArray.length === 1) {
+      let loc = Number(keyArray[0].match(/\d+$/)[0]);
+      let con = keyArray[0];
+      con = con.match(/(.+)@/)[1];
+      return context[con][loc]
+    }
+    // recu case
+    if (keyArray[0].match("@")) {
+      let loc = Number(keyArray[0].match(/\d+$/)[0]);
+      let con = keyArray[0];
+      con = con.match(/(.+)@/)[1];
+      return findNestedValue(context[con][loc], keyArray.slice(1));
+    } else {
+      return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+    }
+  }
+
+
   function generateFields(cfgArgs: any, cfgEle:any, depth = 0, path = ''): JSX.Element[] | JSX.Element  {
     // logic for constructing elements
 
@@ -47,12 +67,15 @@ export default function Setup(props: SetupProps.Props, context?: any) {
                       borderTopLeftRadius: idx === 0 ? '10px' : ''
                     } 
                   }>
-                    <button onClick={ (e) => handleRepeatedClick({ id: path + '.' + field, value: e.target.value }) }>
+                    <button onClick={() => handleRepeatedClick({ id: path+'.'+field+'@'+idx, request: 'add'   }) } >
                       +
+                    </button>
+                    <button onClick={() => handleRepeatedClick({ id: path+'.'+field+'@'+idx, request: 'remove' }) } >
+                      -
                     </button>
                     <div className="li-body">
                       <div className="li-body-top">
-                        <div className="name">{cfgEle[field][0].messageName} : {field}</div>
+                        <div className="name">{idx} : {cfgEle[field][0].messageName} : {field}</div>
                       </div>
                       <div className="li-body-bottom">
                         <div className="message">{cfgEle[field][0].type} </div>
@@ -99,19 +122,26 @@ export default function Setup(props: SetupProps.Props, context?: any) {
                       borderTopLeftRadius: idx === 0 ? '10px' : ''
                     } 
                   }>
-                    <button>
+                    <button onClick={() => handleRepeatedClick({ id: path+'.'+field+'@'+idx, request: 'add'   }) } >
                       +
+                    </button>
+                    <button onClick={() => handleRepeatedClick({ id: path+'.'+field+'@'+idx, request: 'remove' }) } >
+                      -
                     </button>
                     <div className="li-body">
                       <div className="li-body-top">
-                        <div className="name">{field}</div>
+                        <div className="name">{idx} : {field}</div>
                       </div>
                       <div className="li-body-bottom">
                         <div className="message">{cfgEle[field].type}</div>
                         <div className="type">{cfgEle[field].label}</div>
                       </div>
                     </div>
-                    <input id={path+'.'+field+'@'+idx} className={pos} onChange={(e) => handleConfigInput({id: path+'.'+field+'@'+idx, value: e.target.value}) }/>
+                    <input 
+                      id={path+'.'+field+'@'+idx}
+                      value={ findNestedValue(props.configArguments.arguments, (path+'.'+field+'@'+idx).split(".").slice(1)) }
+                      className={pos} 
+                      onChange={(e) => handleConfigInput({id: path+'.'+field+'@'+idx, value: e.target.value}) }/>
                   </li>
                 )
               })  
