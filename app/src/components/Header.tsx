@@ -1,21 +1,23 @@
 import * as React from "react";
 import { MainModel } from "../models/MainModel";
-import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
 export namespace HeaderProps {
   export interface Props {
     trail: string;
-    connectType: CallType | string;
-    targetIP: string;
-    handleSendRequest: () => any;
+    handleSendRequest: any;
+    requestConfig: RequestConfig<any>;
+    baseConfig: BaseConfig;
   }
 }
 
 export function Header(props: HeaderProps.Props, context?: any) {
-  const { trail, connectType } = props;
+  const { trail } = props;
+  const { callType } = props.requestConfig;
+
   let userConnectType;
 
-  switch (connectType) {
+  switch (callType) {
     case CallType.UNARY_CALL: {
       userConnectType = "UNARY";
       break;
@@ -42,7 +44,11 @@ export function Header(props: HeaderProps.Props, context?: any) {
       <div className="header-left">
         <div className="trail">{trail}</div>
         <div className="connection-display">{userConnectType}</div>
-        <button className="send-button" onClick={props.handleSendRequest} disabled={props.targetIP.length ? false : true}>
+        <button
+          className="send-button"
+          onClick={props.handleSendRequest}
+          disabled={props.baseConfig.grpcServerURI.length ? false : true}
+        >
           SEND REQUEST
         </button>
       </div>
