@@ -1,6 +1,5 @@
 import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
-import { createAsyncAction } from "redux-actions-async";
 
 export namespace mainActions {
   export enum Type {
@@ -14,6 +13,7 @@ export namespace mainActions {
     HANDLE_MESSAGE_TRIE = "HANDLE_MESSAGE_TRIE",
     HANDLE_CONFIG_INPUT = "HANDLE_CONFIG_INPUT",
     HANDLE_REPEATED_CLICK = "HANDLE_REPEATED_CLICK",
+    SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
   }
 
   export const handleIPInput = value => ({
@@ -44,6 +44,11 @@ export namespace mainActions {
   // export const handleSendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST);
   export const handleSendRequest = () => ({
     type: Type.HANDLE_SEND_REQUEST,
+  });
+
+  export const setGRPCResponse = response => ({
+    type: Type.SET_GRPC_RESPONSE,
+    payload: response,
   });
 
   export const setMode = value => ({

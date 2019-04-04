@@ -10,6 +10,7 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
+import * as cloneDeep from "lodash.clonedeep";
 
 const initialState: RootState.mainState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
@@ -305,14 +306,54 @@ export const mainReducer = (state = initialState, action) => {
     }
 
     case mainActions.Type.HANDLE_REPEATED_CLICK: {
+      let keys = action.payload.id.split(".").slice(1);
+      function findNestedValue(context, keyArray) {
+        // base case
+        if (keyArray.length === 1) {
+          return context;
+        }
+        // recu case
+        if (keyArray[0].match("@")) {
+          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+          let con = keyArray[0];
+          con = con.match(/(.+)@/)[1];
+          return findNestedValue(context[con][loc], keyArray.slice(1));
+        } else {
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+        }
+      }
+
+      // find the correct location
+      let context = findNestedValue(state.configArguments.arguments, keys);
+      let baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
+      let baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+
+      // console.log(context)
+      // console.log(baseKey)
+      // console.log(baseLoc)
+
+      if (action.payload.request === "add") {
+        context[baseKey][context[baseKey].length] = cloneDeep(
+          context[baseKey][context[baseKey].length - 1],
+        );
+      }
+
+      if (action.payload.request === "remove") {
+        for (let i = baseLoc; i < context[baseKey].length - 1; i++) {
+          context[baseKey][i] = context[baseKey][i + 1];
+        }
+        context[baseKey].pop();
+      }
+
+      const newConfigArguments = cloneDeep(state.configArguments);
+
       return {
         ...state,
-        arguments: action.payload,
+        configArguments: newConfigArguments,
       };
     }
 
     case mainActions.Type.HANDLE_SEND_REQUEST: {
-      // let requestConfig: RequestConfig<any>
       if (state.requestConfig.callType === CallType.UNARY_CALL) {
         const requestConfig: RequestConfig<UnaryRequestBody> = {
           ...state.requestConfig,
