@@ -36,7 +36,7 @@ export default class App extends React.Component<App.Props, {}> {
   render() {
     return (
       <div className="wrapper">
-        <Header {...this.props.main} />
+        <Header {...this.props.main} {...this.props.actions} />
         <div className="app">
           <Left {...this.props.main} {...this.props.actions} />
           <Right {...this.props.main} />
