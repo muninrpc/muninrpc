@@ -1,4 +1,3 @@
-import { handleActions } from "redux-actions";
 import { RootState } from "./state";
 import { mainActions } from "../actions";
 import { MainModel } from "../models/MainModel";
@@ -11,30 +10,31 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
-import { handleAsyncActions } from 'redux-actions-async';
 
 const initialState: RootState.mainState = {
-  responseMetrics: "got2go fast",
-  targetIP: "",
+  baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
+  configArguments: { arguments: {} },
+  configElements: { arguments: {} },
   filePath: "",
-  trail: "",
-  connectType: "Select an RPC",
-  mode: MainModel.Mode.SHOW_SERVICE,
-  serviceList: [],
   messageList: {},
-  serverResponse: "",
-  packageDefinition: null,
+  messageTrie: new Trie(),
+  messageTrieInput: "",
+  messageRecommendations: [],
+  mode: MainModel.Mode.SHOW_SERVICE,
+  requestConfig: { requestName: "", callType: null, reqBody: {} },
+  requestTrie: new Trie(),
+  responseMetrics: "got2go fast",
+  serviceList: {},
+  serviceRecommendations: [],
+  serverResponse: {},
   selectedService: null,
   selectedRequest: null,
   serviceTrie: new Trie(),
-  serviceRecommendations: [],
   serviceTrieInput: "",
-  requestTrie: new Trie(),
-  messageTrie: new Trie(),
-  messageRecommendations: [],
-  messageTrieInput: "",
-  configArguments: { arguments: {} },
-  configElements: { arguments: {} },
+  trail: "",
+  // targetIP: "",
+  // connectType: "Select an RPC",
+  // packageDefinition: null,
 };
 
 export const mainReducer = (state = initialState, action) => {
@@ -48,15 +48,15 @@ export const mainReducer = (state = initialState, action) => {
       }
       return {
         ...state,
-        targetIP: action.payload,
         trail: newTrail,
+        baseConfig: { ...state.baseConfig, grpcServerURI: action.payload },
       };
     }
 
     case mainActions.Type.HANDLE_SERVICE_CLICK: {
       let writtenIP = "IP";
-      if (state.targetIP) {
-        writtenIP = state.targetIP;
+      if (state.baseConfig.grpcServerURI) {
+        writtenIP = state.baseConfig.grpcServerURI;
       }
       if (action.payload.service === "") {
         return {
@@ -64,6 +64,8 @@ export const mainReducer = (state = initialState, action) => {
           selectedService: "",
           selectedRequest: "",
           trail: writtenIP,
+          baseConfig: { ...state.baseConfig, packageName: "", serviceName: "" },
+          requestConfig: { ...state.requestConfig, requestName: "", callType: null },
         };
       }
       const newTrail = writtenIP + " → " + action.payload.service;
@@ -71,6 +73,11 @@ export const mainReducer = (state = initialState, action) => {
         ...state,
         selectedService: action.payload.service,
         trail: newTrail,
+        baseConfig: {
+          ...state.baseConfig,
+          packageName: action.payload.service.match(/(.+)\./)[1],
+          serviceName: action.payload.service.match(/\.(.+)/)[1],
+        },
       };
     }
 
@@ -79,8 +86,8 @@ export const mainReducer = (state = initialState, action) => {
       //else add just request string
       let newTrail: string;
       let writtenIP = "IP";
-      if (state.targetIP) {
-        writtenIP = state.targetIP;
+      if (state.baseConfig.grpcServerURI) {
+        writtenIP = state.baseConfig.grpcServerURI;
       }
       if (state.selectedService) {
         //let regexedString = action.payload.match(/(?<=→\ ).+/)
@@ -190,10 +197,19 @@ export const mainReducer = (state = initialState, action) => {
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
-        connectType: newConnectType,
         trail: newTrail,
         configArguments: newConfigArguments,
         configElements: newConfigElements,
+        baseConfig: {
+          ...state.baseConfig,
+          packageName: action.payload.service.match(/(.+)\./)[1],
+          serviceName: action.payload.service.match(/\.(.+)/)[1],
+        },
+        requestConfig: {
+          ...state.requestConfig,
+          requestName: action.payload.request,
+          callType: newConnectType,
+        },
       };
     }
 
@@ -222,12 +238,12 @@ export const mainReducer = (state = initialState, action) => {
       return {
         ...state,
         filePath: filePath,
-        packageDefinition: packageDefinition,
         serviceList: protoServices,
         serviceTrie: newServiceTrie,
         requestTrie: newRequestTrie,
         messageTrie: newMessageTrie,
         messageList: protoMessages,
+        baseConfig: { ...state.baseConfig, packageDefinition: packageDefinition },
       };
     }
 
@@ -235,7 +251,7 @@ export const mainReducer = (state = initialState, action) => {
       return {
         ...state,
         mode: action.payload,
-      }
+      };
     }
 
     case mainActions.Type.HANDLE_SERVICE_TRIE: {
@@ -292,37 +308,34 @@ export const mainReducer = (state = initialState, action) => {
       return {
         ...state,
         arguments: action.payload,
-      }
+      };
     }
 
     case mainActions.Type.HANDLE_SEND_REQUEST: {
       const baseConfig: BaseConfig = {
-        grpcServerURI: state.targetIP,
+        grpcServerURI: state.baseConfig.grpcServerURI,
         packageDefinition: state.packageDefinition,
         packageName: state.selectedService.match(/(.+)\./)[1],
         serviceName: state.selectedService.match(/\.(.+)/)[1],
       };
       // let requestConfig: RequestConfig<any>
-      if (state.connectType === CallType.UNARY_CALL) {
+      if (state.requestConfig.callType === CallType.UNARY_CALL) {
         const requestConfig: RequestConfig<UnaryRequestBody> = {
-          requestName: state.selectedRequest,
-          callType: state.connectType,
+          ...state.requestConfig,
           reqBody: { argument: state.configArguments.arguments },
         };
         const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-          ...baseConfig,
+          ...state.baseConfig,
           ...requestConfig,
         };
-        console.log("merged config", mergedConfig);
         const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        handler.initiateRequest()
-          .then(response => {
-            console.log('response', response)
-            return {
-              ...state,
-              serverResponse: response
-            }
-          })
+        handler.initiateRequest().then(response => {
+          console.log("response", response);
+          return {
+            ...state,
+            serverResponse: response,
+          };
+        });
       }
     }
 

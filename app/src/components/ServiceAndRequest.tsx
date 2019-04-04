@@ -70,7 +70,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
       <div className="service-request-left">
         <h2>Service</h2>
         <div className="service-header">
-          <img src="rune" />
+          <img src="./src/assets/rune.png" />
           <input
             type="text"
             placeholder="type a service"

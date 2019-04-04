@@ -12,7 +12,6 @@ class TrieNode {
 
 export class Trie {
   public TrieHead: { [index: string]: TrieNode };
-  private MAX_RECOMMENDATIONS: number = 5;
   constructor() {
     this.TrieHead = {};
   }
@@ -77,19 +76,15 @@ export class Trie {
       recommended.push(accumulator.join(""));
     }
 
-    function recommendHelper(node: TrieNode, MAX_RECOMMENDATIONS: number) {
+    function recommendHelper(node: TrieNode) {
       accumulator.push(node.char);
 
       if (node.isWord) {
         recommended.push(accumulator.join(""));
       }
 
-      if (recommended.length === MAX_RECOMMENDATIONS) {
-        return recommended;
-      }
-
       Object.values(node.nextWords).forEach(childNode => {
-        recommendHelper(childNode, MAX_RECOMMENDATIONS);
+        recommendHelper(childNode);
       });
 
       accumulator.pop();
@@ -100,7 +95,7 @@ export class Trie {
     // REMINDER TO POP OFF WHEN WE EXiT FUNCTION
 
     Object.values(currNode.nextWords).forEach(childNode => {
-      recommendHelper(childNode, this.MAX_RECOMMENDATIONS);
+      recommendHelper(childNode);
     });
 
     return recommended;
