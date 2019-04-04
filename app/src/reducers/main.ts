@@ -10,7 +10,7 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
-import * as cloneDeep from 'lodash.clonedeep';
+import * as cloneDeep from "lodash.clonedeep";
 
 const initialState: RootState.mainState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
@@ -325,30 +325,32 @@ export const mainReducer = (state = initialState, action) => {
 
       // find the correct location
       let context = findNestedValue(state.configArguments.arguments, keys);
-      let baseKey = keys[keys.length-1].match(/(.+)@/)[1];
-      let baseLoc = Number(keys[keys.length-1].match(/\d+$/)[0])
+      let baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
+      let baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
 
       // console.log(context)
       // console.log(baseKey)
       // console.log(baseLoc)
 
-      if(action.payload.request === 'add' ) {
-        context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length-1])  
-      } 
+      if (action.payload.request === "add") {
+        context[baseKey][context[baseKey].length] = cloneDeep(
+          context[baseKey][context[baseKey].length - 1],
+        );
+      }
 
-      if(action.payload.request === 'remove' ) {
-        for(let i=baseLoc; i<context[baseKey].length-1; i++){
-          context[baseKey][i] = context[baseKey][i+1]
+      if (action.payload.request === "remove") {
+        for (let i = baseLoc; i < context[baseKey].length - 1; i++) {
+          context[baseKey][i] = context[baseKey][i + 1];
         }
         context[baseKey].pop();
-      } 
+      }
 
-      const newConfigArguments = cloneDeep(state.configArguments) 
+      const newConfigArguments = cloneDeep(state.configArguments);
 
       return {
         ...state,
-        configArguments: newConfigArguments
-      }
+        configArguments: newConfigArguments,
+      };
     }
 
     case mainActions.Type.HANDLE_SEND_REQUEST: {
