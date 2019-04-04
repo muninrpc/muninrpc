@@ -1,5 +1,6 @@
 import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
+import { createAsyncAction } from 'redux-actions-async';
 
 export namespace mainActions {
   export enum Type {
@@ -15,48 +16,50 @@ export namespace mainActions {
     HANDLE_REPEATED_CLICK = "HANDLE_REPEATED_CLICK",
   }
 
-  export const handleIPInput = createAction<PartialPick<MainModel, "targetIP">>(
-    Type.HANDLE_IP_INPUT,
-  );
-  export const handleConfigInput = createAction<PartialPick<MainModel, "configArguments">>(
-    Type.HANDLE_CONFIG_INPUT,
-  );
-  export const handleProtoUpload = createAction<PartialPick<MainModel, "filePath">>(
-    Type.HANDLE_PROTO_UPLOAD,
-  );
-  export const handleServiceClick = createAction<PartialPick<MainModel, "selectedService">>(
-    Type.HANDLE_SERVICE_CLICK,
-  );
-  export const handleRequestClick = createAction<PartialPick<MainModel, "selectedRequest">>(
-    Type.HANDLE_REQUEST_CLICK,
-  );
+  export const handleIPInput = (value) => ({
+    type: Type.HANDLE_IP_INPUT,
+    payload: value
+  })
+  export const handleConfigInput = (value) => ({
+    type: Type.HANDLE_CONFIG_INPUT,
+    payload: value
+  })
+  export const handleProtoUpload = (filelist) => ({
+    type: Type.HANDLE_PROTO_UPLOAD,
+    payload: filelist
+  })
+  export const handleServiceClick = (service) => ({
+    type: Type.HANDLE_SERVICE_CLICK,
+    payload: service
+  })
+  export const handleRequestClick = (request) => ({
+    type: Type.HANDLE_REQUEST_CLICK,
+    payload: request
+  })
+
   export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(
     Type.HANDLE_REPEATED_CLICK,
   );
 
-  export const handleSendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST); //replace <any> with the function shape
-  export const setMode = createAction<string>(Type.HANDLE_SET_MODE);
-  export const handleServiceTrie = createAction<PartialPick<MainModel, "serviceTrieInput">>(
-    Type.HANDLE_SERVICE_TRIE,
-  );
-  export const handleMessageTrie = createAction<PartialPick<MainModel, "messageTrieInput">>(
-    Type.HANDLE_MESSAGE_TRIE,
-  );
+  // export const handleSendRequest = createAction<any>(Type.HANDLE_SEND_REQUEST);
+  export const handleSendRequest = () => ({
+    type: Type.HANDLE_SEND_REQUEST
+  })
+
+
+  export const setMode = (value) => ({
+    type: Type.HANDLE_SET_MODE,
+    payload: value
+  })
+
+  export const handleServiceTrie = (value) => ({
+    type: Type.HANDLE_SERVICE_TRIE,
+    payload: value
+  })
+  export const handleMessageTrie = (value) => ({
+    type: Type.HANDLE_MESSAGE_TRIE,
+    payload: value
+  })
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;
-
-/*
-
-targetIP - string
-filePath - string
-trail - string
-connectionDisplay - string
-responseDisplay - string
-repsonseMetrics - string
-
-handleIPInput - func
-handleProtoUpload - func
-sendRequest - func
-
-*/

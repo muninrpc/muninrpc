@@ -11,6 +11,7 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
+import { handleAsyncActions } from 'redux-actions-async';
 
 const initialState: RootState.mainState = {
   responseMetrics: "got2go fast",
@@ -36,9 +37,9 @@ const initialState: RootState.mainState = {
   configElements: { arguments: {} },
 };
 
-export const mainReducer = handleActions<RootState.mainState, MainModel>(
-  {
-    [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string }) => {
+export const mainReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case mainActions.Type.HANDLE_IP_INPUT: {
       let newTrail: string;
       if (action.payload === "") {
         newTrail = ` `;
@@ -50,8 +51,9 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         targetIP: action.payload,
         trail: newTrail,
       };
-    },
-    [mainActions.Type.HANDLE_SERVICE_CLICK]: (state, action: { payload: { service: string } }) => {
+    }
+
+    case mainActions.Type.HANDLE_SERVICE_CLICK: {
       let writtenIP = "IP";
       if (state.targetIP) {
         writtenIP = state.targetIP;
@@ -65,17 +67,14 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         };
       }
       const newTrail = writtenIP + " → " + action.payload.service;
-
       return {
         ...state,
         selectedService: action.payload.service,
         trail: newTrail,
       };
-    },
-    [mainActions.Type.HANDLE_REQUEST_CLICK]: (
-      state,
-      action: { payload: { request: string; service: string } },
-    ) => {
+    }
+
+    case mainActions.Type.HANDLE_REQUEST_CLICK: {
       //if there is a selectedservice, then add service + regex'd request string
       //else add just request string
       let newTrail: string;
@@ -196,9 +195,9 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         configArguments: newConfigArguments,
         configElements: newConfigElements,
       };
-    },
+    }
 
-    [mainActions.Type.HANDLE_PROTO_UPLOAD]: (state, action) => {
+    case mainActions.Type.HANDLE_PROTO_UPLOAD: {
       const filePath = action.payload[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
 
@@ -230,33 +229,32 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         messageTrie: newMessageTrie,
         messageList: protoMessages,
       };
-    },
+    }
 
-    [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
-      ...state,
-      mode: action.payload,
-    }),
+    case mainActions.Type.HANDLE_SET_MODE: {
+      return {
+        ...state,
+        mode: action.payload,
+      }
+    }
 
-    [mainActions.Type.HANDLE_SERVICE_TRIE]: (state, action) => {
+    case mainActions.Type.HANDLE_SERVICE_TRIE: {
       return {
         ...state,
         serviceTrieInput: action.payload,
         serviceRecommendations: state.serviceTrie.recommend(action.payload),
       };
-    },
+    }
 
-    [mainActions.Type.HANDLE_MESSAGE_TRIE]: (state, action) => {
+    case mainActions.Type.HANDLE_MESSAGE_TRIE: {
       return {
         ...state,
         messageTrieInput: action.payload,
         messageRecommendations: state.messageTrie.recommend(action.payload),
       };
-    },
+    }
 
-    [mainActions.Type.HANDLE_CONFIG_INPUT]: (
-      state,
-      action: { payload: { id: string; value: string } },
-    ) => {
+    case mainActions.Type.HANDLE_CONFIG_INPUT: {
       let keys = action.payload.id.split(".").slice(1);
       function findNestedValue(context, keyArray) {
         // base case
@@ -288,14 +286,16 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       return {
         ...state,
       };
-    },
+    }
 
-    [mainActions.Type.HANDLE_REPEATED_CLICK]: (state, action) => ({
-      ...state,
-      arguments: action.payload,
-    }),
+    case mainActions.Type.HANDLE_REPEATED_CLICK: {
+      return {
+        ...state,
+        arguments: action.payload,
+      }
+    }
 
-    [mainActions.Type.HANDLE_SEND_REQUEST]: (state, action) => {
+    case mainActions.Type.HANDLE_SEND_REQUEST: {
       const baseConfig: BaseConfig = {
         grpcServerURI: state.targetIP,
         packageDefinition: state.packageDefinition,
@@ -318,13 +318,16 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         handler.initiateRequest()
           .then(response => {
             console.log('response', response)
-            return ({
+            return {
               ...state,
               serverResponse: response
-            })
+            }
           })
       }
-    },
-  },
-  initialState,
-);
+    }
+
+    default: {
+      return state;
+    }
+  }
+};
