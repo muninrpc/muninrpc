@@ -351,7 +351,7 @@ export const mainReducer = (state = initialState, action) => {
         ...state,
         configArguments: newConfigArguments,
       };
-    }
+   }
 
     case mainActions.Type.HANDLE_SEND_REQUEST: {
       if (state.requestConfig.callType === CallType.UNARY_CALL) {
