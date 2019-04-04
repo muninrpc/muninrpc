@@ -37,6 +37,11 @@
     button:active {
       color: darken($primary-color, 20%);
     }
+    button:disabled {
+      background: white;
+      border: 1px solid grey;
+      color: darkgrey;
+    }
   
     .connection-display {
       min-width: 130px;

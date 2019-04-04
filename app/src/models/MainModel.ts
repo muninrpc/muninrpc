@@ -13,7 +13,7 @@ export interface MainModel {
   mode: MainModel.Mode;
   serviceList: string[];
   messageList: any;
-  serverResponse: string[];
+  serverResponse: string;
   packageDefinition: protoLoader.PackageDefinition;
   selectedService: string;
   selectedRequest: string;
