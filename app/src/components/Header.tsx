@@ -6,14 +6,13 @@ export namespace HeaderProps {
   export interface Props {
     trail: string;
     connectType: CallType | string;
+    targetIP: string;
     handleSendRequest: () => any;
   }
 }
 
 export function Header(props: HeaderProps.Props, context?: any) {
   const { trail, connectType } = props;
-  console.log("header props", props);
-
   let userConnectType;
 
   switch (connectType) {
@@ -43,7 +42,7 @@ export function Header(props: HeaderProps.Props, context?: any) {
       <div className="header-left">
         <div className="trail">{trail}</div>
         <div className="connection-display">{userConnectType}</div>
-        <button className="send-button" onClick={props.handleSendRequest}>
+        <button className="send-button" onClick={props.handleSendRequest} disabled={props.targetIP.length ? false : true}>
           SEND REQUEST
         </button>
       </div>
