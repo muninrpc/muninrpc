@@ -1,18 +1,16 @@
-import { Store, createStore, applyMiddleware } from "redux";
-import { composeWithDevTools } from "redux-devtools-extension";
-import { RootState, rootReducer } from "../reducers/index";
-import ReduxThunk from 'redux-thunk';
+import { createStore, applyMiddleware } from 'redux';
+import { rootReducer } from "../reducers/index";
+import { composeWithDevTools } from 'redux-devtools-extension';
+import thunk from 'redux-thunk';
 
-export function configureStore(initialState?: RootState): Store<RootState> {
-  let middleware = applyMiddleware();
+let middleware = applyMiddleware();
 
-  if (process.env.NODE_ENV !== "production") {
-    middleware = composeWithDevTools(middleware);
-  }
-
-  const store = createStore(rootReducer as any, initialState as any, middleware) as Store<
-    RootState
-  >;
-
-  return store;
+//if we are in dev move, compose middleware with dev tools before creating the store
+if (process.env.NODE_ENV !== 'production'){
+  middleware = composeWithDevTools(applyMiddleware(thunk))
 }
+
+
+const store = createStore(rootReducer, middleware);
+
+export default store;
