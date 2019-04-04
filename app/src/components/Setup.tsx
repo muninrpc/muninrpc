@@ -26,7 +26,11 @@ export default function Setup(props: SetupProps.Props, context?: any) {
 
     if(cfgArgs) {
       if ( (Object.keys(cfgArgs).length === 0) || (cfgArgs.length === 0) ) {
-        // additionalMessages.push(<p className="no-fields">This message has no fields.</p>);
+        additionalMessages.push(
+          <p className="no-fields" style={ { marginLeft: (depth-1) * 20 - 5 + 'px' } }>
+            This message has no fields.
+          </p>
+        )
       } else {
         Object.keys(cfgArgs).forEach( field => {
           // case: is repeating

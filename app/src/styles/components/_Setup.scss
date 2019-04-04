@@ -85,11 +85,8 @@
 
     .no-fields {
       display: flex;
-      justify-content: center;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid darken($primary-color, 20%);
+      margin-top: -4px;
+      font-size: 0.8rem;
     }
 
   }
