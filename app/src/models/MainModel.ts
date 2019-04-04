@@ -27,7 +27,7 @@ export interface MainModel {
   messageTrie: Trie;
   messageRecommendations: string[];
   messageTrieInput: string;
-  configArguments: any;
+  configArguments: object;
   configElements: any;
 }
 
