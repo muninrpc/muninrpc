@@ -50,7 +50,9 @@ const MapStateToProps = (store) => ({
   messageRecommendations: store.main.messageRecommendations,
   messageTrieInput: store.main.messageTrieInput,
   configArguments: store.main.configArguments,
-  configElements: store.main.configElements
+  configElements: store.main.configElements,
+  requestConfig: store.main.requestConfig,
+  baseConfig: store.main.baseConfig
 })
 
 // const MapDispatchToProps = (dispatch) => ({

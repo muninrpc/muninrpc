@@ -312,13 +312,6 @@ export const mainReducer = (state = initialState, action) => {
     }
 
     case mainActions.Type.HANDLE_SEND_REQUEST: {
-      const baseConfig: BaseConfig = {
-        grpcServerURI: state.baseConfig.grpcServerURI,
-        packageDefinition: state.packageDefinition,
-        packageName: state.selectedService.match(/(.+)\./)[1],
-        serviceName: state.selectedService.match(/\.(.+)/)[1],
-      };
-      // let requestConfig: RequestConfig<any>
       if (state.requestConfig.callType === CallType.UNARY_CALL) {
         const requestConfig: RequestConfig<UnaryRequestBody> = {
           ...state.requestConfig,
