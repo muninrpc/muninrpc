@@ -294,7 +294,6 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       arguments: action.payload,
     }),
     [mainActions.Type.HANDLE_SEND_REQUEST]: (state, action) => {
-      // hella shit to do here
       console.log("firing");
       const baseConfig: BaseConfig = {
         grpcServerURI: state.targetIP,
