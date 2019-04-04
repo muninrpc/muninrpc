@@ -9,16 +9,14 @@ export namespace LeftProps {
   export interface Props {
     responseDisplay?: string;
     responseMetrics?: string;
-    targetIP: string;
     filePath: string;
     trail?: string;
-    connectType?: string;
     serviceList: string[];
     messageList: any;
     selectedService: string;
     selectedRequest: string;
     mode: string;
-    
+
     configElements: any;
     configArguments: any;
 

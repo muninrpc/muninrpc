@@ -1,22 +1,24 @@
 import * as React from "react";
 import { MainModel } from "../models/MainModel";
-import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { CallType, RequestConfig } from "../../lib/local/grpcHandlerFactory";
+import { ActionFunction1 } from "redux-actions";
 
 export namespace HeaderProps {
   export interface Props {
     trail: string;
-    connectType: CallType | string;
-    handleSendRequest: () => any;
+    handleSendRequest: any;
+    requestConfig: RequestConfig<any>;
   }
 }
 
 export function Header(props: HeaderProps.Props, context?: any) {
-  const { trail, connectType } = props;
+  const { trail } = props;
+  const { callType } = props.requestConfig;
   console.log("header props", props);
 
   let userConnectType;
 
-  switch (connectType) {
+  switch (callType) {
     case CallType.UNARY_CALL: {
       userConnectType = "UNARY";
       break;

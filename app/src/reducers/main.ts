@@ -13,31 +13,34 @@ import {
 import { Trie } from "../utils/trieClass";
 
 const initialState: RootState.mainState = {
-  responseMetrics: "got2go fast",
-  targetIP: "",
-  filePath: "",
-  trail: "",
-  connectType: "Select an RPC",
-  mode: MainModel.Mode.SHOW_SERVICE,
-  serviceList: [],
-  messageList: {},
-  serverResponse: ["response from server will go here"],
-  packageDefinition: null,
-  selectedService: null,
-  selectedRequest: null,
-  serviceTrie: new Trie(),
-  serviceRecommendations: [],
-  serviceTrieInput: "",
-  requestTrie: new Trie(),
-  messageTrie: new Trie(),
-  messageRecommendations: [],
-  messageTrieInput: "",
+  baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
   configArguments: { arguments: {} },
   configElements: { arguments: {} },
+  filePath: "",
+  messageList: {},
+  messageTrie: new Trie(),
+  messageTrieInput: "",
+  messageRecommendations: [],
+  mode: MainModel.Mode.SHOW_SERVICE,
+  requestConfig: { requestName: "", callType: null, reqBody: {} },
+  requestTrie: new Trie(),
+  responseMetrics: "got2go fast",
+  serverResponse: ["response from server will go here"],
+  serviceList: [],
+  serviceRecommendations: [],
+  selectedRequest: null,
+  selectedService: null,
+  serviceTrie: new Trie(),
+  serviceTrieInput: "",
+  trail: "",
+  // targetIP: "",
+  // connectType: "Select an RPC",
+  // packageDefinition: null,
 };
 
 export const mainReducer = handleActions<RootState.mainState, MainModel>(
   {
+    //@ts-ignore
     [mainActions.Type.HANDLE_IP_INPUT]: (state, action: { payload: string }) => {
       let newTrail: string;
       if (action.payload === "") {
@@ -47,14 +50,15 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       }
       return {
         ...state,
-        targetIP: action.payload,
         trail: newTrail,
+        baseConfig: { ...state.baseConfig, grpcServerURI: action.payload },
       };
     },
+    //@ts-ignore
     [mainActions.Type.HANDLE_SERVICE_CLICK]: (state, action: { payload: { service: string } }) => {
       let writtenIP = "IP";
-      if (state.targetIP) {
-        writtenIP = state.targetIP;
+      if (state.baseConfig.grpcServerURI) {
+        writtenIP = state.baseConfig.grpcServerURI;
       }
       if (action.payload.service === "") {
         return {
@@ -62,6 +66,8 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
           selectedService: "",
           selectedRequest: "",
           trail: writtenIP,
+          baseConfig: { ...state.baseConfig, packageName: "", serviceName: "" },
+          requestConfig: { ...state.requestConfig, requestName: "", callType: null },
         };
       }
       const newTrail = writtenIP + " → " + action.payload.service;
@@ -70,8 +76,14 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         ...state,
         selectedService: action.payload.service,
         trail: newTrail,
+        baseConfig: {
+          ...state.baseConfig,
+          packageName: action.payload.service.match(/(.+)\./)[1],
+          serviceName: action.payload.service.match(/\.(.+)/)[1],
+        },
       };
     },
+    //@ts-ignore
     [mainActions.Type.HANDLE_REQUEST_CLICK]: (
       state,
       action: { payload: { request: string; service: string } },
@@ -80,8 +92,8 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       //else add just request string
       let newTrail: string;
       let writtenIP = "IP";
-      if (state.targetIP) {
-        writtenIP = state.targetIP;
+      if (state.baseConfig.grpcServerURI) {
+        writtenIP = state.baseConfig.grpcServerURI;
       }
       if (state.selectedService) {
         //let regexedString = action.payload.match(/(?<=→\ ).+/)
@@ -191,13 +203,23 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
-        connectType: newConnectType,
         trail: newTrail,
         configArguments: newConfigArguments,
         configElements: newConfigElements,
+        baseConfig: {
+          ...state.baseConfig,
+          packageName: action.payload.service.match(/(.+)\./)[1],
+          serviceName: action.payload.service.match(/\.(.+)/)[1],
+        },
+        requestConfig: {
+          ...state.requestConfig,
+          requestName: action.payload.request,
+          callType: newConnectType,
+        },
       };
     },
 
+    //@ts-ignore
     [mainActions.Type.HANDLE_PROTO_UPLOAD]: (state, action) => {
       const filePath = action.payload[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
@@ -223,20 +245,22 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       return {
         ...state,
         filePath: filePath,
-        packageDefinition: packageDefinition,
         serviceList: protoServices,
         serviceTrie: newServiceTrie,
         requestTrie: newRequestTrie,
         messageTrie: newMessageTrie,
         messageList: protoMessages,
+        baseConfig: { ...state.baseConfig, packageDefinition: packageDefinition },
       };
     },
 
+    //@ts-ignore
     [mainActions.Type.HANDLE_SET_MODE]: (state, action) => ({
       ...state,
       mode: action.payload,
     }),
 
+    //@ts-ignore
     [mainActions.Type.HANDLE_SERVICE_TRIE]: (state, action) => {
       return {
         ...state,
@@ -245,6 +269,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       };
     },
 
+    //@ts-ignore
     [mainActions.Type.HANDLE_MESSAGE_TRIE]: (state, action) => {
       return {
         ...state,
@@ -253,6 +278,7 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       };
     },
 
+    //@ts-ignore
     [mainActions.Type.HANDLE_CONFIG_INPUT]: (
       state,
       action: { payload: { id: string; value: string } },
@@ -293,26 +319,17 @@ export const mainReducer = handleActions<RootState.mainState, MainModel>(
       ...state,
       arguments: action.payload,
     }),
+    //@ts-ignore
     [mainActions.Type.HANDLE_SEND_REQUEST]: (state, action) => {
-      console.log("firing");
-      const baseConfig: BaseConfig = {
-        grpcServerURI: state.targetIP,
-        packageDefinition: state.packageDefinition,
-        packageName: state.selectedService.match(/(.+)\./)[1],
-        serviceName: state.selectedService.match(/\.(.+)/)[1],
-      };
-      // let requestConfig: RequestConfig<any>
-      if (state.connectType === CallType.UNARY_CALL) {
+      if (state.requestConfig.callType === CallType.UNARY_CALL) {
         const requestConfig: RequestConfig<UnaryRequestBody> = {
-          requestName: state.selectedRequest,
-          callType: state.connectType,
+          ...state.requestConfig,
           reqBody: { argument: state.configArguments.arguments },
         };
         const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-          ...baseConfig,
+          ...state.baseConfig,
           ...requestConfig,
         };
-        console.log("merged config", mergedConfig);
         const handler = GrpcHandlerFactory.createHandler(mergedConfig);
         handler.initiateRequest().then(response => console.log(response));
       }

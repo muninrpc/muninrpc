@@ -1,34 +1,31 @@
-import { ReactComponentElement } from "react";
-import { ServerResponse } from "http";
 import * as protoLoader from "@grpc/proto-loader";
-import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { CallType, BaseConfig, RequestConfig } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 
 export interface MainModel {
-  responseMetrics: string;
-  targetIP: string;
+  baseConfig: BaseConfig;
+  configArguments: { arguments: {} };
+  configElements: { arguments: {} };
   filePath: string;
-  trail: string;
-  connectType: CallType | string;
-  mode: MainModel.Mode;
-  serviceList: string[];
   messageList: any;
+  messageTrie: Trie;
+  messageTrieInput: string;
+  messageRecommendations: string[];
+  mode: MainModel.Mode;
+  requestConfig: RequestConfig<any>;
+  requestTrie: Trie;
+  responseMetrics: string;
   serverResponse: string[];
-  packageDefinition: protoLoader.PackageDefinition;
-  selectedService: string;
+  serviceList: string[];
+  serviceRecommendations: string[];
   selectedRequest: string;
-
+  selectedService: string;
   serviceTrie: Trie;
   serviceTrieInput: string;
-  serviceRecommendations: string[];
-
-  requestTrie: Trie;
-
-  messageTrie: Trie;
-  messageRecommendations: string[];
-  messageTrieInput: string;
-  configArguments: object;
-  configElements: any;
+  trail: string;
+  // targetIP: string;
+  // connectType: CallType | string;
+  // packageDefinition: protoLoader.PackageDefinition;
 }
 
 export namespace MainModel {
