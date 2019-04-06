@@ -19,6 +19,8 @@ export interface RequestConfig<
   callType: CallType;
   reqBody: T;
 }
+
+
 export interface UnaryRequestBody {
   argument: object;
 }
@@ -84,7 +86,7 @@ abstract class GrpcHandler<
     this.requestName = config.requestName;
     this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[
       this.packageName
-    ] as typeof grpc.Client;
+    ] as typeof grpc.Client; //check typeof?
     this.client = new this.loadedPackage[this.serviceName](
       this.grpcServerURI,
       grpc.credentials.createInsecure(),
@@ -148,8 +150,8 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
 }
 
 class ServerStreamHandler extends GrpcHandler<ServerStreamRequestBody> {
-  public cb: (a: any) => any;
-  public readableStream: grpc.ClientReadableStream<any>;
+  public cb: (a: any) => any; //make private
+  public readableStream: grpc.ClientReadableStream<any>; //make private
 
   constructor(config: BaseConfig & RequestConfig<ServerStreamRequestBody>) {
     super(config);

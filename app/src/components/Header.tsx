@@ -4,15 +4,15 @@ import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandler
 
 export namespace HeaderProps {
   export interface Props {
-    trail: string;
     handleSendRequest: any;
     requestConfig: RequestConfig<any>;
     baseConfig: BaseConfig;
+    selectedService: string;
+    selectedRequest: string;
   }
 }
 
 export function Header(props: HeaderProps.Props, context?: any) {
-  const { trail } = props;
   const { callType } = props.requestConfig;
 
   let userConnectType;
@@ -42,7 +42,10 @@ export function Header(props: HeaderProps.Props, context?: any) {
   return (
     <div className="header">
       <div className="header-left">
-        <div className="trail">{trail}</div>
+        <div className="trail">{props.baseConfig.grpcServerURI ? props.baseConfig.grpcServerURI : 'IP'}
+        {props.selectedService ? ` → ${props.selectedService}` : ''}
+        {props.selectedRequest ? ` → ${props.selectedRequest}` : ''}
+        </div>
         <div className="connection-display">{userConnectType}</div>
         <button
           className="send-button"
