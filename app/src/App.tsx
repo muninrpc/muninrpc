@@ -1,21 +1,17 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
+
+import * as Types from "MyTypes";
 import { mainActions } from "./actions";
 import { RootState } from "./models";
+
+// import components
 import { Left, Right, Header } from "./components";
-import { RootAction, ReducerState } from "MyTypes";
 
-// const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
-//   key => MainModel.Mode[key],
-// );
+type AppProps = RootState & mainActions;
 
-type AppProps = {
-  main: RootState;
-  actions: mainActions;
-};
-
-const MapStateToProps = (store: ReducerState) => ({
+const MapStateToProps = (store: Types.ReducerState) => ({
   responseMetrics: store.main.responseMetrics,
   filePath: store.main.filePath,
   mode: store.main.mode,
@@ -37,7 +33,7 @@ const MapStateToProps = (store: ReducerState) => ({
   baseConfig: store.main.baseConfig,
 });
 
-const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+const MapDispatchToProps = (dispatch: Dispatch<Types.RootAction>) =>
   bindActionCreators(
     {
       handleIPInput: mainActions.handleIPInput,
@@ -51,6 +47,7 @@ const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
       handleServiceTrie: mainActions.handleServiceTrie,
       handleMessageTrie: mainActions.handleMessageTrie,
     },
+    //@ts-ignore
     dispatch,
   );
 

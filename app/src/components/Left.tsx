@@ -7,41 +7,34 @@ import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
 import { BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
-export namespace LeftProps {
-  export interface Props {
-    responseDisplay?: string;
-    responseMetrics?: string;
-    filePath: string;
-    trail?: string;
-    serviceList: { [index: string]: protoLoader.ServiceDefinition };
-    messageList: any;
-    selectedService: string;
-    selectedRequest: string;
-    mode: string;
-    baseConfig: BaseConfig;
-
-    configElements: any;
-    configArguments: any;
-
-    handleIPInput: any; // (value: string) => void;
-    handleProtoUpload: any;
-    setMode: any;
-    handleServiceClick: any;
-    handleRequestClick: any;
-    handleRepeatedClick: any;
-    handleConfigInput: any;
-
-    handleServiceTrie: any;
-    serviceRecommendations: string[];
-    serviceTrieInput: string;
-
-    handleMessageTrie: any;
-    messageTrieInput: string;
-    messageRecommendations: string[];
-  }
+export interface LeftProps {
+  baseConfig: BaseConfig;
+  responseDisplay?: string;
+  responseMetrics?: string;
+  filePath: string;
+  serviceList: { [index: string]: protoLoader.ServiceDefinition };
+  messageList: any;
+  selectedService: string;
+  selectedRequest: string;
+  mode: string;
+  configElements: any;
+  configArguments: any;
+  handleIPInput: any; // (value: string) => void;
+  handleProtoUpload: any;
+  setMode: any;
+  handleServiceClick: any;
+  handleRequestClick: any;
+  handleRepeatedClick: any;
+  handleConfigInput: any;
+  handleServiceTrie: any;
+  serviceRecommendations: string[];
+  serviceTrieInput: string;
+  handleMessageTrie: any;
+  messageTrieInput: string;
+  messageRecommendations: string[];
 }
 
-export function Left(props: LeftProps.Props, context?: any) {
+export function Left(props: LeftProps, context?: any) {
   let mode: React.ReactComponentElement<any, {}>;
   if (props.mode === Mode.SHOW_SERVICE) {
     mode = <ServiceAndRequest {...props} />;

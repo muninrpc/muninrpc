@@ -1,21 +1,18 @@
 import * as React from "react";
-import { MainModel } from "../models/MainModel";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
-export namespace HeaderProps {
-  export interface Props {
-    handleSendRequest: any;
-    requestConfig: RequestConfig<any>;
-    baseConfig: BaseConfig;
-    selectedService: string;
-    selectedRequest: string;
-  }
-}
+type HeaderProps = {
+  handleSendRequest: () => (dispatch: any, getState: any) => void;
+  requestConfig: RequestConfig<any>;
+  baseConfig: BaseConfig;
+  selectedService: string;
+  selectedRequest: string;
+};
 
-export function Header(props: HeaderProps.Props, context?: any) {
+export function Header(props: HeaderProps, context?: any) {
   const { callType } = props.requestConfig;
 
-  let userConnectType;
+  let userConnectType: string;
 
   switch (callType) {
     case CallType.UNARY_CALL: {
@@ -42,9 +39,10 @@ export function Header(props: HeaderProps.Props, context?: any) {
   return (
     <div className="header">
       <div className="header-left">
-        <div className="trail">{props.baseConfig.grpcServerURI ? `${props.baseConfig.grpcServerURI} →` : ''}
-        {props.selectedService ? `${props.selectedService}` : ''}
-        {props.selectedRequest ? ` → ${props.selectedRequest}` : ''}
+        <div className="trail">
+          {props.baseConfig.grpcServerURI ? `${props.baseConfig.grpcServerURI} →` : ""}
+          {props.selectedService ? `${props.selectedService}` : ""}
+          {props.selectedRequest ? ` → ${props.selectedRequest}` : ""}
         </div>
         <div className="connection-display">{userConnectType}</div>
         <button

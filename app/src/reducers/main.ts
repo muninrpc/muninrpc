@@ -2,13 +2,7 @@
 import { mainActions } from "../actions";
 import { RootState, Mode } from "../models/MainModel";
 import * as pbActions from "../../lib/local/pbActions";
-import {
-  CallType,
-  BaseConfig,
-  RequestConfig,
-  UnaryRequestBody,
-  GrpcHandlerFactory,
-} from "../../lib/local/grpcHandlerFactory";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
 import * as Types from "MyTypes";

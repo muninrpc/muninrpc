@@ -1,5 +1,5 @@
 import { action } from "typesafe-actions";
-import { RootState, Mode } from "../models/MainModel";
+import { Mode } from "../models/MainModel";
 import {
   CallType,
   BaseConfig,
@@ -23,29 +23,17 @@ export namespace mainActions {
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
   }
 
-  // export const handleIPInput = value => ({
-  // type: Type.HANDLE_IP_INPUT,
-  // payload: value,
-  // });
-
   export const handleIPInput = (value: string) => action(Type.HANDLE_IP_INPUT, value);
   export const handleConfigInput = value => action(Type.HANDLE_CONFIG_INPUT, value);
   export const handleProtoUpload = (filelist: FileList) => action(Type.HANDLE_PROTO_UPLOAD, filelist);
-
   export const handleServiceClick = (service: { service: string }) => action(Type.HANDLE_SERVICE_CLICK, service);
-
+  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
   export const handleRequestClick = (request: { service: string; request: string }) =>
     action(Type.HANDLE_REQUEST_CLICK, request);
 
   export const handleRepeatedClick = (newMemberInfo: { id: string; action: string }) =>
     action(Type.HANDLE_REPEATED_CLICK, newMemberInfo);
 
-  //old
-  // export const handleSendRequest = () => ({
-  //   type: Type.HANDLE_SEND_REQUEST,
-  // });
-
-  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
   //new
   export const handleSendRequest = () => (dispatch, getState) => {
     const state = getState().main;
