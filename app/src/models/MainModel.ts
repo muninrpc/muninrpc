@@ -3,29 +3,9 @@ import { CallType, BaseConfig, RequestConfig } from "../../lib/local/grpcHandler
 import { Trie } from "../utils/trieClass";
 
 export interface MainModel {
-  baseConfig: BaseConfig;
-  configArguments: { arguments: {} };
-  configElements: { arguments: {} };
-  filePath: string;
-  messageList: { [index: string]: protoLoader.MessageTypeDefinition };
-  messageTrie: Trie;
-  messageTrieInput: string;
-  messageRecommendations: string[];
-  mode: MainModel.Mode;
-  requestConfig: RequestConfig<any>;
-  requestTrie: Trie;
-  responseMetrics: string;
-  serviceList: { [index: string]: protoLoader.ServiceDefinition };
-  serviceRecommendations: string[];
-  serverResponse: object;
-  selectedRequest: string;
-  selectedService: string;
-  serviceTrie: Trie;
-  serviceTrieInput: string;
-  trail: string;
-  // targetIP: string;
-  // connectType: CallType | string;
-  // packageDefinition: protoLoader.PackageDefinition;
+  selectedTab: number,
+  leftArray: JSX.Element[],
+  cleanLeft: JSX.Element
 }
 
 export namespace MainModel {

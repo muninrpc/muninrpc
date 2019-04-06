@@ -24,44 +24,18 @@ type AppProps = {
 };
 
 const MapStateToProps = store => ({
-  responseMetrics: store.main.responseMetrics,
-  targetIP: store.main.targetIP,
-  filePath: store.main.filePath,
-  trail: store.main.trail,
-  connectType: store.main.connectType,
-  mode: store.main.mode,
-  serviceList: store.main.serviceList,
-  messageList: store.main.messageList,
-  serverResponse: store.main.serverResponse,
-  packageDefinition: store.main.packageDefinition,
-  selectedService: store.main.selectedService,
-  selectedRequest: store.main.selectedRequest,
-  serviceTrie: store.main.serviceTrie,
-  serviceRecommendations: store.main.serviceRecommendations,
-  serviceTrieInput: store.main.serviceTrieInput,
-  requestTrie: store.main.requestTrie,
-  messageTrie: store.main.messageTrie,
-  messageRecommendations: store.main.messageRecommendations,
-  messageTrieInput: store.main.messageTrieInput,
-  configArguments: store.main.configArguments,
-  configElements: store.main.configElements,
-  requestConfig: store.main.requestConfig,
-  baseConfig: store.main.baseConfig,
+
+  selectedTab: store.main.selectedTab,
+  leftArray: store.main.leftArray,
+  cleanLeft: store.main.cleanLeft
+
 });
 
 const MapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      handleIPInput: mainActions.handleIPInput,
-      handleConfigInput: mainActions.handleConfigInput,
-      handleProtoUpload: mainActions.handleProtoUpload,
-      handleServiceClick: mainActions.handleServiceClick,
-      handleRequestClick: mainActions.handleRequestClick,
-      handleRepeatedClick: mainActions.handleRepeatedClick,
-      handleSendRequest: mainActions.handleSendRequest,
-      setMode: mainActions.setMode,
-      handleServiceTrie: mainActions.handleServiceTrie,
-      handleMessageTrie: mainActions.handleMessageTrie,
+      addNewTab: mainActions.addNewTab,
+      removeTab: mainActions.removeTab,
     },
     dispatch,
   );
@@ -70,13 +44,12 @@ class App extends React.Component<App.Props, {}> {
   constructor(props: App.Props) {
     super(props);
   }
-  render() {
+  render(props) {
     return (
       <div className="wrapper">
         <Header {...this.props} />
         <div className="app">
-          <Left {...this.props} />
-          <Right {...this.props} />
+          {this.props.leftArray}
         </div>
       </div>
     );
