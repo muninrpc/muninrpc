@@ -45,7 +45,7 @@ const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
       handleProtoUpload: mainActions.handleProtoUpload,
       handleServiceClick: mainActions.handleServiceClick,
       handleRequestClick: mainActions.handleRequestClick,
-      // handleRepeatedClick: mainActions.handleRepeatedClick,
+      handleRepeatedClick: mainActions.handleRepeatedClick,
       handleSendRequest: mainActions.handleSendRequest,
       setMode: mainActions.setMode,
       handleServiceTrie: mainActions.handleServiceTrie,
