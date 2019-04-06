@@ -41,21 +41,31 @@ export function Header(props: HeaderProps.Props, context?: any) {
 
   return (
     <div className="header">
-      <div className="header-left">
-        <div className="trail">{trail}</div>
-        <div className="connection-display">{userConnectType}</div>
-        <button
-          className="send-button"
-          onClick={props.handleSendRequest}
-          disabled={props.baseConfig.grpcServerURI.length ? false : true}
-        >
-          SEND REQUEST
-        </button>
+      <div className="header-top">
+        <div className="header-left">
+          <div className="trail">{trail}</div>
+          <div className="connection-display">{userConnectType}</div>
+          <button
+            className="send-button"
+            onClick={props.handleSendRequest}
+            disabled={props.baseConfig.grpcServerURI.length ? false : true}
+          >
+            SEND REQUEST
+          </button>
+        </div>
+        <div className="right">
+          <h1>MuninRPC</h1>
+          <img className="logo" src="./src/assets/raven.png" />
+        </div>
       </div>
-      <div className="right">
-        <h1>MuninRPC</h1>
-        <img className="logo" src="./src/assets/raven.png" />
+
+      <div className="header-tabs">
+        <div className="tab-box">
+          <div className="tab"></div>
+          <div className="add"></div>
+        </div>
       </div>
+
     </div>
   );
 }
