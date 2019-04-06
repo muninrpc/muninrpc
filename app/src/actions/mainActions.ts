@@ -37,16 +37,17 @@ export namespace mainActions {
   export const handleRequestClick = (request: { service: string; request: string }) =>
     action(Type.HANDLE_REQUEST_CLICK, request);
 
-  export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(Type.HANDLE_REPEATED_CLICK);
+  export const handleRepeatedClick = (newMemberInfo: { id: string; action: string }) =>
+    action(Type.HANDLE_REPEATED_CLICK, newMemberInfo);
 
   //old
   // export const handleSendRequest = () => ({
   //   type: Type.HANDLE_SEND_REQUEST,
   // });
 
+  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
   //new
   export const handleSendRequest = () => (dispatch, getState) => {
-    console.log("get state", getState());
     const state = getState().main;
     if (state.requestConfig.callType === CallType.UNARY_CALL) {
       const requestConfig: RequestConfig<UnaryRequestBody> = {
@@ -60,13 +61,10 @@ export namespace mainActions {
       const handler = GrpcHandlerFactory.createHandler(mergedConfig);
 
       handler.initiateRequest().then(response => {
-        console.log("inside initiateResponse", response);
         dispatch(setGRPCResponse(response));
       });
     }
   };
-
-  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
 
   export const setMode = (value: Mode) => action(Type.HANDLE_SET_MODE, value);
 

@@ -22,9 +22,6 @@ export type RootState = {
   readonly selectedService: string;
   readonly serviceTrie: Trie;
   readonly serviceTrieInput: string;
-  // targetIP: string;
-  // connectType: CallType | string;
-  // packageDefinition: protoLoader.PackageDefinition;
 };
 
 export enum Mode {

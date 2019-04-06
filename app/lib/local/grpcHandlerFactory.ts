@@ -15,6 +15,7 @@ export interface RequestConfig<
   callType: CallType;
   reqBody: T;
 }
+
 export interface UnaryRequestBody {
   argument: object;
 }
@@ -134,8 +135,8 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
 }
 
 class ServerStreamHandler extends GrpcHandler<ServerStreamRequestBody> {
-  public cb: (a: any) => any;
-  public readableStream: grpc.ClientReadableStream<any>;
+  public cb: (a: any) => any; //make private
+  public readableStream: grpc.ClientReadableStream<any>; //make private
 
   constructor(config: BaseConfig & RequestConfig<ServerStreamRequestBody>) {
     super(config);

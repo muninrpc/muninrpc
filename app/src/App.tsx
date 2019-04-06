@@ -55,7 +55,7 @@ const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   );
 
 class App extends React.Component<AppProps, {}> {
-  constructor(props: App.Props) {
+  constructor(props: AppProps) {
     super(props);
   }
   render() {
