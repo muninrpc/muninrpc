@@ -9,11 +9,7 @@ export interface BaseConfig {
 }
 
 export interface RequestConfig<
-  T extends
-    | UnaryRequestBody
-    | ClientStreamRequestBody
-    | ServerStreamRequestBody
-    | BidiStreamRequestBody
+  T extends UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody
 > {
   requestName: string;
   callType: CallType;
@@ -55,11 +51,7 @@ export enum CallType {
 }
 
 abstract class GrpcHandler<
-  T extends
-    | UnaryRequestBody
-    | ClientStreamRequestBody
-    | ServerStreamRequestBody
-    | BidiStreamRequestBody
+  T extends UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody
 > {
   protected grpcServerURI: string;
   protected packageDefinition: protoLoader.PackageDefinition;
@@ -67,11 +59,7 @@ abstract class GrpcHandler<
   protected serviceName: string;
   protected requestName: string;
   protected callType: string;
-  protected requestConfig:
-    | UnaryRequestBody
-    | ClientStreamRequestBody
-    | ServerStreamRequestBody
-    | BidiStreamRequestBody;
+  protected requestConfig: UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody;
   protected loadedPackage: typeof grpc.Client;
   protected client: grpc.Client;
 
@@ -82,9 +70,7 @@ abstract class GrpcHandler<
     this.serviceName = config.serviceName;
     this.requestConfig = config.reqBody;
     this.requestName = config.requestName;
-    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[
-      this.packageName
-    ] as typeof grpc.Client;
+    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName] as typeof grpc.Client;
     this.client = new this.loadedPackage[this.serviceName](
       this.grpcServerURI,
       grpc.credentials.createInsecure(),
@@ -196,15 +182,9 @@ class BidiStreamHandler extends GrpcHandler<BidiStreamRequestBody> {
 
 export class GrpcHandlerFactory {
   static createHandler(config: BaseConfig & RequestConfig<UnaryRequestBody>): UnaryHandler;
-  static createHandler(
-    config: BaseConfig & RequestConfig<ClientStreamRequestBody>,
-  ): ClientStreamHandler;
-  static createHandler(
-    config: BaseConfig & RequestConfig<ServerStreamRequestBody>,
-  ): ServerStreamHandler;
-  static createHandler(
-    config: BaseConfig & RequestConfig<BidiStreamRequestBody>,
-  ): BidiStreamHandler;
+  static createHandler(config: BaseConfig & RequestConfig<ClientStreamRequestBody>): ClientStreamHandler;
+  static createHandler(config: BaseConfig & RequestConfig<ServerStreamRequestBody>): ServerStreamHandler;
+  static createHandler(config: BaseConfig & RequestConfig<BidiStreamRequestBody>): BidiStreamHandler;
   static createHandler(config: BaseConfig & RequestConfig<any>) {
     switch (config.callType) {
       case CallType.UNARY_CALL: {

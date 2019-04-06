@@ -16,7 +16,8 @@ export function ServiceOrRequestList(props: ServiceOrRequestListProps.Props) {
   props.List.forEach((item, idx) => {
     if (props.ListType === "service") {
       ListJSX.push(
-        <p key={item + idx}
+        <p
+          key={item + idx}
           onClick={() => props.onClickHandler({ service: item })}
           className={props.selectedService === item ? "selected" : ""}
         >
@@ -25,7 +26,8 @@ export function ServiceOrRequestList(props: ServiceOrRequestListProps.Props) {
       );
     } else if (props.ListType === "request") {
       ListJSX.push(
-        <p key={item + idx}
+        <p
+          key={item + idx}
           onClick={() => props.onClickHandler({ request: item, service: props.selectedService })}
           className={props.selectedRequest === item ? "selected" : ""}
         >

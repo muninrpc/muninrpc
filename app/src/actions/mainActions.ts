@@ -1,5 +1,5 @@
-import { createAction } from "redux-actions";
-import { MainModel } from "../models/MainModel";
+import { action } from "typesafe-actions";
+import { RootState, Mode } from "../models/MainModel";
 import {
   CallType,
   BaseConfig,
@@ -23,40 +23,31 @@ export namespace mainActions {
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
   }
 
-  export const handleIPInput = value => ({
-    type: Type.HANDLE_IP_INPUT,
-    payload: value,
-  });
-  export const handleConfigInput = value => ({
-    type: Type.HANDLE_CONFIG_INPUT,
-    payload: value,
-  });
-  export const handleProtoUpload = filelist => ({
-    type: Type.HANDLE_PROTO_UPLOAD,
-    payload: filelist,
-  });
-  export const handleServiceClick = service => ({
-    type: Type.HANDLE_SERVICE_CLICK,
-    payload: service,
-  });
-  export const handleRequestClick = request => ({
-    type: Type.HANDLE_REQUEST_CLICK,
-    payload: request,
-  });
+  // export const handleIPInput = value => ({
+  // type: Type.HANDLE_IP_INPUT,
+  // payload: value,
+  // });
 
-  export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(
-    Type.HANDLE_REPEATED_CLICK,
-  );
+  export const handleIPInput = (value: string) => action(Type.HANDLE_IP_INPUT, value);
+  export const handleConfigInput = value => action(Type.HANDLE_CONFIG_INPUT, value);
+  export const handleProtoUpload = (filelist: FileList) => action(Type.HANDLE_PROTO_UPLOAD, filelist);
+
+  export const handleServiceClick = (service: { service: string }) => action(Type.HANDLE_SERVICE_CLICK, service);
+
+  export const handleRequestClick = (request: { service: string; request: string }) =>
+    action(Type.HANDLE_REQUEST_CLICK, request);
+
+  export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(Type.HANDLE_REPEATED_CLICK);
 
   //old
   // export const handleSendRequest = () => ({
   //   type: Type.HANDLE_SEND_REQUEST,
   // });
-  
+
   //new
-  export const handleSendRequest =  () => (dispatch, getState) => {
-    console.log('get state',getState())
-    const state = getState().main
+  export const handleSendRequest = () => (dispatch, getState) => {
+    console.log("get state", getState());
+    const state = getState().main;
     if (state.requestConfig.callType === CallType.UNARY_CALL) {
       const requestConfig: RequestConfig<UnaryRequestBody> = {
         ...state.requestConfig,
@@ -67,34 +58,21 @@ export namespace mainActions {
         ...requestConfig,
       };
       const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-      
-      handler.initiateRequest()
-      .then((response) => {
-        console.log('inside initiateResponse',response)
-        dispatch(setGRPCResponse(response))
-      })
+
+      handler.initiateRequest().then(response => {
+        console.log("inside initiateResponse", response);
+        dispatch(setGRPCResponse(response));
+      });
     }
-  }
+  };
 
-  export const setGRPCResponse = response => {
-    return {
-    type: Type.SET_GRPC_RESPONSE,
-    payload: response,
-  }};
+  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
 
-  export const setMode = value => ({
-    type: Type.HANDLE_SET_MODE,
-    payload: value,
-  });
+  export const setMode = (value: Mode) => action(Type.HANDLE_SET_MODE, value);
 
-  export const handleServiceTrie = value => ({
-    type: Type.HANDLE_SERVICE_TRIE,
-    payload: value,
-  });
-  export const handleMessageTrie = value => ({
-    type: Type.HANDLE_MESSAGE_TRIE,
-    payload: value,
-  });
+  export const handleServiceTrie = (value: string) => action(Type.HANDLE_SERVICE_TRIE, value);
+
+  export const handleMessageTrie = (value: string) => action(Type.HANDLE_MESSAGE_TRIE, value);
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;

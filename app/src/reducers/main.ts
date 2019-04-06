@@ -1,6 +1,6 @@
-import { RootState } from "./state";
+// import { RootState } from "./state";
 import { mainActions } from "../actions";
-import { MainModel } from "../models/MainModel";
+import { RootState, Mode } from "../models/MainModel";
 import * as pbActions from "../../lib/local/pbActions";
 import {
   CallType,
@@ -11,8 +11,9 @@ import {
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
+import * as Types from "MyTypes";
 
-const initialState: RootState.mainState = {
+const initialState: RootState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
   configArguments: { arguments: {} },
   configElements: { arguments: {} },
@@ -21,7 +22,7 @@ const initialState: RootState.mainState = {
   messageTrie: new Trie(),
   messageTrieInput: "",
   messageRecommendations: [],
-  mode: MainModel.Mode.SHOW_SERVICE,
+  mode: Mode.SHOW_SERVICE,
   requestConfig: { requestName: "", callType: null, reqBody: {} },
   requestTrie: new Trie(),
   responseMetrics: "",
@@ -32,13 +33,9 @@ const initialState: RootState.mainState = {
   selectedRequest: null,
   serviceTrie: new Trie(),
   serviceTrieInput: "",
-  trail: "",
-  // targetIP: "",
-  // connectType: "Select an RPC",
-  // packageDefinition: null,
 };
 
-export const mainReducer = (state = initialState, action) => {
+export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
   switch (action.type) {
     case mainActions.Type.HANDLE_IP_INPUT: {
       let newTrail: string;
@@ -97,9 +94,7 @@ export const mainReducer = (state = initialState, action) => {
         newTrail = `${writtenIP} → ${action.payload.service} → ${action.payload.request}`;
       }
 
-      const { requestStream, responseStream } = state.serviceList[action.payload.service][
-        action.payload.request
-      ];
+      const { requestStream, responseStream } = state.serviceList[action.payload.service][action.payload.request];
       let newConnectType: string;
 
       if (requestStream && responseStream) {
@@ -160,11 +155,7 @@ export const mainReducer = (state = initialState, action) => {
                 type: f.type,
                 typeName: f.typeName,
               };
-              parseService(
-                state.messageList[f.typeName].type,
-                configArguments[f.name],
-                configElements[f.name],
-              );
+              parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name]);
             }
             // case: message and repeating
             if (f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
@@ -177,11 +168,7 @@ export const mainReducer = (state = initialState, action) => {
                   typeName: f.typeName,
                 },
               ];
-              parseService(
-                state.messageList[f.typeName].type,
-                configArguments[f.name][0],
-                configElements[f.name][0],
-              );
+              parseService(state.messageList[f.typeName].type, configArguments[f.name][0], configElements[f.name][0]);
             }
           });
         }
@@ -333,9 +320,7 @@ export const mainReducer = (state = initialState, action) => {
       // console.log(baseLoc)
 
       if (action.payload.request === "add") {
-        context[baseKey][context[baseKey].length] = cloneDeep(
-          context[baseKey][context[baseKey].length - 1],
-        );
+        context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length - 1]);
       }
 
       if (action.payload.request === "remove") {
@@ -372,17 +357,16 @@ export const mainReducer = (state = initialState, action) => {
     //     });
     //   }
     // }
-    
 
     case mainActions.Type.SET_GRPC_RESPONSE: {
       return {
         ...state,
-        serverResponse: action.payload
-      }
+        serverResponse: action.payload,
+      };
     }
 
     default: {
       return state;
     }
-  };
-}
+  }
+};

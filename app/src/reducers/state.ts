@@ -1,9 +1,11 @@
-import { MainModel } from "../models/MainModel";
+// import { MainModel } from "../models/MainModel";
 
-export interface RootState {
-  main: RootState.mainState;
-}
+// export interface RootState {
+// main: RootState.mainState;
+// }
 
-export namespace RootState {
-  export type mainState = MainModel;
-}
+export { RootState } from "../models/MainModel";
+
+// export namespace RootState {
+// export type mainState = MainModel;
+// }
