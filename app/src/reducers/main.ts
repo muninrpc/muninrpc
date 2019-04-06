@@ -32,8 +32,6 @@ const initialState: RootState.mainState = {
   selectedRequest: null,
   serviceTrie: new Trie(),
   serviceTrieInput: "",
-  trail: "",
-  // targetIP: "",
   // connectType: "Select an RPC",
   // packageDefinition: null,
 };
@@ -41,39 +39,26 @@ const initialState: RootState.mainState = {
 export const mainReducer = (state = initialState, action) => {
   switch (action.type) {
     case mainActions.Type.HANDLE_IP_INPUT: {
-      let newTrail: string;
-      if (action.payload === "") {
-        newTrail = ` `;
-      } else {
-        newTrail = `${action.payload} → ${state.selectedService} → ${state.selectedRequest}`;
-      }
       return {
         ...state,
-        trail: newTrail,
         baseConfig: { ...state.baseConfig, grpcServerURI: action.payload },
       };
     }
 
     case mainActions.Type.HANDLE_SERVICE_CLICK: {
-      let writtenIP = "IP";
-      if (state.baseConfig.grpcServerURI) {
-        writtenIP = state.baseConfig.grpcServerURI;
-      }
+      //deselects service upon clicking outside of service list
       if (action.payload.service === "") {
         return {
           ...state,
           selectedService: "",
           selectedRequest: "",
-          trail: writtenIP,
           baseConfig: { ...state.baseConfig, packageName: "", serviceName: "" },
           requestConfig: { ...state.requestConfig, requestName: "", callType: null },
         };
       }
-      const newTrail = writtenIP + " → " + action.payload.service;
       return {
         ...state,
         selectedService: action.payload.service,
-        trail: newTrail,
         baseConfig: {
           ...state.baseConfig,
           packageName: action.payload.service.match(/(.+)\./)[1],
@@ -85,17 +70,6 @@ export const mainReducer = (state = initialState, action) => {
     case mainActions.Type.HANDLE_REQUEST_CLICK: {
       //if there is a selectedservice, then add service + regex'd request string
       //else add just request string
-      let newTrail: string;
-      let writtenIP = "IP";
-      if (state.baseConfig.grpcServerURI) {
-        writtenIP = state.baseConfig.grpcServerURI;
-      }
-      if (state.selectedService) {
-        //let regexedString = action.payload.match(/(?<=→\ ).+/)
-        newTrail = `${writtenIP} → ${state.selectedService} → ${action.payload.request}`;
-      } else {
-        newTrail = `${writtenIP} → ${action.payload.service} → ${action.payload.request}`;
-      }
 
       const { requestStream, responseStream } = state.serviceList[action.payload.service][
         action.payload.request
@@ -198,7 +172,6 @@ export const mainReducer = (state = initialState, action) => {
         ...state,
         selectedService: action.payload.service,
         selectedRequest: action.payload.request,
-        trail: newTrail,
         configArguments: newConfigArguments,
         configElements: newConfigElements,
         baseConfig: {

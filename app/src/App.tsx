@@ -27,7 +27,6 @@ const MapStateToProps = store => ({
   responseMetrics: store.main.responseMetrics,
   targetIP: store.main.targetIP,
   filePath: store.main.filePath,
-  trail: store.main.trail,
   connectType: store.main.connectType,
   mode: store.main.mode,
   serviceList: store.main.serviceList,

@@ -1,4 +1,3 @@
-import { createAction } from "redux-actions";
 import { MainModel } from "../models/MainModel";
 import {
   CallType,
@@ -44,9 +43,10 @@ export namespace mainActions {
     payload: request,
   });
 
-  export const handleRepeatedClick = createAction<PartialPick<MainModel, "configElements">>(
-    Type.HANDLE_REPEATED_CLICK,
-  );
+  export const handleRepeatedClick = (newMemberInfo) => ({
+    type: Type.HANDLE_REPEATED_CLICK,
+    payload: newMemberInfo
+  })
 
   //old
   // export const handleSendRequest = () => ({
@@ -54,8 +54,7 @@ export namespace mainActions {
   // });
   
   //new
-  export const handleSendRequest =  () => (dispatch, getState) => {
-    console.log('get state',getState())
+  export const handleSendRequest = () => (dispatch, getState) => {
     const state = getState().main
     if (state.requestConfig.callType === CallType.UNARY_CALL) {
       const requestConfig: RequestConfig<UnaryRequestBody> = {
@@ -70,17 +69,15 @@ export namespace mainActions {
       
       handler.initiateRequest()
       .then((response) => {
-        console.log('inside initiateResponse',response)
         dispatch(setGRPCResponse(response))
       })
     }
   }
 
-  export const setGRPCResponse = response => {
-    return {
+  export const setGRPCResponse = response => ({
     type: Type.SET_GRPC_RESPONSE,
     payload: response,
-  }};
+  });
 
   export const setMode = value => ({
     type: Type.HANDLE_SET_MODE,

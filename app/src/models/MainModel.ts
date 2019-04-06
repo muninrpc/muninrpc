@@ -22,8 +22,6 @@ export interface MainModel {
   selectedService: string;
   serviceTrie: Trie;
   serviceTrieInput: string;
-  trail: string;
-  // targetIP: string;
   // connectType: CallType | string;
   // packageDefinition: protoLoader.PackageDefinition;
 }
