@@ -42,8 +42,8 @@ export function Header(props: HeaderProps.Props, context?: any) {
   return (
     <div className="header">
       <div className="header-left">
-        <div className="trail">{props.baseConfig.grpcServerURI ? props.baseConfig.grpcServerURI : 'IP'}
-        {props.selectedService ? ` → ${props.selectedService}` : ''}
+        <div className="trail">{props.baseConfig.grpcServerURI ? `${props.baseConfig.grpcServerURI} →` : ''}
+        {props.selectedService ? `${props.selectedService}` : ''}
         {props.selectedRequest ? ` → ${props.selectedRequest}` : ''}
         </div>
         <div className="connection-display">{userConnectType}</div>
