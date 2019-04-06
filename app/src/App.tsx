@@ -2,37 +2,26 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
 import { mainActions } from "./actions";
-import { RootState } from "./reducers";
-import { MainModel } from "./models";
-import { omit } from "./utils";
+import { RootState } from "./models";
 import { Left, Right, Header } from "./components";
+import { RootAction, ReducerState } from "MyTypes";
 
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
 //   key => MainModel.Mode[key],
 // );
 
-export namespace App {
-  export interface Props {
-    main: RootState.mainState;
-    actions: mainActions;
-  }
-}
-
 type AppProps = {
-  main: RootState.mainState;
+  main: RootState;
   actions: mainActions;
 };
 
-const MapStateToProps = store => ({
+const MapStateToProps = (store: ReducerState) => ({
   responseMetrics: store.main.responseMetrics,
-  targetIP: store.main.targetIP,
   filePath: store.main.filePath,
-  connectType: store.main.connectType,
   mode: store.main.mode,
   serviceList: store.main.serviceList,
   messageList: store.main.messageList,
   serverResponse: store.main.serverResponse,
-  packageDefinition: store.main.packageDefinition,
   selectedService: store.main.selectedService,
   selectedRequest: store.main.selectedRequest,
   serviceTrie: store.main.serviceTrie,
@@ -48,7 +37,7 @@ const MapStateToProps = store => ({
   baseConfig: store.main.baseConfig,
 });
 
-const MapDispatchToProps = dispatch =>
+const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   bindActionCreators(
     {
       handleIPInput: mainActions.handleIPInput,
@@ -65,8 +54,8 @@ const MapDispatchToProps = dispatch =>
     dispatch,
   );
 
-class App extends React.Component<App.Props, {}> {
-  constructor(props: App.Props) {
+class App extends React.Component<AppProps, {}> {
+  constructor(props: AppProps) {
     super(props);
   }
   render() {

@@ -2,34 +2,30 @@ import * as protoLoader from "@grpc/proto-loader";
 import { CallType, BaseConfig, RequestConfig } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 
-export interface MainModel {
-  baseConfig: BaseConfig;
-  configArguments: { arguments: {} };
-  configElements: { arguments: {} };
-  filePath: string;
-  messageList: { [index: string]: protoLoader.MessageTypeDefinition };
-  messageTrie: Trie;
-  messageTrieInput: string;
-  messageRecommendations: string[];
-  mode: MainModel.Mode;
-  requestConfig: RequestConfig<any>;
-  requestTrie: Trie;
-  responseMetrics: string;
-  serviceList: { [index: string]: protoLoader.ServiceDefinition };
-  serviceRecommendations: string[];
-  serverResponse: object;
-  selectedRequest: string;
-  selectedService: string;
-  serviceTrie: Trie;
-  serviceTrieInput: string;
-  // connectType: CallType | string;
-  // packageDefinition: protoLoader.PackageDefinition;
-}
+export type RootState = {
+  readonly baseConfig: BaseConfig;
+  readonly configArguments: { arguments: {} };
+  readonly configElements: { arguments: {} };
+  readonly filePath: string;
+  readonly messageList: { [index: string]: protoLoader.MessageTypeDefinition };
+  readonly messageTrie: Trie;
+  readonly messageTrieInput: string;
+  readonly messageRecommendations: string[];
+  readonly mode: Mode;
+  readonly requestConfig: RequestConfig<any>;
+  readonly requestTrie: Trie;
+  readonly responseMetrics: string;
+  readonly serviceList: { [index: string]: protoLoader.ServiceDefinition };
+  readonly serviceRecommendations: string[];
+  readonly serverResponse: object;
+  readonly selectedRequest: string;
+  readonly selectedService: string;
+  readonly serviceTrie: Trie;
+  readonly serviceTrieInput: string;
+};
 
-export namespace MainModel {
-  export enum Mode {
-    SHOW_SERVICE = "SERVICE_AND_REQUEST",
-    SHOW_MESSAGES = "MESSAGES",
-    SHOW_SETUP = "SETUP",
-  }
+export enum Mode {
+  SHOW_SERVICE = "SERVICE_AND_REQUEST",
+  SHOW_MESSAGES = "MESSAGES",
+  SHOW_SETUP = "SETUP",
 }
