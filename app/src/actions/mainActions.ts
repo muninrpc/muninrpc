@@ -1,5 +1,5 @@
 import { action } from "typesafe-actions";
-import { Mode } from "../models/MainModel";
+import { Mode } from "../models";
 import {
   CallType,
   BaseConfig,

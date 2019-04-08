@@ -1,13 +1,12 @@
-// import { RootState } from "./state";
 import { mainActions } from "../actions";
-import { RootState, Mode } from "../models/MainModel";
+import { TabState, Mode } from "../models/TabModel";
 import * as pbActions from "../../lib/local/pbActions";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
 import * as Types from "MyTypes";
 
-const initialState: RootState = {
+const initialState: TabState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
   configArguments: { arguments: {} },
   configElements: { arguments: {} },
@@ -29,7 +28,7 @@ const initialState: RootState = {
   serviceTrieInput: "",
 };
 
-export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
+export const mainReducer = (state: TabState = initialState, action: Types.RootAction) => {
   switch (action.type) {
     case mainActions.Type.HANDLE_IP_INPUT: {
       return {

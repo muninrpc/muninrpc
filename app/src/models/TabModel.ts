@@ -2,7 +2,7 @@ import * as protoLoader from "@grpc/proto-loader";
 import { BaseConfig, RequestConfig } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 
-export type RootState = {
+export type TabState = {
   readonly baseConfig: BaseConfig;
   readonly configArguments: { arguments: {} };
   readonly configElements: { arguments: {} };

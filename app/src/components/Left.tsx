@@ -2,7 +2,7 @@ import * as React from "react";
 import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
-import { Mode } from "../models/MainModel";
+import { Mode } from "../models/TabModel";
 import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
 import { BaseConfig } from "../../lib/local/grpcHandlerFactory";
