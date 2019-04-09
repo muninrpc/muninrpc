@@ -11,53 +11,97 @@ import {
 } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
-import { Test } from '../components/Test';
-
+import { LeftFactory } from '../components/Left';
+import { array } from "prop-types";
 
 const initialState: RootState.mainState = {
-
-  selectedTab: 0,
+  selectedTab: 'tab0',
   leftArray: [],
-  cleanLeft: {}
-
+  tabPrimaryKey: 0,
+  initialState: {
+    filePath: '',
+    serviceList: [],
+    messageList: [],
+    selectedService: '',
+    selectedRequest: '',
+    mode: '',
+    baseConfig: {},
+    configElements: {},
+    configArguments: {},
+    tabKey: null
+  }
 };
-
-export function TestFactory(props) {
-  return Test({
-    index: props.index,
-    removeTab: props.removeTab
-  })
-}
 
 export const mainReducer = (state = initialState, action) => {
   switch (action.type) {
 
     case mainActions.Type.ADD_NEW_TAB : {
+
       const newLeftArray = cloneDeep(state.leftArray)
-      newLeftArray.push( TestFactory({ pasta: Math.floor(Math.random() * 10), index: state.leftArray.length, removeTab: action.payload.removeFunc }) )
+      const newSelectedTab = 'tab' + state.tabPrimaryKey;
+      const newTabPrimaryKey = state.tabPrimaryKey + 1;
+      const leftEle = new LeftFactory({tabKey: newSelectedTab})
+      newLeftArray.push(leftEle)
+
+
       return ({
         ...state,
-        leftArray: newLeftArray
+        leftArray: newLeftArray,
+        tabPrimaryKey: newTabPrimaryKey,
+        selectedTab: newSelectedTab,
       })
     }
 
     case mainActions.Type.REMOVE_TAB : {
 
-      console.log('this is the supposed id:', action.payload)
+      // expect a payload of 'tabN' where N is the tabID
+      let newLeftArray = cloneDeep(state.leftArray);
+      let removeIdx;
+      let newSelectedTab = state.selectedTab;
 
-      const newLeftArray = cloneDeep(state.leftArray);
-      for(let i=action.payload; i<newLeftArray.length-1; i++) {
+      // first search for the tab to delete
+      newLeftArray.forEach( (ele, idx) => {
+        if(ele.key === action.payload) {
+          removeIdx = idx;
+        }
+      })
+      // logic if the deleted tab is currently selected
+
+      if( state.selectedTab === action.payload) {
+        // case - where there's nothing left to select
+        if(state.leftArray.length === 1) {
+          console.log('case0')
+          newSelectedTab = '';
+        // case - where you delete the last tab
+        } else if(removeIdx === newLeftArray.length - 1) {
+          console.log('case1')
+          newSelectedTab = state.leftArray[removeIdx - 1].key;
+        // all other cases
+        } else {
+          console.log('case2')
+          newSelectedTab = state.leftArray[removeIdx + 1].key;
+        }
+      }
+      // overwrite it with the consecutive elements
+      for(let i=removeIdx; i<newLeftArray.length - 1; i++) {
         newLeftArray[i] = newLeftArray[i+1];
-      } 
+      }
       newLeftArray.pop();
-
 
       return {
         ...state,
-        leftArray: newLeftArray
+        leftArray: newLeftArray,
+        selectedTab: newSelectedTab,
       }
     }
 
+    case mainActions.Type.SELECT_TAB : {
+      const newSelectedTab = action.payload
+      return {
+        ...state,
+        selectedTab: newSelectedTab
+      }
+    }
 
     default: {
       return state;

@@ -12,10 +12,12 @@ export namespace TestProps {
 
 export function Test(props) {
   return (
-    <div className={props.index}>
-      <button id={props.index} className="subtract" onClick={() => props.removeTab(props.index)}>-</button>
-      {props.pasta} is really {props.index}
+    <div className={'tab' + props.tabKey}>
+      my primary key is {props.tabKey}
     </div>
   )
 } 
+
+
+
 

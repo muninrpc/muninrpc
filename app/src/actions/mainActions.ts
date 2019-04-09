@@ -10,20 +10,25 @@ import {
 export namespace mainActions {
   export enum Type {
     ADD_NEW_TAB = "ADD_NEW_TAB",
-    REMOVE_TAB = "REMOVE_TAB"
+    REMOVE_TAB = "REMOVE_TAB",
+    SELECT_TAB = "SELECT_TAB",
   }
 
-  export const addNewTab = (func) => ({
+  export const addNewTab = (funcs) => ({
     type: Type.ADD_NEW_TAB,
-    payload: { removeFunc: func }
+    payload: { tabFuncs: funcs }
   })
 
-  export const removeTab = (id) => {
-    return {
+  export const removeTab = (id) => ({
     type: Type.REMOVE_TAB,
     payload: id
-    }
-  }
+  })
+
+  export const selectTab = (id) => ({
+    type: Type.SELECT_TAB,
+    payload: id
+  })
+
 }
 
 export type mainActions = Omit<typeof mainActions, "Type">;

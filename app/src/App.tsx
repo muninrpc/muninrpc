@@ -36,6 +36,10 @@ const MapDispatchToProps = dispatch =>
     {
       addNewTab: mainActions.addNewTab,
       removeTab: mainActions.removeTab,
+      selectTab: mainActions.selectTab,
+
+      handleProtoUpload: mainActions.handleProtoUpload,
+      handleIPInput: mainActions.handleIPInput
     },
     dispatch,
   );
@@ -43,13 +47,25 @@ const MapDispatchToProps = dispatch =>
 class App extends React.Component<App.Props, {}> {
   constructor(props: App.Props) {
     super(props);
+
+    //initialize with a fresh tab?
   }
-  render(props) {
+  render() {
+    let selectedIdx;
+    this.props.leftArray.forEach( (ele, idx) => {
+      if(ele.key === this.props.selectedTab) {
+        selectedIdx = idx;
+      }
+    })
+
     return (
       <div className="wrapper">
         <Header {...this.props} />
         <div className="app">
-          {this.props.leftArray}
+          <div className="left">
+            {this.props.leftArray[selectedIdx]}
+          </div>
+          <Right {...this.props} />
         </div>
       </div>
     );

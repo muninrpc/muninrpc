@@ -5,13 +5,18 @@ import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandler
 export interface HeaderProps{
   selectedTab: MainModel['selectedTab'];
   leftArray: MainModel['leftArray'];
+
   addNewTab: any;
   removeTab: any;
+  selectTab: any;
+
+  handleIPInput: any;
+  handleProtoUpload: any;
 }
 
 
 export function Header(props: HeaderProps, context?: any) {
-  const { removeTab, addNewTab, leftArray, selectedTab } = props
+  const { handleIPInput, handleProtoUpload, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props;
   // const { selectedRequest, selectedService } = props.leftArray[selectedTab];
 
   // let userConnectType;
@@ -37,15 +42,56 @@ export function Header(props: HeaderProps, context?: any) {
   //     userConnectType = "Select an RPC";
   //   }
   // }
-  
+
+  const tabArray = [];
+
+  leftArray.forEach( (tab) => { 
+    tabArray.push(
+      <div key={'button' + tab.key} className={tab.key === props.selectedTab ? 'tab selected' : 'tab'} onClick={ () => selectTab(tab.key) }>
+        {tab.key}
+        <button onClick={ 
+          (e) => {
+            e.stopPropagation();
+            removeTab(tab.key) 
+          } 
+        }>
+          x
+        </button>
+      </div>
+    )
+  });
 
   return (
     <div className="header">
-      <div className="header-tabs">
-        <div className="tab-box">
-          <button onClick={() => props.addNewTab(removeTab)}>+</button> 
+      <div className="header-top">
+        <div className="header-left">
+          <div className="trail">
+            {/* TRAIL */}
+          </div>
+          <div className="connection-display">
+            {/* {userConnectType} */}
+          </div>
+          <button
+            className="send-button"
+            // onClick={props.handleSendRequest}
+            // disabled={props.baseConfig.grpcServerURI.length ? false : true}
+          >
+            SEND REQUEST
+          </button>
+        </div>
+        <div className="header-right">
+          <h1>MuninRPC</h1>
+          <img className="logo" src="./src/assets/raven.png" />
         </div>
       </div>
+
+      <div className="header-tabs">
+        <div className="tab-box">
+          {tabArray}
+          <button onClick={() => props.addNewTab()}>+</button> 
+        </div>
+      </div>
+
     </div>
   );
 }
