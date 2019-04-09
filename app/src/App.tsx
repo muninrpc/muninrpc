@@ -7,6 +7,7 @@ import { MainModel } from "./models";
 import { omit } from "./utils";
 import { Left, Right, Header } from "./components";
 
+
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
 //   key => MainModel.Mode[key],
 // );
@@ -37,9 +38,6 @@ const MapDispatchToProps = dispatch =>
       addNewTab: mainActions.addNewTab,
       removeTab: mainActions.removeTab,
       selectTab: mainActions.selectTab,
-
-      handleProtoUpload: mainActions.handleProtoUpload,
-      handleIPInput: mainActions.handleIPInput
     },
     dispatch,
   );
@@ -47,7 +45,7 @@ const MapDispatchToProps = dispatch =>
 class App extends React.Component<App.Props, {}> {
   constructor(props: App.Props) {
     super(props);
-
+    this.props.addNewTab();
     //initialize with a fresh tab?
   }
   render() {

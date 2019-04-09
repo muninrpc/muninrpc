@@ -15,6 +15,7 @@ export namespace ServiceAndRequestProps {
     handleServiceTrie: any;
     serviceRecommendations: string[];
     serviceTrieInput: string;
+    requestTrieInput: string;
   }
 }
 
@@ -80,6 +81,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
             type="text"
             placeholder="type a service"
             onChange={e => props.handleServiceTrie(e.target.value)}
+            value={props.serviceTrieInput}
           />
         </div>
         <div
@@ -101,7 +103,11 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
       <div className="service-request-right">
         <h2>Request</h2>
         <div className="request-header">
-          <input type="text" placeholder="type a request" />
+          <input 
+            type="text" 
+            placeholder="type a request" 
+            value={props.requestTrieInput}
+          />
         </div>
         <div className="request-area">{requestListJSX}</div>
       </div>

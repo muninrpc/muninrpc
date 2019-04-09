@@ -40,9 +40,9 @@ enum Mode {
 }
 
 export const LeftFactory = (props) => {
-
   let closureState;
   if (!closureState) closureState = {
+    children: props.children,
     tabKey: props.tabKey,
     handlerContext: [],
     filePath: '',
@@ -61,11 +61,11 @@ export const LeftFactory = (props) => {
     messageTrieInput: "",
     
     requestTrie: new Trie(),
+    requestTrieInput: "",
     
     serviceRecommendations: [],
     serviceTrie: new Trie(),
     serviceTrieInput: "",
-
 
   }
 
@@ -74,21 +74,7 @@ export const LeftFactory = (props) => {
     // state management
     const [state, updateState] = useState(closureState);
     closureState = state;
-    console.log(state)
-
-    // mode management
-    const setMode = (val) => updateState({...state, mode: val})
-    let mode: React.ReactComponentElement<any, {}>;
-    if (props.mode === Mode.SHOW_SERVICE) {
-      mode = <ServiceAndRequest {...state} />;
-    }
-    if (props.mode === Mode.SHOW_MESSAGES) {
-      mode = <Messages {...state} />;
-    }
-    if (props.mode === Mode.SHOW_SETUP) {
-      mode = <Setup {...state} />; 
-    }
-     
+    
     // user input management
     const handleRequestClick = (payload) => {
 
@@ -231,7 +217,10 @@ export const LeftFactory = (props) => {
       messageTrieInput: val,
       messageRecommendations: state.messageTrie.recommend(val)
     })
-    const handleIPInput = (val) => updateState({...state, baseConfig: {...state.baseConfig, grpcServerURI: val } })
+    const handleIPInput = (val) => updateState({
+      ...state, 
+      baseConfig: {...state.baseConfig, grpcServerURI: val } 
+    })
     const handleProtoUpload = (file) => {
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
@@ -243,10 +232,8 @@ export const LeftFactory = (props) => {
       Object.keys(protoServices).forEach(service => {
         requestWordsArr = [...requestWordsArr, ...Object.keys(protoServices[service])];
       });
-
       const newRequestTrie = new Trie();
       newRequestTrie.insertArrayOfWords(requestWordsArr);
-
       const newMessageTrie = new Trie();
       newMessageTrie.insertArrayOfWords(Object.keys(protoMessages));
 
@@ -262,6 +249,27 @@ export const LeftFactory = (props) => {
       })
     
     }
+
+    // mode management
+    const setMode = (val) => updateState({...state, mode: val})
+    let mode: React.ReactComponentElement<any, {}>;
+    if (state.mode === Mode.SHOW_SERVICE) {
+      mode = <ServiceAndRequest 
+        {...state} 
+        handleServiceTrie={handleServiceTrie} 
+        handleMessageTrie={handleMessageTrie} 
+        handleRequestClick={handleRequestClick}
+        handleServiceClick={handleServiceClick}
+      />;
+    }
+    if (state.mode === Mode.SHOW_MESSAGES) {
+      mode = <Messages {...state} />;
+    }
+    if (state.mode === Mode.SHOW_SETUP) {
+      mode = <Setup {...state} />; 
+    }
+    
+    console.log(state)
 
     return (
       <div className={state.tabKey}>
@@ -313,13 +321,7 @@ export const LeftFactory = (props) => {
         </div>
 
         <div className="main">
-          <ServiceAndRequest 
-            {...state} 
-            handleServiceTrie={handleServiceTrie} 
-            handleMessageTrie={handleMessageTrie} 
-            handleRequestClick={handleRequestClick}
-            handleServiceClick={handleServiceClick}
-          />
+          {mode}
           {/* <Messages {...state} /> */}
           {/* <Setup {...state} /> */}
         </div>

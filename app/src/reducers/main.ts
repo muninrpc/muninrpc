@@ -13,8 +13,12 @@ import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
 import { array } from "prop-types";
+import ServiceAndRequest from '../components/ServiceAndRequest'
+import Messages from '../components/Messages' 
+import Setup from '../components/Setup'  
 
 const initialState: RootState.mainState = {
+  handlers: [],
   selectedTab: 'tab0',
   leftArray: [],
   tabPrimaryKey: 0,
@@ -40,9 +44,10 @@ export const mainReducer = (state = initialState, action) => {
       const newLeftArray = cloneDeep(state.leftArray)
       const newSelectedTab = 'tab' + state.tabPrimaryKey;
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
-      const leftEle = new LeftFactory({tabKey: newSelectedTab})
+      const leftEle = LeftFactory({
+        tabKey: newSelectedTab, 
+      })
       newLeftArray.push(leftEle)
-
 
       return ({
         ...state,
