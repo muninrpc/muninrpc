@@ -38,10 +38,7 @@ function AddItem(call, callback) {
  * Client side streamining
  */
 
-function CalculateAverage(
-  call: grpc.ServerReadableStream<any>,
-  callback: grpc.requestCallback<{ average: number }>
-) {
+function CalculateAverage(call: grpc.ServerReadableStream<any>, callback: grpc.requestCallback<{ average: number }>) {
   const numCache = [];
   call.on("data", data => {
     numCache.push(data.numb);
@@ -54,8 +51,24 @@ function CalculateAverage(
 
 /**
  *
- * @param {Duplex} call The stream for incoming and outgoing messages
+ *  Server side streaming
+ *
  */
+
+function TestServerStream(call: grpc.ServerWriteableStream<any>) {
+  const responseArr = [{ numb: 1 }, { numb: 2 }, { numb: 3 }, { numb: 4 }, { numb: 5 }];
+  responseArr.forEach(val => {
+    call.write(val);
+  });
+  call.end();
+}
+
+/**
+ *
+ * Bi-directional Streaming
+ *
+ */
+
 function ItemStreamer(call: grpc.ServerDuplexStream<any, any>) {
   console.log("stream open");
   let counter = 0;
@@ -64,7 +77,6 @@ function ItemStreamer(call: grpc.ServerDuplexStream<any, any>) {
   });
   call.on("end", () => {
     call.end();
-    console.log("stream closed");
   });
 }
 
@@ -74,7 +86,8 @@ export function getServer(): grpc.Server {
     GetList: GetList,
     AddItem: AddItem,
     ItemStreamer: ItemStreamer,
-    CalculateAverage: CalculateAverage
+    CalculateAverage: CalculateAverage,
+    TestServerStream: TestServerStream
   });
   return server;
 }
