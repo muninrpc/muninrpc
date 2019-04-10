@@ -18,7 +18,6 @@ export interface RequestConfig<
   reqBody: T;
 }
 
-//if request body has only an argument, then it is a unary request
 export interface UnaryRequestBody {
   argument: object;
 }
@@ -79,9 +78,9 @@ abstract class GrpcHandler<
     this.serviceName = config.serviceName;
     this.requestConfig = config.reqBody;
     this.requestName = config.requestName;
-    //loadPackageDefinition is native to 'grpc' library
-    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName] as typeof grpc.Client;
-    // ???
+    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[
+      this.packageName
+    ] as typeof grpc.Client; //check typeof?
     this.client = new this.loadedPackage[this.serviceName](
       this.grpcServerURI,
       grpc.credentials.createInsecure(),

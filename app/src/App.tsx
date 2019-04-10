@@ -6,6 +6,7 @@ import { RootState } from "./models";
 import { Left, Right, Header } from "./components";
 import { RootAction, ReducerState } from "MyTypes";
 
+
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
 //   key => MainModel.Mode[key],
 // );
@@ -15,41 +16,20 @@ type AppProps = {
   actions: mainActions;
 };
 
-const MapStateToProps = (store: ReducerState) => ({
-  responseMetrics: store.main.responseMetrics,
-  filePath: store.main.filePath,
-  mode: store.main.mode,
-  serviceList: store.main.serviceList,
-  messageList: store.main.messageList,
-  serverResponse: store.main.serverResponse,
-  selectedService: store.main.selectedService,
-  selectedRequest: store.main.selectedRequest,
-  serviceTrie: store.main.serviceTrie,
-  serviceRecommendations: store.main.serviceRecommendations,
-  serviceTrieInput: store.main.serviceTrieInput,
-  requestTrie: store.main.requestTrie,
-  messageTrie: store.main.messageTrie,
-  messageRecommendations: store.main.messageRecommendations,
-  messageTrieInput: store.main.messageTrieInput,
-  configArguments: store.main.configArguments,
-  configElements: store.main.configElements,
-  requestConfig: store.main.requestConfig,
-  baseConfig: store.main.baseConfig,
+const MapStateToProps = store => ({
+
+  selectedTab: store.main.selectedTab,
+  leftArray: store.main.leftArray,
+  cleanLeft: store.main.cleanLeft
+
 });
 
 const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   bindActionCreators(
     {
-      handleIPInput: mainActions.handleIPInput,
-      handleConfigInput: mainActions.handleConfigInput,
-      handleProtoUpload: mainActions.handleProtoUpload,
-      handleServiceClick: mainActions.handleServiceClick,
-      handleRequestClick: mainActions.handleRequestClick,
-      handleRepeatedClick: mainActions.handleRepeatedClick,
-      handleSendRequest: mainActions.handleSendRequest,
-      setMode: mainActions.setMode,
-      handleServiceTrie: mainActions.handleServiceTrie,
-      handleMessageTrie: mainActions.handleMessageTrie,
+      addNewTab: mainActions.addNewTab,
+      removeTab: mainActions.removeTab,
+      selectTab: mainActions.selectTab,
     },
     dispatch,
   );
@@ -57,13 +37,24 @@ const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
 class App extends React.Component<AppProps, {}> {
   constructor(props: AppProps) {
     super(props);
+    this.props.addNewTab();
+    //initialize with a fresh tab?
   }
   render() {
+    let selectedIdx;
+    this.props.leftArray.forEach( (ele, idx) => {
+      if(ele.key === this.props.selectedTab) {
+        selectedIdx = idx;
+      }
+    })
+
     return (
       <div className="wrapper">
         <Header {...this.props} />
         <div className="app">
-          <Left {...this.props} />
+          <div className="left">
+            {this.props.leftArray[selectedIdx]}
+          </div>
           <Right {...this.props} />
         </div>
       </div>

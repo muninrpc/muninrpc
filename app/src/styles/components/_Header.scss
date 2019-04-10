@@ -1,94 +1,129 @@
 .header {
   display: flex;
-  flex-flow: row nowrap;
-  position: sticky;
-  height: 75px;
-  width: 100%;
-  background: black;
+  flex-flow: column nowrap;
   margin-bottom: 50px;
+  
+  .header-top {
 
-  .header-left {
-    width: 70%;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: flex-start;
-    align-content: space-around;
-    align-items: center;
-    margin-left: 30px;
+    position: sticky;
+    height: 75px;
+    width: 100%;
+    background-image: linear-gradient(to right, #434343 0%, black 100%);
 
-    button {
-      min-width: 140px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-left: 25px;
-      margin-right: 20px;
-      padding: 4px 20px;
-      background: $primary-color;
-      color: white;
-      box-shadow: 5px;
-      border: none;
-      transition: 0.2s ease all;
-    }
-    button:hover {
-      color: $primary-color;
-      background: white;
-
-    }
-    button:active {
-      color: darken($primary-color, 20%);
-    }
-    button:disabled {
-      background: white;
-      border: 1px solid grey;
-      color: darkgrey;
-    }
-  
-    .connection-display {
-      min-width: 130px;
-      margin-left: 25px;
-      border-radius: 6px;
-      opacity: 0.9;
+    .header-left {
+      width: 70%;
       display: flex;
-      justify-content: center;
-      text-align: center;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-content: space-around;
       align-items: center;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #005AA7;
-      background: white;
-      padding: 7px 20px; 
+      margin-left: 30px;
+
+      button {
+        min-width: 140px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-left: 25px;
+        margin-right: 20px;
+        padding: 4px 20px;
+        background: $primary-color;
+        color: white;
+        box-shadow: 5px;
+        border: none;
+        transition: 0.2s ease all;
+      }
+      button:hover {
+        color: $primary-color;
+        background: white;
+
+      }
+      button:active {
+        color: darken($primary-color, 20%);
+      }
+      button:disabled {
+        background: white;
+        border: 1px solid grey;
+        color: darkgrey;
+      }
+    
+      .connection-display {
+        min-width: 130px;
+        margin-left: 25px;
+        border-radius: 6px;
+        opacity: 0.9;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        align-items: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #005AA7;
+        background: white;
+        padding: 7px 20px; 
+      }
+      .trail {
+        height: 1.7rem;
+        flex-grow: 1;
+        padding: 5px;
+        color: black;
+        background: white;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        white-space: nowrap;
+      }
+      .trail::-webkit-scrollbar {
+        width: auto;
+        height: 5px;
+      }
+      .trail::-webkit-scrollbar-thumb {
+        background: black;
+      }
     }
-    .trail {
-      height: 1.7rem;
-      flex-grow: 1;
-      padding: 5px;
-      color: black;
-      background: white;
-      overflow-x: scroll;
-      overflow-y: hidden;
-      white-space: nowrap;
-    }
-    .trail::-webkit-scrollbar {
-      width: auto;
-      height: 5px;
-    }
-    .trail::-webkit-scrollbar-thumb {
-      background: black;
+
+    .header-right {
+      width: 30%;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+      margin-right: 30px;
+
+      img {
+        margin-left: 30px;
+        height: 30px; 
+        width: 30px;
+      }
     }
   }
 
-  .right {
-    width: 30%;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    margin-right: 30px;
+  .header-tabs {
 
-    img {
-      margin-left: 30px;
-      height: 30px; 
-      width: 30px;
+    .tab-box {
+      display: flex;
+      flex-flow: row wrap;
+      border: 1px solid red;  
+      height: 75px;
+      
+      .tab {
+        width: auto;
+        padding: 5px 10px;
+        border: 1px solid black;
+        transition: 0.2s ease all;
+      }
+      .tab:hover {
+        color: white;
+        background: $primary-color;
+      }
+
+      .selected {
+        color: white;
+        background: $primary-color;
+      }
+      .selected:hover {
+        background: darken($primary-color, 20%);
+      }
     }
   }
 }
