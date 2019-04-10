@@ -6,6 +6,7 @@ import Setup from "./Setup";
 import * as pbActions from "../../lib/local/pbActions";
 import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
+import { parseService } from "../utils/parseService"
 import { mainActions } from "../actions";
 import {
   CallType,
@@ -15,7 +16,6 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import * as cloneDeep from "lodash.clonedeep";
-import * as Types from "MyTypes";
 import { render } from "react-dom";
 
 
@@ -42,8 +42,9 @@ enum Mode {
 export const LeftFactory = (props) => {
   let closureState;
   if (!closureState) closureState = {
-    children: props.children,
     tabKey: props.tabKey,
+    getTabState: props.getTabState,
+
     handlerContext: [],
     filePath: '',
     serviceList: {},
@@ -60,6 +61,7 @@ export const LeftFactory = (props) => {
     messageTrie: new Trie(),
     messageTrieInput: "",
     
+    requestRecommendations: [],
     requestTrie: new Trie(),
     requestTrieInput: "",
     
@@ -74,12 +76,12 @@ export const LeftFactory = (props) => {
     // state management
     const [state, updateState] = useState(closureState);
     closureState = state;
-    
+    state.getTabState({...cloneDeep(closureState)})
+
     // user input management
     const handleRequestClick = (payload) => {
 
       const { requestStream, responseStream } = state.serviceList[payload.service][payload.request];
-
       let newConnectType: string;
 
       if (requestStream && responseStream) {
@@ -94,76 +96,15 @@ export const LeftFactory = (props) => {
         newConnectType = "ERROR";
       }
 
-      // logic for assembling the arguments object
-      function parseService(typeArray, configArguments, configElements) {
-        // 5 possible cases:
-        // case: fields array is empty
-        if (typeArray.field.length === 0) {
-          configArguments = null;
-          configElements[typeArray.name] = {
-            name: typeArray.name,
-            type: "TYPE_MESSAGE",
-            label: "LABEL_OPTIONAL",
-          };
-        } else {
-          typeArray.field.forEach(f => {
-            // case: not a message and not repeating
-            if (f.type !== "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
-              configArguments[f.name] = null;
-              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
-              configElements[f.name] = {
-                messageName: typeArray.name,
-                type: f.type,
-                label: f.label,
-              };
-            }
-            // case: not a message and repeating
-            if (f.type !== "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
-              configArguments[f.name] = [null];
-              // if(!configElements[typeArray.name]) configElements[typeArray.name] = {}
-              configElements[f.name] = {
-                name: f.name,
-                messageName: typeArray.name,
-                type: f.type,
-                label: f.label,
-              };
-            }
-            // case: message and not repeating
-            if (f.type === "TYPE_MESSAGE" && f.label !== "LABEL_REPEATED") {
-              configArguments[f.name] = {};
-              // if(!configElements[f.name]) configElements[f.name] = {}
-              configElements[f.name] = {
-                name: f.name,
-                label: f.label,
-                type: f.type,
-                typeName: f.typeName,
-              };
-              parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name]);
-            }
-            // case: message and repeating
-            if (f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
-              configArguments[f.name] = [{}];
-              configElements[f.name] = [
-                {
-                  messageName: typeArray.name,
-                  label: f.label,
-                  type: f.type,
-                  typeName: f.typeName,
-                },
-              ];
-              parseService(state.messageList[f.typeName].type, configArguments[f.name][0], configElements[f.name][0]);
-            }
-          });
-        }
-      }
-
       let newConfigArguments = { arguments: {} };
       let newConfigElements = { arguments: {} };
 
+      // mutates newConfigArgs and newConfigEles to reflect the proto file
       parseService(
         state.serviceList[payload.service][payload.request].requestType.type,
         newConfigArguments.arguments,
         newConfigElements.arguments,
+        state
       );
 
       updateState({
@@ -217,15 +158,22 @@ export const LeftFactory = (props) => {
       messageTrieInput: val,
       messageRecommendations: state.messageTrie.recommend(val)
     })
+    const handleRequestTrie = (val) => updateState({
+      ...state,
+      requestTrieInput: val,
+      // requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
+    })
     const handleIPInput = (val) => updateState({
       ...state, 
       baseConfig: {...state.baseConfig, grpcServerURI: val } 
     })
     const handleProtoUpload = (file) => {
+      // handle file
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
       const { protoServices, protoMessages } = pbActions.parsePackageDefinition(packageDefinition);
 
+      // populate tries
       const newServiceTrie = new Trie();
       newServiceTrie.insertArrayOfWords(Object.keys(protoServices));
       let requestWordsArr: string[] = [];
@@ -247,7 +195,87 @@ export const LeftFactory = (props) => {
         messageTrie: newMessageTrie,
         baseConfig: { ...state.baseConfig, packageDefinition: packageDefinition },
       })
-    
+    }
+
+    const handleRepeatedClick = (payload) => {
+      let keys = payload.id.split(".").slice(1);
+      function findNestedValue(context, keyArray) {
+        // base case
+        if (keyArray.length === 1) {
+          return context;
+        }
+        // recu case
+        if (keyArray[0].match("@")) {
+          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+          let con = keyArray[0];
+          con = con.match(/(.+)@/)[1];
+          return findNestedValue(context[con][loc], keyArray.slice(1));
+        } else {
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+        }
+      }
+
+      // find the correct location
+      let context = findNestedValue(state.configArguments.arguments, keys);
+      let baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
+      let baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+
+      // console.log(context)
+      // console.log(baseKey)
+      // console.log(baseLoc)
+
+      if (payload.request === "add") {
+        context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length - 1]);
+        context[baseKey][context[baseKey].length-1] = ''
+      }
+
+      if (payload.request === "remove") {
+        for (let i = baseLoc; i < context[baseKey].length - 1; i++) {
+          context[baseKey][i] = context[baseKey][i + 1];
+        }
+        context[baseKey].pop();
+      }
+
+      const newConfigArguments = cloneDeep(state.configArguments);
+
+      updateState({
+        ...state,
+        configArguments: newConfigArguments,
+      });
+    }
+
+    const handleConfigInput = (payload) => {
+      let keys = payload.id.split(".").slice(1);
+      function findNestedValue(context, keyArray) {
+        // base case
+        if (keyArray.length === 1) {
+          return context;
+        }
+        // recu case
+        if (keyArray[0].match("@")) {
+          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+          let con = keyArray[0];
+          con = con.match(/(.+)@/)[1];
+          return findNestedValue(context[con][loc], keyArray.slice(1));
+        } else {
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+        }
+      }
+
+      // find the correct location
+      let context = findNestedValue(state.configArguments.arguments, keys);
+
+      if (keys[keys.length - 1].includes("@")) {
+        let key = keys[keys.length - 1].match(/(.+)@/)[1];
+        let pos = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+        context[key][pos] = payload.value;
+      } else {
+        context[keys[keys.length - 1]] = payload.value;
+      }
+
+      updateState({
+        ...state,
+      })
     }
 
     // mode management
@@ -256,7 +284,8 @@ export const LeftFactory = (props) => {
     if (state.mode === Mode.SHOW_SERVICE) {
       mode = <ServiceAndRequest 
         {...state} 
-        handleServiceTrie={handleServiceTrie} 
+        handleServiceTrie={handleServiceTrie}
+        handleRequestTrie={handleRequestTrie} 
         handleMessageTrie={handleMessageTrie} 
         handleRequestClick={handleRequestClick}
         handleServiceClick={handleServiceClick}
@@ -266,14 +295,16 @@ export const LeftFactory = (props) => {
       mode = <Messages {...state} />;
     }
     if (state.mode === Mode.SHOW_SETUP) {
-      mode = <Setup {...state} />; 
+      mode = <Setup 
+        {...state} 
+        handleRepeatedClick={handleRepeatedClick}
+        handleConfigInput={handleConfigInput}
+      />; 
     }
-    
-    console.log(state)
 
     return (
-      <div className={state.tabKey}>
-      <h1 style={ {color: 'black'} }>{state.tabKey}</h1>
+      <div id="tab" className={state.tabKey}>
+      <h1 onClick={() => console.log(state)} style={ {color: 'black'} }>{state.tabKey}</h1>
         <div className="input-header">
           <div className="address-box">
             <h3>Target Server IP</h3>

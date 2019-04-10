@@ -1,22 +1,20 @@
 import * as React from "react";
 import * as protoLoader from "@grpc/proto-loader";
 
-export namespace SetupProps {
-  export interface Props {
-    serviceList: { [index: string]: protoLoader.ServiceDefinition };
-    messageList: any;
-    selectedService: string;
-    selectedRequest: string;
+export interface SetupProps {
+  serviceList: { [index: string]: protoLoader.ServiceDefinition };
+  messageList: any;
+  selectedService: string;
+  selectedRequest: string;
 
-    configElements: any;
-    configArguments: any;
+  configElements: any;
+  configArguments: any;
 
-    handleRepeatedClick: any;
-    handleConfigInput: any;
-  }
+  handleRepeatedClick: any;
+  handleConfigInput: any;
 }
 
-export default function Setup(props: SetupProps.Props, context?: any) {
+export default function Setup(props: SetupProps, context?: any) {
   const {
     handleConfigInput,
     handleRepeatedClick,
@@ -34,10 +32,14 @@ export default function Setup(props: SetupProps.Props, context?: any) {
     function findNestedValue(context, keyArray) {
       // base case
       if (keyArray.length === 1) {
-        let loc = Number(keyArray[0].match(/\d+$/)[0]);
-        let con = keyArray[0];
-        con = con.match(/(.+)@/)[1];
-        return context[con][loc];
+        if(keyArray[0].match(/\d+$/)){
+          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+          let con = keyArray[0];
+          con = con.match(/(.+)@/)[1];
+          return context[con][loc];
+        } else {
+          return context[keyArray[0]]
+        }
       }
       // recu case
       if (keyArray[0].match("@")) {
@@ -215,6 +217,10 @@ export default function Setup(props: SetupProps.Props, context?: any) {
                   </div>
                   <input
                     id={path + "." + field}
+                    value={findNestedValue(
+                      props.configArguments.arguments,
+                      (path + "." + field).split(".").slice(1),
+                    )}
                     className={pos}
                     onChange={e =>
                       handleConfigInput({ id: path + "." + field, value: e.target.value })

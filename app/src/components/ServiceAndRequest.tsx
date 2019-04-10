@@ -13,9 +13,11 @@ export namespace ServiceAndRequestProps {
     handleServiceClick: any;
     handleRequestClick: any;
     handleServiceTrie: any;
+    handleRequestTrie: any;
     serviceRecommendations: string[];
     serviceTrieInput: string;
     requestTrieInput: string;
+    
   }
 }
 
@@ -105,7 +107,8 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
         <div className="request-header">
           <input 
             type="text" 
-            placeholder="type a request" 
+            placeholder="type a request"
+            onChange={e => props.handleRequestTrie(e.target.value)} 
             value={props.requestTrieInput}
           />
         </div>

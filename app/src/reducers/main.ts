@@ -22,30 +22,30 @@ const initialState: RootState.mainState = {
   selectedTab: 'tab0',
   leftArray: [],
   tabPrimaryKey: 0,
-  initialState: {
-    filePath: '',
-    serviceList: [],
-    messageList: [],
-    selectedService: '',
-    selectedRequest: '',
-    mode: '',
-    baseConfig: {},
-    configElements: {},
-    configArguments: {},
-    tabKey: null
-  }
+  serverResponse: {},
+  responseMetrics: '',
+  activeTab: {}
 };
 
 export const mainReducer = (state = initialState, action) => {
   switch (action.type) {
 
-    case mainActions.Type.ADD_NEW_TAB : {
+    case mainActions.Type.GET_TAB_STATE : {
+      return {
+        ...state,
+        activeTab: {
+          ...state.activeTab,
+          ...action.payload
+        }
+      }
+    }
 
+    case mainActions.Type.ADD_NEW_TAB : {
       const newLeftArray = cloneDeep(state.leftArray)
       const newSelectedTab = 'tab' + state.tabPrimaryKey;
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
       const leftEle = LeftFactory({
-        tabKey: newSelectedTab, 
+        tabKey: newSelectedTab, getTabState: action.payload
       })
       newLeftArray.push(leftEle)
 

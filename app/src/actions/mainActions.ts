@@ -12,12 +12,22 @@ export namespace mainActions {
     ADD_NEW_TAB = "ADD_NEW_TAB",
     REMOVE_TAB = "REMOVE_TAB",
     SELECT_TAB = "SELECT_TAB",
+    GET_TAB_STATE = "GET_TAB_STATE"
   }
 
-  export const addNewTab = (funcs) => ({
-    type: Type.ADD_NEW_TAB,
-    payload: { tabFuncs: funcs }
-  })
+  export const getTabState = (state) => {
+    return {
+      type: Type.GET_TAB_STATE,
+      payload: state
+    }
+  }
+
+  export const addNewTab = (reducerFunc) => {
+    return {
+      type: Type.ADD_NEW_TAB,
+      payload: reducerFunc
+    }
+  }
 
   export const removeTab = (id) => ({
     type: Type.REMOVE_TAB,

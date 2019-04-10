@@ -5,7 +5,7 @@ import { mainActions } from "./actions";
 import { RootState } from "./reducers";
 import { MainModel } from "./models";
 import { omit } from "./utils";
-import { Left, Right, Header } from "./components";
+import { Right, Header } from "./components";
 
 
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
@@ -28,13 +28,14 @@ const MapStateToProps = store => ({
 
   selectedTab: store.main.selectedTab,
   leftArray: store.main.leftArray,
-  cleanLeft: store.main.cleanLeft
+  activeTab: store.main.activeTab
 
 });
 
 const MapDispatchToProps = dispatch =>
   bindActionCreators(
     {
+      getTabState: mainActions.getTabState,
       addNewTab: mainActions.addNewTab,
       removeTab: mainActions.removeTab,
       selectTab: mainActions.selectTab,
@@ -45,8 +46,10 @@ const MapDispatchToProps = dispatch =>
 class App extends React.Component<App.Props, {}> {
   constructor(props: App.Props) {
     super(props);
-    this.props.addNewTab();
-    //initialize with a fresh tab?
+  }
+  
+  componentDidMount() {
+    this.props.addNewTab(this.props.getTabState);
   }
   render() {
     let selectedIdx;
@@ -58,9 +61,9 @@ class App extends React.Component<App.Props, {}> {
 
     return (
       <div className="wrapper">
-        <Header {...this.props} />
+        <Header {...this.props} getTabState={this.props.getTabState} />
         <div className="app">
-          <div className="left">
+          <div className="left-half">
             {this.props.leftArray[selectedIdx]}
           </div>
           <Right {...this.props} />

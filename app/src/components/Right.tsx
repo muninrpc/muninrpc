@@ -12,8 +12,8 @@ export function Right(props: RightProps, context?: any) {
   return (
     <div className="right-half">
       <h2>Server Response</h2>
-      <div className="response-display"></div>
-      <div className="response-metrics"></div>
+      <div className="response-display">{props.serverResponse}</div>
+      <div className="response-metrics">{props.responseMetrics}</div>
     </div>
   );
 }
