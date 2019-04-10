@@ -1,7 +1,7 @@
 .header {
   display: flex;
   flex-flow: column nowrap;
-  margin-bottom: 50px;
+  margin-bottom: 25px;
   
   .header-top {
 
@@ -103,14 +103,22 @@
     .tab-box {
       display: flex;
       flex-flow: row wrap;
-      border: 1px solid red;  
-      height: 75px;
+      border-bottom: 3px solid lightgrey; 
+      height: 40px;
+      padding: 0 30px;
+      margin-top: 20px;
       
       .tab {
-        width: auto;
-        padding: 5px 10px;
-        border: 1px solid black;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-grow: 0.5;
+        padding: 0 10px;
+        margin-right: 20px;
         transition: 0.2s ease all;
+        padding-bottom: 0px;
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
       }
       .tab:hover {
         color: white;
@@ -124,6 +132,26 @@
       .selected:hover {
         background: darken($primary-color, 20%);
       }
+      .selected:active {
+        background: darken($primary-color, 30%);
+      }
+      
+
+      .add {
+        display: flex;
+        align-items: center;
+        margin-left: -10px;
+        margin-bottom: 5px;
+        padding: 0 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        transition: 0.3s all ease;
+      }
+      .add:hover {
+        color: white;
+        background: $primary-color;
+      }
+      
     }
   }
 }

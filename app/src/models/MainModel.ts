@@ -3,9 +3,11 @@ import { CallType, BaseConfig, RequestConfig } from "../../lib/local/grpcHandler
 import { Trie } from "../utils/trieClass";
 
 export interface MainModel {
-  initialState: any,
+  handlers: any[], // TODO: Find correct handler type
   selectedTab: string,
   leftArray: JSX.Element[],
   tabPrimaryKey: number,
-  handlers: any[], // TODO: Find correct handler type
+  serverResponse: any,
+  responseMetrics: string,
+  activeTab: any,
 }

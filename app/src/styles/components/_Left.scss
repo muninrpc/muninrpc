@@ -1,9 +1,20 @@
-.left {
+.left-half {
   display: flex;
   flex-flow: column nowrap;
   width: 70%;
   height: 100%;
   margin-right: 8%;
+
+  h1 {
+    margin-bottom: 20px;
+  }
+  
+
+  #tab {
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column nowrap;
+  }
 
   .input-header {
     display: flex;
@@ -151,6 +162,7 @@
   .main {
     flex-grow: 1;
     display: flex;
+    flex-grow: 1;
     width: 100%;
     background: white;
     border: 1px solid black;
