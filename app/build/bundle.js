@@ -1133,6 +1133,11 @@ __export(__webpack_require__(/*! ./Test */ "./app/src/components/Test.tsx"));
 Object.defineProperty(exports, "__esModule", { value: true });
 var redux_1 = __webpack_require__(/*! redux */ "./node_modules/redux/es/redux.js");
 var main_1 = __webpack_require__(/*! ./main */ "./app/src/reducers/main.ts");
+// NOTE: current type definition of Reducer in 'redux-actions' module
+// doesn't go well with redux@4
+// type CombinedReducerState = {
+//   readonly main: RootState;
+// };
 var rootReducer = redux_1.combineReducers({
     main: main_1.mainReducer,
 });
