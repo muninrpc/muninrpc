@@ -1,7 +1,7 @@
 
 // import { RootState } from "./state";
 import { mainActions } from "../actions";
-import { RootState, Mode } from "../models/MainModel";
+import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
 import {
@@ -15,14 +15,12 @@ import {
   GrpcHandlerFactory,
   StreamAction,
 } from "../../lib/local/grpcHandlerFactory";
-import { TabState, Mode } from "../models/TabModel";
 import * as pbActions from "../../lib/local/pbActions";
-import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as Types from "MyTypes";
 import { array } from "prop-types";
 
-const initialState: RootState.mainState = {
+const initialState: MainModel = {
   handlers: {},
   selectedTab: 'tab0',
   leftArray: [],
@@ -33,8 +31,7 @@ const initialState: RootState.mainState = {
   isStreaming: false
 };
 
-export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
-
+export const mainReducer = (state: MainModel = initialState, action: Types.RootAction) => {
 
   switch (action.type) {
 

@@ -1,1 +1,1 @@
-export * from "./TabModel";
+export * from "./MainModel";
