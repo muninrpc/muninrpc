@@ -4,7 +4,8 @@ import {
   BaseConfig,
   ClientStreamRequestBody,
   BidiAndServerStreamRequestBody,
-  BidiStreamHandler
+  BidiStreamHandler,
+  Observers,
 } from "../lib/local/grpcHandlerFactory";
 
 import { getServer } from "./grpc-server/grpc-server";
@@ -13,6 +14,22 @@ import * as path from "path";
 import { GrpcHandlerFactory } from "../lib/local/grpcHandlerFactory";
 import * as grpc from "grpc";
 import * as _ from "lodash";
+
+class Observer implements Observers {
+  private onUpdateCb: Function;
+  private onEndCb: Function;
+  constructor(onUpdateCb: Function, onEndCb: Function) {
+    this.onUpdateCb = onUpdateCb;
+    this.onEndCb = onEndCb;
+  }
+  update(o: object[]) {
+    this.onUpdateCb(o);
+  }
+
+  finalUpdate(o: object[]) {
+    this.onEndCb(o);
+  }
+}
 
 describe("test gRPC unary call", () => {
   let routeServer: grpc.Server;
@@ -34,18 +51,18 @@ describe("test gRPC unary call", () => {
     grpcServerURI: "localhost:50052",
     packageDefinition: packageDefinition,
     packageName: "todo",
-    serviceName: "ListActions"
+    serviceName: "ListActions",
   };
 
   it("should make a unary call with no arguments", async () => {
     const expected = {
-      items: [{ item: "clean the house" }, { item: "do laundry" }]
+      items: [{ item: "clean the house" }, { item: "do laundry" }],
     };
 
     const unaryCallConfig: RequestConfig<void> = {
       requestName: "GetList",
       callType: CallType.UNARY_CALL,
-      argument: {}
+      argument: {},
     };
 
     const mergedConfig = { ...baseConfig, ...unaryCallConfig };
@@ -57,13 +74,13 @@ describe("test gRPC unary call", () => {
 
   it("should make a unary call with arguments", async () => {
     const expected = {
-      items: [{ item: "clean the house" }, { item: "do laundry" }, { item: "more to do" }]
+      items: [{ item: "clean the house" }, { item: "do laundry" }, { item: "more to do" }],
     };
 
     const unaryCallConfig: RequestConfig<void> = {
       callType: CallType.UNARY_CALL,
       requestName: "AddItem",
-      argument: { item: "more to do" }
+      argument: { item: "more to do" },
     };
 
     const mergedConfig = { ...baseConfig, ...unaryCallConfig };
@@ -82,8 +99,8 @@ describe("test gRPC unary call", () => {
         onEndCb: data => {
           expect(data).toEqual({ average: 15 });
           done();
-        }
-      }
+        },
+      },
     };
 
     const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = { ...baseConfig, ...clientStreamConfig };
@@ -98,33 +115,40 @@ describe("test gRPC unary call", () => {
     writableStream.end();
   });
 
-  it("should create respond to a server side streaming request", done => {
+  it("should respond to a server side streaming request", done => {
     const testArr = [];
+    const onDataCb = (data: object[]) => {
+      testArr.push(data[data.length - 1]);
+      console.log("from observer", testArr[testArr.length - 1]);
+    };
+    const onEndCb = (data: object[]) => {
+      expect(testArr).toEqual([{ numb: 1 }, { numb: 2 }, { numb: 3 }, { numb: 4 }, { numb: 5 }]);
+      done();
+    };
+
     const serverStreamConfig: RequestConfig<BidiAndServerStreamRequestBody> = {
       callType: CallType.SERVER_STREAM,
       requestName: "TestServerStream",
       argument: {},
       streamConfig: {
-        onDataCb: data => {
-          testArr.push(data);
-        },
-        onEndCb: () => {
-          expect(testArr).toEqual([{ numb: 1 }, { numb: 2 }, { numb: 3 }, { numb: 4 }, { numb: 5 }]);
-          done();
-        }
-      }
+        onDataCb,
+        onEndCb,
+      },
     };
+
+    const testObserver = new Observer(onDataCb, onEndCb);
 
     const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody> = {
       ...baseConfig,
-      ...serverStreamConfig
+      ...serverStreamConfig,
     };
 
     const serverStreamHandler = GrpcHandlerFactory.createHandler(mergedConfig);
+    serverStreamHandler.registerObservers(testObserver);
     serverStreamHandler.initiateRequest();
   });
 
-  it("should test bidirectional streaming", done => {
+  xit("should test bidirectional streaming", done => {
     const testArr = [];
     const bidiStreamConfig: RequestConfig<BidiAndServerStreamRequestBody> = {
       callType: CallType.BIDI_STREAM,
@@ -141,16 +165,16 @@ describe("test gRPC unary call", () => {
             { msg: "spoon - count: 0" },
             { msg: "fork - count: 1" },
             { msg: "knife - count: 2" },
-            { msg: "plate - count: 3" }
+            { msg: "plate - count: 3" },
           ]);
           done();
-        }
-      }
+        },
+      },
     };
 
     const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody> = {
       ...baseConfig,
-      ...bidiStreamConfig
+      ...bidiStreamConfig,
     };
     const bidiStreamHandler = GrpcHandlerFactory.createHandler(mergedConfig) as BidiStreamHandler;
     bidiStreamHandler.initiateRequest();

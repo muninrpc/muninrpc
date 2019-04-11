@@ -31,6 +31,11 @@ export enum CallType {
   BIDI_STREAM = "BIDI_STREAM",
 }
 
+export interface Observers {
+  update: (o: object[]) => any;
+  finalUpdate: (o: object[]) => any;
+}
+
 abstract class GrpcHandler<T extends void | ClientStreamRequestBody | BidiAndServerStreamRequestBody> {
   protected grpcServerURI: string;
   protected packageDefinition: protoLoader.PackageDefinition;
@@ -75,7 +80,7 @@ class UnaryHandler extends GrpcHandler<void> {
    * The argument sent is located in the configuration file
    */
 
-  initiateRequest(): Promise<{}> {
+  public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
       this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
@@ -96,7 +101,7 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
     this.onEndCb = config.streamConfig.onEndCb;
   }
 
-  initiateRequest() {
+  public initiateRequest() {
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
         throw err;
@@ -112,7 +117,35 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
   }
 }
 
-class ServerStreamHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
+abstract class SubjectGrpcHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
+  private streamedData: object[];
+  private observers: Observers[];
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
+    super(config);
+    this.streamedData = [];
+    this.observers = [];
+  }
+
+  protected updateData(newData: object) {
+    this.streamedData.push(newData);
+  }
+
+  public registerObservers(obs: Observers) {
+    this.observers.push(obs);
+  }
+
+  protected notifyObservers(string?: "end") {
+    this.observers.forEach(observer => {
+      if (string === "end") {
+        observer.finalUpdate(this.streamedData);
+      } else {
+        observer.update(this.streamedData);
+      }
+    });
+  }
+}
+
+class ServerStreamHandler extends SubjectGrpcHandler {
   private onDataCb: (a: any) => any;
   private onEndCb: (a: any) => any;
   private readableStream: grpc.ClientReadableStream<any>;
@@ -123,18 +156,22 @@ class ServerStreamHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
     this.onEndCb = config.streamConfig.onEndCb;
   }
 
-  initiateRequest() {
+  public initiateRequest() {
     this.readableStream = this.client[this.requestName](this.args);
-    this.readableStream.on("data", data => {
-      this.onDataCb(data);
+    this.readableStream.on("data", (data: object) => {
+      this.updateData(data);
+      this.notifyObservers();
     });
     this.readableStream.on("end", data => {
-      this.onEndCb(data);
+      if (data) {
+        this.updateData(data);
+      }
+      this.notifyObservers("end");
     });
   }
 }
 
-export class BidiStreamHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
+export class BidiStreamHandler extends SubjectGrpcHandler {
   private onDataCb: (a: any) => any;
   private onEndCb: (a: any) => any;
   private bidiStream: grpc.ClientDuplexStream<any, any>;
@@ -145,13 +182,15 @@ export class BidiStreamHandler extends GrpcHandler<BidiAndServerStreamRequestBod
     this.onEndCb = config.streamConfig.onEndCb;
   }
 
-  initiateRequest() {
+  public initiateRequest() {
     this.bidiStream = this.client[this.requestName]();
     this.bidiStream.on("data", data => {
-      this.onDataCb(data);
+      this.updateData(data);
+      this.notifyObservers();
     });
     this.bidiStream.on("end", data => {
-      this.onEndCb(data);
+      this.updateData(data);
+      this.notifyObservers("end");
     });
     return this;
   }
