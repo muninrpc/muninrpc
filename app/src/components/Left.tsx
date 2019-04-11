@@ -125,13 +125,13 @@ export const LeftFactory = props => {
     const handleServiceClick = payload => {
       //deselects service upon clicking outside of service list
       if (payload.service === "") {
-        return {
+        updateState({
           ...state,
           selectedService: "",
           selectedRequest: "",
           baseConfig: { ...state.baseConfig, packageName: "", serviceName: "" },
           requestConfig: { ...state.requestConfig, requestName: "", callType: null },
-        };
+        });
       }
       updateState({
         ...state,
@@ -353,12 +353,10 @@ export const LeftFactory = props => {
 
         <div className="main">
           {mode}
-          {/* <Messages {...state} /> */}
-          {/* <Setup {...state} /> */}
         </div>
       </div>
     );
   }
-
   return <Left key={props.tabKey} {...props} />;
 };
+

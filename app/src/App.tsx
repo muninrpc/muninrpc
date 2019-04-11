@@ -11,37 +11,44 @@ import * as Types from "MyTypes";
 import { mainActions } from "./actions";
 import { RootState } from "./models";
 
+
+// const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
+//   key => MainModel.Mode[key],
+// );
+
+type AppProps = {
+  main: RootState;
+  actions: mainActions;
+};
+
 // import components
 import { Left, Right, Header } from "./components";
 
 type AppProps = RootState & mainActions;
 
+
 const MapStateToProps = store => ({
   selectedTab: store.main.selectedTab,
   leftArray: store.main.leftArray,
   activeTab: store.main.activeTab,
+  serverResponses: store.main.serverResponses,
+  handlers: store.main.handlers,
+  isStreaming: store.main.isStreaming
+
 });
 
-const MapDispatchToProps = (dispatch: Dispatch<Types.RootAction>) =>
-  bindActionCreators(
-    {
-      getTabState: mainActions.getTabState,
-      addNewTab: mainActions.addNewTab,
-      removeTab: mainActions.removeTab,
-      selectTab: mainActions.selectTab,
-    },
-    //@ts-ignore
-    dispatch,
-  );
+const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(mainActions, dispatch);
 
 class App extends React.Component<AppProps, {}> {
   constructor(props: AppProps) {
     super(props);
+    this.props.addNewTab(this.props.getTabState);
   }
 
   componentDidMount() {
-    this.props.addNewTab(this.props.getTabState);
+    
   }
+
   render() {
     let selectedIdx;
     this.props.leftArray.forEach((ele, idx) => {
@@ -52,7 +59,7 @@ class App extends React.Component<AppProps, {}> {
 
     return (
       <div className="wrapper">
-        <Header {...this.props} getTabState={this.props.getTabState} />
+        <Header {...this.props} getTabState={this.props.getTabState} toggleStream={this.props.toggleStream} />
         <div className="app">
           <div className="left-half">{this.props.leftArray[selectedIdx]}</div>
           <Right {...this.props} />

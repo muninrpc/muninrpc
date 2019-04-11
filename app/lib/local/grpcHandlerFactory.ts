@@ -1,12 +1,14 @@
 import * as grpc from "grpc";
 import * as protoLoader from "@grpc/proto-loader";
 
+//base config: properties that all config objects will have
 export interface BaseConfig {
   grpcServerURI: string;
   packageDefinition: protoLoader.PackageDefinition;
   packageName: string; // ex: todo
   serviceName: string; // ex: ListActions
 }
+
 
 export interface RequestConfig<T extends ClientStreamRequestBody | BidiAndServerStreamRequestBody | void> {
   requestName: string;
@@ -15,6 +17,7 @@ export interface RequestConfig<T extends ClientStreamRequestBody | BidiAndServer
   streamConfig?: T;
 }
 
+//if the req body has an action, then it will maintain an open connection
 export interface ClientStreamRequestBody {
   onEndCb: (a: any) => any;
 }
@@ -24,6 +27,7 @@ export interface BidiAndServerStreamRequestBody {
   onEndCb: (a: any) => any;
 }
 
+//enums for the 4 types of calls
 export enum CallType {
   UNARY_CALL = "UNARY_CALL",
   CLIENT_STREAM = "CLIENT_STREAM",
@@ -63,8 +67,10 @@ abstract class GrpcHandler<T extends void | ClientStreamRequestBody | BidiAndSer
     ) as grpc.Client;
   }
 
+  //all handlers will be able to initiate a request
   abstract initiateRequest();
 
+  //all handlers will close in the same way
   closeConnection() {
     this.client.close();
   }
@@ -202,6 +208,7 @@ export class BidiStreamHandler extends SubjectGrpcHandler {
   }
 }
 
+//factory function to create gRPC connections
 export class GrpcHandlerFactory {
   static createHandler(
     config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>,
