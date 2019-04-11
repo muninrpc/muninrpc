@@ -5,6 +5,7 @@ service ListActions {
   rpc AddItem (Item) returns (ItemList) {}
   // rpc RemoveItem(Item) returns (ItemList) {}
   rpc GetList(GetListParams) returns (ItemList) {}
+  rpc TestServerStream(NoFields) returns (stream Numbers) {}
   rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
   rpc CalculateAverage(stream Numbers) returns (Average) {}
   rpc Test(MessageRepeating) returns (MessageRepeating) {}
@@ -55,5 +56,5 @@ message Numbers {
 }
 
 message Average {
-  int32 average = 1;
+  int64 average = 1;
 }

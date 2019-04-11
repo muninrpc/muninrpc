@@ -1,11 +1,10 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
-import { mainActions } from "./actions";
-import { RootState } from "./reducers";
+import { actions } from "./actions";
 import { MainModel } from "./models";
 import { omit } from "./utils";
-import { Right, Header } from "./components";
+import * as Types from "MyTypes";
 
 
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
@@ -13,48 +12,47 @@ import { Right, Header } from "./components";
 // );
 
 type AppProps = {
-  main: RootState;
+  main: MainModel;
   actions: mainActions;
 };
 
-const MapStateToProps = store => ({
+// import components
+import { Right, Header } from "./components";
 
+const MapStateToProps = store => ({
   selectedTab: store.main.selectedTab,
   leftArray: store.main.leftArray,
   activeTab: store.main.activeTab,
-  serverResponses: store.main.serverResponses,
+  handlerInfo: store.main.handlerInfo,
   handlers: store.main.handlers,
   isStreaming: store.main.isStreaming
-
 });
 
-const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(mainActions, dispatch);
+const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(actions, dispatch);
 
 class App extends React.Component<AppProps, {}> {
   constructor(props: AppProps) {
     super(props);
     this.props.addNewTab(this.props.getTabState);
   }
-  
+
   componentDidMount() {
     
   }
 
   render() {
     let selectedIdx;
-    this.props.leftArray.forEach( (ele, idx) => {
-      if(ele.key === this.props.selectedTab) {
+    this.props.leftArray.forEach((ele, idx) => {
+      if (ele.key === this.props.selectedTab) {
         selectedIdx = idx;
       }
-    })
+    });
 
     return (
       <div className="wrapper">
-        <Header {...this.props} getTabState={this.props.getTabState} toggleStream={this.props.toggleStream} />
+        <Header {...this.props} />
         <div className="app">
-          <div className="left-half">
-            {this.props.leftArray[selectedIdx]}
-          </div>
+          <div className="left-half">{this.props.leftArray[selectedIdx]}</div>
           <Right {...this.props} />
         </div>
       </div>

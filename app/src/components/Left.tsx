@@ -6,7 +6,7 @@ import Setup from "./Setup";
 import * as pbActions from "../../lib/local/pbActions";
 import * as protoLoader from "@grpc/proto-loader";
 import { Trie } from "../utils/trieClass";
-import { parseService } from "../utils/parseService"
+import { parseService } from "../utils/parseService";
 import { mainActions } from "../actions";
 import {
   CallType,
@@ -16,21 +16,19 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import * as cloneDeep from "lodash.clonedeep";
-import { render } from "react-dom";
-
 
 interface LeftProps {
-  handlerContext: [],
-  tabKey: string,
-  filePath: string,
-  serviceList: [],
-  messageList: [],
-  selectedService: string,
-  selectedRequest: string,
-  mode: string,
-  baseConfig: {},
-  configElements: {},
-  configArguments: {} 
+  handlerContext: [];
+  tabKey: string;
+  filePath: string;
+  serviceList: [];
+  messageList: [];
+  selectedService: string;
+  selectedRequest: string;
+  mode: string;
+  baseConfig: {};
+  configElements: {};
+  configArguments: {};
 }
 
 enum Mode {
@@ -39,48 +37,47 @@ enum Mode {
   SHOW_SETUP = "SETUP",
 }
 
-export const LeftFactory = (props) => {
+export const LeftFactory = props => {
   let closureState;
-  if (!closureState) closureState = {
-    tabKey: props.tabKey,
-    getTabState: props.getTabState,
+  if (!closureState)
+    closureState = {
+      tabKey: props.tabKey,
+      getTabState: props.getTabState,
 
-    handlerContext: [],
-    filePath: '',
-    serviceList: {},
-    messageList: [],
-    selectedService: '',
-    selectedRequest: '',
-    mode: 'SERVICE_AND_REQUEST',
-    baseConfig: {},
+      handlerContext: [],
+      filePath: "",
+      serviceList: {},
+      messageList: [],
+      selectedService: "",
+      selectedRequest: "",
+      mode: "SERVICE_AND_REQUEST",
+      baseConfig: { grpcServerURI: 'localhost:50052' },
+      requestConfig: {},
 
-    configElements: {},
-    configArguments: {},
+      configElements: {},
+      configArguments: {},
 
-    messageRecommendations: [],
-    messageTrie: new Trie(),
-    messageTrieInput: "",
-    
-    requestRecommendations: [],
-    requestTrie: new Trie(),
-    requestTrieInput: "",
-    
-    serviceRecommendations: [],
-    serviceTrie: new Trie(),
-    serviceTrieInput: "",
+      messageRecommendations: [],
+      messageTrie: new Trie(),
+      messageTrieInput: "",
 
-  }
+      requestRecommendations: [],
+      requestTrie: new Trie(),
+      requestTrieInput: "",
 
-  function Left(props:LeftProps) {
-    
+      serviceRecommendations: [],
+      serviceTrie: new Trie(),
+      serviceTrieInput: "",
+    };
+
+  function Left(props: LeftProps) {
     // state management
     const [state, updateState] = useState(closureState);
     closureState = state;
-    state.getTabState({...cloneDeep(closureState)})
+    state.getTabState({ ...cloneDeep(closureState) });
 
     // user input management
-    const handleRequestClick = (payload) => {
-
+    const handleRequestClick = payload => {
       const { requestStream, responseStream } = state.serviceList[payload.service][payload.request];
       let newConnectType: string;
 
@@ -104,7 +101,7 @@ export const LeftFactory = (props) => {
         state.serviceList[payload.service][payload.request].requestType.type,
         newConfigArguments.arguments,
         newConfigElements.arguments,
-        state
+        state,
       );
 
       updateState({
@@ -124,9 +121,9 @@ export const LeftFactory = (props) => {
           callType: newConnectType,
         },
       });
-    }
+    };
 
-    const handleServiceClick = (payload) => {
+    const handleServiceClick = payload => {
       //deselects service upon clicking outside of service list
       if (payload.service === "") {
         updateState({
@@ -146,28 +143,32 @@ export const LeftFactory = (props) => {
           serviceName: payload.service.match(/\.(.+)/)[1],
         },
       });
-    }
+    };
 
-    const handleServiceTrie = (val) => updateState({
-      ...state,
-      serviceTrieInput: val,
-      serviceRecommendations: state.serviceTrie.recommend(val)
-    })
-    const handleMessageTrie = (val) => updateState({
-      ...state,
-      messageTrieInput: val,
-      messageRecommendations: state.messageTrie.recommend(val)
-    })
-    const handleRequestTrie = (val) => updateState({
-      ...state,
-      requestTrieInput: val,
-      // requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
-    })
-    const handleIPInput = (val) => updateState({
-      ...state, 
-      baseConfig: {...state.baseConfig, grpcServerURI: val } 
-    })
-    const handleProtoUpload = (file) => {
+    const handleServiceTrie = val =>
+      updateState({
+        ...state,
+        serviceTrieInput: val,
+        serviceRecommendations: state.serviceTrie.recommend(val),
+      });
+    const handleMessageTrie = val =>
+      updateState({
+        ...state,
+        messageTrieInput: val,
+        messageRecommendations: state.messageTrie.recommend(val),
+      });
+    const handleRequestTrie = val =>
+      updateState({
+        ...state,
+        requestTrieInput: val,
+        // requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
+      });
+    const handleIPInput = val =>
+      updateState({
+        ...state,
+        baseConfig: { ...state.baseConfig, grpcServerURI: val },
+      });
+    const handleProtoUpload = file => {
       // handle file
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
@@ -194,10 +195,10 @@ export const LeftFactory = (props) => {
         requestTrie: newRequestTrie,
         messageTrie: newMessageTrie,
         baseConfig: { ...state.baseConfig, packageDefinition: packageDefinition },
-      })
-    }
+      });
+    };
 
-    const handleRepeatedClick = (payload) => {
+    const handleRepeatedClick = payload => {
       let keys = payload.id.split(".").slice(1);
       function findNestedValue(context, keyArray) {
         // base case
@@ -226,7 +227,7 @@ export const LeftFactory = (props) => {
 
       if (payload.request === "add") {
         context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length - 1]);
-        context[baseKey][context[baseKey].length-1] = ''
+        context[baseKey][context[baseKey].length - 1] = "";
       }
 
       if (payload.request === "remove") {
@@ -242,9 +243,9 @@ export const LeftFactory = (props) => {
         ...state,
         configArguments: newConfigArguments,
       });
-    }
+    };
 
-    const handleConfigInput = (payload) => {
+    const handleConfigInput = payload => {
       let keys = payload.id.split(".").slice(1);
       function findNestedValue(context, keyArray) {
         // base case
@@ -275,36 +276,36 @@ export const LeftFactory = (props) => {
 
       updateState({
         ...state,
-      })
-    }
+      });
+    };
 
     // mode management
-    const setMode = (val) => updateState({...state, mode: val})
+    const setMode = val => updateState({ ...state, mode: val });
     let mode: React.ReactComponentElement<any, {}>;
     if (state.mode === Mode.SHOW_SERVICE) {
-      mode = <ServiceAndRequest 
-        {...state} 
-        handleServiceTrie={handleServiceTrie}
-        handleRequestTrie={handleRequestTrie} 
-        handleMessageTrie={handleMessageTrie} 
-        handleRequestClick={handleRequestClick}
-        handleServiceClick={handleServiceClick}
-      />;
+      mode = (
+        <ServiceAndRequest
+          {...state}
+          handleServiceTrie={handleServiceTrie}
+          handleRequestTrie={handleRequestTrie}
+          handleMessageTrie={handleMessageTrie}
+          handleRequestClick={handleRequestClick}
+          handleServiceClick={handleServiceClick}
+        />
+      );
     }
     if (state.mode === Mode.SHOW_MESSAGES) {
       mode = <Messages {...state} />;
     }
     if (state.mode === Mode.SHOW_SETUP) {
-      mode = <Setup 
-        {...state} 
-        handleRepeatedClick={handleRepeatedClick}
-        handleConfigInput={handleConfigInput}
-      />; 
+      mode = <Setup {...state} handleRepeatedClick={handleRepeatedClick} handleConfigInput={handleConfigInput} />;
     }
 
     return (
       <div id="tab" className={state.tabKey}>
-      <h1 onClick={() => console.log(state)} style={ {color: 'black'} }>{state.tabKey}</h1>
+        <h1 onClick={() => console.log(state)} style={{ color: "black" }}>
+          {state.tabKey}
+        </h1>
         <div className="input-header">
           <div className="address-box">
             <h3>Target Server IP</h3>
@@ -354,11 +355,9 @@ export const LeftFactory = (props) => {
         <div className="main">
           {mode}
         </div>
-
       </div>
-    )
+    );
   }
+  return <Left key={props.tabKey} {...props} />;
+};
 
-  return <Left key={props.tabKey} {...props} />
-
-}

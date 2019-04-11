@@ -1,6 +1,7 @@
+
 // import { RootState } from "./state";
-import { mainActions } from "../actions";
-import { RootState, Mode } from "../models/MainModel";
+import { mainActions, mainRequestActions } from "../actions";
+import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
 import {
@@ -14,20 +15,23 @@ import {
   GrpcHandlerFactory,
   StreamAction,
 } from "../../lib/local/grpcHandlerFactory";
+import * as pbActions from "../../lib/local/pbActions";
+import { Trie } from "../utils/trieClass";
+import * as Types from "MyTypes";
+import { array } from "prop-types";
 
-
-const initialState: RootState.mainState = {
+const initialState: MainModel = {
   handlers: {},
   selectedTab: 'tab0',
   leftArray: [],
   tabPrimaryKey: 0,
-  serverResponses: {},
+  handlerInfo: {},
   responseMetrics: '',
   activeTab: {},
-  isStreaming: false
 };
 
-export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
+export const mainReducer = (state: MainModel = initialState, action: Types.RootAction) => {
+
   switch (action.type) {
 
     case mainActions.Type.GET_TAB_STATE : {
@@ -43,8 +47,13 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
     case mainActions.Type.ADD_NEW_TAB : {
       const newLeftArray = cloneDeep(state.leftArray)
       const newSelectedTab = 'tab' + state.tabPrimaryKey;
-      const newServerResponses = cloneDeep(state.serverResponses);
-      newServerResponses[newSelectedTab] = {};
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
+      // set initial handler info
+      newHandlerInfo[newSelectedTab] = {
+        serverResponse: {},
+        isStreaming: false
+      }
+      // give location for handler to be stored
       state.handlers[newSelectedTab] = null;
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
       const leftEle = LeftFactory({
@@ -57,7 +66,7 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
         leftArray: newLeftArray,
         tabPrimaryKey: newTabPrimaryKey,
         selectedTab: newSelectedTab,
-        serverResponses: newServerResponses
+        handlerInfo: newHandlerInfo
       })
     }
 
@@ -112,66 +121,26 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
       }
     }
 
-    //Unused
-    // case mainActions.Type.HANDLE_SEND_REQUEST: {
-    //   const newHandlers = cloneDeep(state.handlers)
-    //   //Unary
-    //   if (state.activeTab.requestConfig.callType === CallType.UNARY_CALL) {
-    //     console.log('if')
-    //     const requestConfig: RequestConfig<UnaryRequestBody> = {
-    //       ...state.activeTab.requestConfig,
-    //       reqBody: { argument: state.activeTab.configArguments.arguments },
-    //     };
-    //     const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-    //       ...state.activeTab.baseConfig,
-    //       ...requestConfig,
-    //     };
-    //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-    //     newHandlers[state.selectedTab] = handler;
-    //     console.log('handler:', handler)
-    //   }
-
-    //   //Client Stream
-    //   if (state.activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
-    //     const requestConfig: RequestConfig<ClientStreamRequestBody> = {
-    //       ...state.activeTab.requestConfig,
-    //       reqBody: {
-    //         action: StreamAction.INITIATE
-    //         //maybe callback?
-    //       }
-    //     };
-    //     const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = {
-    //       ...state.activeTab.baseConfig,
-    //       ...requestConfig
-    //     };
-    //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        
-    //   }
-
-    //   return {
-    //     ...state,
-    //     handlers: newHandlers
-    //   }
-    // }
-
-    case mainActions.Type.SET_GRPC_RESPONSE: {
-      let newServerResponses = cloneDeep(state.serverResponses)
-      newServerResponses[state.selectedTab] = action.payload;
+    case mainRequestActions.Type.SET_GRPC_RESPONSE: {
+      let newHandlerInfo = cloneDeep(state.handlerInfo)
+      newHandlerInfo[state.selectedTab].serverResponse = action.payload;
       return {
         ...state,
-        serverResponses: newServerResponses
+        handlerInfo: newHandlerInfo
       };
     }
 
     case mainActions.Type.TOGGLE_STREAM: {
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
+      newHandlerInfo[state.selectedTab].isStreaming = action.payload;
       return {
         ...state,
-        isStreaming: action.payload
+        handlerInfo: newHandlerInfo
       }
     }
 
     default: {
       return state;
-    }
+    } 
   }
 };
