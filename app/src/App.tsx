@@ -1,69 +1,58 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
-import { mainActions } from "./actions";
-import { RootState } from "./models";
-import { Left, Right, Header } from "./components";
-import { RootAction, ReducerState } from "MyTypes";
+import { actions } from "./actions";
+import { MainModel } from "./models";
+import { omit } from "./utils";
+import * as Types from "MyTypes";
+
 
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
 //   key => MainModel.Mode[key],
 // );
 
 type AppProps = {
-  main: RootState;
+  main: MainModel;
   actions: mainActions;
 };
 
-const MapStateToProps = (store: ReducerState) => ({
-  responseMetrics: store.main.responseMetrics,
-  filePath: store.main.filePath,
-  mode: store.main.mode,
-  serviceList: store.main.serviceList,
-  messageList: store.main.messageList,
-  serverResponse: store.main.serverResponse,
-  selectedService: store.main.selectedService,
-  selectedRequest: store.main.selectedRequest,
-  serviceTrie: store.main.serviceTrie,
-  serviceRecommendations: store.main.serviceRecommendations,
-  serviceTrieInput: store.main.serviceTrieInput,
-  requestTrie: store.main.requestTrie,
-  messageTrie: store.main.messageTrie,
-  messageRecommendations: store.main.messageRecommendations,
-  messageTrieInput: store.main.messageTrieInput,
-  configArguments: store.main.configArguments,
-  configElements: store.main.configElements,
-  requestConfig: store.main.requestConfig,
-  baseConfig: store.main.baseConfig,
+// import components
+import { Right, Header } from "./components";
+
+const MapStateToProps = store => ({
+  selectedTab: store.main.selectedTab,
+  leftArray: store.main.leftArray,
+  activeTab: store.main.activeTab,
+  handlerInfo: store.main.handlerInfo,
+  handlers: store.main.handlers,
+  isStreaming: store.main.isStreaming
 });
 
-const MapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      handleIPInput: mainActions.handleIPInput,
-      handleConfigInput: mainActions.handleConfigInput,
-      handleProtoUpload: mainActions.handleProtoUpload,
-      handleServiceClick: mainActions.handleServiceClick,
-      handleRequestClick: mainActions.handleRequestClick,
-      handleRepeatedClick: mainActions.handleRepeatedClick,
-      handleSendRequest: mainActions.handleSendRequest,
-      setMode: mainActions.setMode,
-      handleServiceTrie: mainActions.handleServiceTrie,
-      handleMessageTrie: mainActions.handleMessageTrie,
-    },
-    dispatch,
-  );
+const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(actions, dispatch);
 
 class App extends React.Component<AppProps, {}> {
   constructor(props: AppProps) {
     super(props);
+    this.props.addNewTab(this.props.getTabState);
   }
+
+  componentDidMount() {
+    
+  }
+
   render() {
+    let selectedIdx;
+    this.props.leftArray.forEach((ele, idx) => {
+      if (ele.key === this.props.selectedTab) {
+        selectedIdx = idx;
+      }
+    });
+
     return (
       <div className="wrapper">
         <Header {...this.props} />
         <div className="app">
-          <Left {...this.props} />
+          <div className="left-half">{this.props.leftArray[selectedIdx]}</div>
           <Right {...this.props} />
         </div>
       </div>
