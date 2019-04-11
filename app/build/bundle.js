@@ -111,13 +111,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var grpc = __webpack_require__(/*! grpc */ "grpc");
-//types for the req body action
-var StreamAction;
-(function (StreamAction) {
-    StreamAction[StreamAction["INITIATE"] = 0] = "INITIATE";
-    StreamAction[StreamAction["SEND"] = 1] = "SEND";
-    StreamAction[StreamAction["KILL"] = 2] = "KILL";
-})(StreamAction = exports.StreamAction || (exports.StreamAction = {}));
 //enums for the 4 types of calls
 var CallType;
 (function (CallType) {
@@ -126,16 +119,16 @@ var CallType;
     CallType["SERVER_STREAM"] = "SERVER_STREAM";
     CallType["BIDI_STREAM"] = "BIDI_STREAM";
 })(CallType = exports.CallType || (exports.CallType = {}));
-//class for the object that will represent the connection to the gRPC server
 var GrpcHandler = /** @class */ (function () {
     function GrpcHandler(config) {
         this.grpcServerURI = config.grpcServerURI;
         this.packageDefinition = config.packageDefinition;
         this.packageName = config.packageName;
         this.serviceName = config.serviceName;
-        this.requestConfig = config.reqBody;
+        this.requestConfig = config.streamConfig;
         this.requestName = config.requestName;
-        this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName]; //check typeof?
+        this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName];
+        this.args = config.argument;
         this.client = new this.loadedPackage[this.serviceName](this.grpcServerURI, grpc.credentials.createInsecure());
     }
     //all handlers will close in the same way
@@ -147,18 +140,16 @@ var GrpcHandler = /** @class */ (function () {
 var UnaryHandler = /** @class */ (function (_super) {
     __extends(UnaryHandler, _super);
     function UnaryHandler(config) {
-        var _this = _super.call(this, config) || this;
-        _this.args = _this.requestConfig.argument;
-        return _this;
+        return _super.call(this, config) || this;
     }
     /**
      * InitiateRequest will send the unary request to the gRPC server.
      * The argument sent is located in the configuration file
      */
-    //requests return a promise
     UnaryHandler.prototype.initiateRequest = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            console.log(_this.args);
             _this.client[_this.requestName](_this.args, function (err, response) {
                 if (err) {
                     reject(err);
@@ -173,19 +164,18 @@ var ClientStreamHandler = /** @class */ (function (_super) {
     __extends(ClientStreamHandler, _super);
     function ClientStreamHandler(config) {
         var _this = _super.call(this, config) || this;
-        _this.cb = config.reqBody.callback;
-        _this.initiateRequest();
+        _this.onEndCb = config.streamConfig.onEndCb;
         return _this;
     }
-    //returns a stream that can be written onto until connection closes
     ClientStreamHandler.prototype.initiateRequest = function () {
         var _this = this;
         this.writableStream = this.client[this.requestName](function (err, response) {
             if (err) {
                 throw err;
             }
-            _this.cb(response);
+            _this.onEndCb(response);
         });
+        return this;
     };
     ClientStreamHandler.prototype.returnHandler = function () {
         return {
@@ -194,43 +184,77 @@ var ClientStreamHandler = /** @class */ (function (_super) {
     };
     return ClientStreamHandler;
 }(GrpcHandler));
+var SubjectGrpcHandler = /** @class */ (function (_super) {
+    __extends(SubjectGrpcHandler, _super);
+    function SubjectGrpcHandler(config) {
+        var _this = _super.call(this, config) || this;
+        _this.streamedData = [];
+        _this.observers = [];
+        return _this;
+    }
+    SubjectGrpcHandler.prototype.updateData = function (newData) {
+        this.streamedData.push(newData);
+    };
+    SubjectGrpcHandler.prototype.registerObservers = function (obs) {
+        this.observers.push(obs);
+    };
+    SubjectGrpcHandler.prototype.notifyObservers = function (string) {
+        var _this = this;
+        this.observers.forEach(function (observer) {
+            if (string === "end") {
+                observer.finalUpdate(_this.streamedData);
+            }
+            else {
+                observer.update(_this.streamedData);
+            }
+        });
+    };
+    return SubjectGrpcHandler;
+}(GrpcHandler));
 var ServerStreamHandler = /** @class */ (function (_super) {
     __extends(ServerStreamHandler, _super);
     function ServerStreamHandler(config) {
         var _this = _super.call(this, config) || this;
-        _this.cb = config.reqBody.callback;
-        _this.initiateRequest();
+        _this.onDataCb = config.streamConfig.onDataCb;
+        _this.onEndCb = config.streamConfig.onEndCb;
         return _this;
     }
     ServerStreamHandler.prototype.initiateRequest = function () {
         var _this = this;
-        this.readableStream = this.client[this.requestName](this.requestConfig.argument);
+        this.readableStream = this.client[this.requestName](this.args);
         this.readableStream.on("data", function (data) {
-            _this.cb(data);
+            _this.updateData(data);
+            _this.notifyObservers();
         });
-        this.readableStream.on("end", function () {
-            console.log("Connection Closed");
+        this.readableStream.on("end", function (data) {
+            if (data) {
+                _this.updateData(data);
+            }
+            _this.notifyObservers("end");
         });
     };
     return ServerStreamHandler;
-}(GrpcHandler));
+}(SubjectGrpcHandler));
 var BidiStreamHandler = /** @class */ (function (_super) {
     __extends(BidiStreamHandler, _super);
     function BidiStreamHandler(config) {
         var _this = _super.call(this, config) || this;
-        _this.cb = config.reqBody.callback;
-        _this.initiateRequest();
+        _this.onDataCb = config.streamConfig.onDataCb;
+        _this.onEndCb = config.streamConfig.onEndCb;
         return _this;
     }
     BidiStreamHandler.prototype.initiateRequest = function () {
         var _this = this;
-        this.bidiStream = this.client[this.requestName];
+        this.bidiStream = this.client[this.requestName]();
         this.bidiStream.on("data", function (data) {
-            _this.cb(data);
+            _this.updateData(data);
+            _this.notifyObservers();
         });
-        this.bidiStream.on("end", function () {
-            console.log("Connection Closed");
+        this.bidiStream.on("end", function (data) {
+            _this.updateData(data);
+            _this.notifyObservers("end");
         });
+        return this;
     };
     BidiStreamHandler.prototype.returnHandler = function () {
         return {
@@ -238,26 +262,24 @@ var BidiStreamHandler = /** @class */ (function (_super) {
         };
     };
     return BidiStreamHandler;
-}(GrpcHandler));
+}(SubjectGrpcHandler));
+exports.BidiStreamHandler = BidiStreamHandler;
 //factory function to create gRPC connections
 var GrpcHandlerFactory = /** @class */ (function () {
     function GrpcHandlerFactory() {
     }
     GrpcHandlerFactory.createHandler = function (config) {
-        //returns appropriate handler, depending on the connection type required
-        switch (config.callType) {
-            case CallType.UNARY_CALL: {
-                return new UnaryHandler(config);
-            }
-            case CallType.CLIENT_STREAM: {
-                return new ClientStreamHandler(config);
-            }
-            case CallType.SERVER_STREAM: {
-                return new ServerStreamHandler(config);
-            }
-            case CallType.BIDI_STREAM: {
-                return new BidiStreamHandler(config);
-            }
+        if (config.callType === CallType.UNARY_CALL) {
+            return new UnaryHandler(config);
+        }
+        if (config.callType === CallType.CLIENT_STREAM) {
+            return new ClientStreamHandler(config);
+        }
+        if (config.callType === CallType.SERVER_STREAM) {
+            return new ServerStreamHandler(config);
+        }
+        if (config.callType === CallType.BIDI_STREAM) {
+            return new BidiStreamHandler(config);
         }
     };
     return GrpcHandlerFactory;
@@ -366,16 +388,17 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_redux_1 = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
 var redux_1 = __webpack_require__(/*! redux */ "./node_modules/redux/es/redux.js");
 var actions_1 = __webpack_require__(/*! ./actions */ "./app/src/actions/index.ts");
+// import components
 var components_1 = __webpack_require__(/*! ./components */ "./app/src/components/index.ts");
 var MapStateToProps = function (store) { return ({
     selectedTab: store.main.selectedTab,
     leftArray: store.main.leftArray,
     activeTab: store.main.activeTab,
-    serverResponses: store.main.serverResponses,
+    handlerInfo: store.main.handlerInfo,
     handlers: store.main.handlers,
     isStreaming: store.main.isStreaming
 }); };
-var MapDispatchToProps = function (dispatch) { return redux_1.bindActionCreators(actions_1.mainActions, dispatch); };
+var MapDispatchToProps = function (dispatch) { return redux_1.bindActionCreators(actions_1.actions, dispatch); };
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
@@ -394,7 +417,7 @@ var App = /** @class */ (function (_super) {
             }
         });
         return (React.createElement("div", { className: "wrapper" },
-            React.createElement(components_1.Header, __assign({}, this.props, { getTabState: this.props.getTabState, toggleStream: this.props.toggleStream })),
+            React.createElement(components_1.Header, __assign({}, this.props)),
             React.createElement("div", { className: "app" },
                 React.createElement("div", { className: "left-half" }, this.props.leftArray[selectedIdx]),
                 React.createElement(components_1.Right, __assign({}, this.props)))));
@@ -416,11 +439,26 @@ exports.default = react_redux_1.connect(MapStateToProps, MapDispatchToProps)(App
 
 "use strict";
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./mainActions */ "./app/src/actions/mainActions.ts"));
+__export(__webpack_require__(/*! ./mainRequestActions */ "./app/src/actions/mainRequestActions.ts"));
+var mainActions_1 = __webpack_require__(/*! ./mainActions */ "./app/src/actions/mainActions.ts");
+var mainRequestActions_1 = __webpack_require__(/*! ./mainRequestActions */ "./app/src/actions/mainRequestActions.ts");
+exports.actions = __assign({}, mainActions_1.mainActions, mainRequestActions_1.mainRequestActions);
 
 
 /***/ }),
@@ -429,6 +467,38 @@ __export(__webpack_require__(/*! ./mainActions */ "./app/src/actions/mainActions
 /*!****************************************!*\
   !*** ./app/src/actions/mainActions.ts ***!
   \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var typesafe_actions_1 = __webpack_require__(/*! typesafe-actions */ "./node_modules/typesafe-actions/dist/index.umd.js");
+var mainActions;
+(function (mainActions) {
+    var Type;
+    (function (Type) {
+        Type["ADD_NEW_TAB"] = "ADD_NEW_TAB";
+        Type["REMOVE_TAB"] = "REMOVE_TAB";
+        Type["SELECT_TAB"] = "SELECT_TAB";
+        Type["GET_TAB_STATE"] = "GET_TAB_STATE";
+        Type["SET_GRPC_RESPONSE"] = "SET_GRPC_RESPONSE";
+        Type["TOGGLE_STREAM"] = "TOGGLE_STREAM";
+    })(Type = mainActions.Type || (mainActions.Type = {}));
+    mainActions.getTabState = function (state) { return typesafe_actions_1.action(Type.GET_TAB_STATE, state); };
+    mainActions.addNewTab = function (reducerFunc) { return typesafe_actions_1.action(Type.ADD_NEW_TAB, reducerFunc); };
+    mainActions.removeTab = function (id) { return typesafe_actions_1.action(Type.REMOVE_TAB, id); };
+    mainActions.selectTab = function (id) { return typesafe_actions_1.action(Type.SELECT_TAB, id); };
+    mainActions.toggleStream = function (boolean) { return typesafe_actions_1.action(Type.TOGGLE_STREAM, boolean); };
+})(mainActions = exports.mainActions || (exports.mainActions = {}));
+
+
+/***/ }),
+
+/***/ "./app/src/actions/mainRequestActions.ts":
+/*!***********************************************!*\
+  !*** ./app/src/actions/mainRequestActions.ts ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -446,74 +516,52 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var typesafe_actions_1 = __webpack_require__(/*! typesafe-actions */ "./node_modules/typesafe-actions/dist/index.umd.js");
 var grpcHandlerFactory_1 = __webpack_require__(/*! ../../lib/local/grpcHandlerFactory */ "./app/lib/local/grpcHandlerFactory.ts");
-var mainActions;
-(function (mainActions) {
+var mainRequestActions;
+(function (mainRequestActions) {
     var Type;
     (function (Type) {
-        Type["ADD_NEW_TAB"] = "ADD_NEW_TAB";
-        Type["REMOVE_TAB"] = "REMOVE_TAB";
-        Type["SELECT_TAB"] = "SELECT_TAB";
-        Type["GET_TAB_STATE"] = "GET_TAB_STATE";
-        //HANDLE_SEND_REQUEST = "HANDLE_SEND_REQUEST",
+        Type["HANDLE_UNARY_REQUEST"] = "HANDLE_UNARY_REQUEST";
+        Type["HANDLE_CLIENT_STREAM_START"] = "HANDLE_CLIENT_STREAM_START";
         Type["SET_GRPC_RESPONSE"] = "SET_GRPC_RESPONSE";
-        Type["TOGGLE_STREAM"] = "TOGGLE_STREAM";
-    })(Type = mainActions.Type || (mainActions.Type = {}));
-    mainActions.getTabState = function (state) {
-        return {
-            type: Type.GET_TAB_STATE,
-            payload: state
-        };
-    };
-    mainActions.addNewTab = function (reducerFunc) {
-        return {
-            type: Type.ADD_NEW_TAB,
-            payload: reducerFunc
-        };
-    };
-    mainActions.removeTab = function (id) { return ({
-        type: Type.REMOVE_TAB,
-        payload: id
-    }); };
-    mainActions.selectTab = function (id) { return ({
-        type: Type.SELECT_TAB,
-        payload: id
-    }); };
-    mainActions.setGRPCResponse = function (response) { return ({
-        type: Type.SET_GRPC_RESPONSE,
-        payload: response
-    }); };
-    //new
-    mainActions.handleSendRequest = function () { return function (dispatch, getState) {
+    })(Type = mainRequestActions.Type || (mainRequestActions.Type = {}));
+    mainRequestActions.setGRPCResponse = function (response) { return typesafe_actions_1.action(Type.SET_GRPC_RESPONSE, response); };
+    mainRequestActions.handleUnaryRequest = function () { return function (dispatch, getState) {
         var activeTab = getState().main.activeTab;
         var state = getState().main;
-        //Unary
         if (activeTab.requestConfig.callType === grpcHandlerFactory_1.CallType.UNARY_CALL) {
-            var requestConfig = __assign({}, activeTab.requestConfig, { reqBody: { argument: activeTab.configArguments.arguments } });
+            var requestConfig = __assign({}, activeTab.requestConfig, { argument: activeTab.configArguments.arguments });
             var mergedConfig = __assign({}, activeTab.baseConfig, requestConfig);
             var handler = grpcHandlerFactory_1.GrpcHandlerFactory.createHandler(mergedConfig);
             state.handlers[state.selectedTab] = handler;
             // const newHandlers = cloneDeep(state.handlers)
             handler.initiateRequest().then(function (response) {
-                dispatch(mainActions.setGRPCResponse(response));
+                dispatch(mainRequestActions.setGRPCResponse(response));
             });
         }
-        //Client Stream
+    }; };
+    mainRequestActions.handleClientStreamStart = function () { return function (dispatch, getState) {
+        var activeTab = getState().main.activeTab;
+        var state = getState().main;
         if (activeTab.requestConfig.callType === grpcHandlerFactory_1.CallType.CLIENT_STREAM) {
-            var requestConfig = __assign({}, activeTab.requestConfig, { reqBody: {
-                    action: grpcHandlerFactory_1.StreamAction.INITIATE
-                    //maybe callback?
-                } });
+            var requestConfig = __assign({}, activeTab.requestConfig, { streamConfig: { onEndCb: function (res) { return dispatch(mainRequestActions.setGRPCResponse(res)); } }, argument: {} });
             var mergedConfig = __assign({}, activeTab.baseConfig, requestConfig);
+            //console.log('the merged config is...',mergedConfig)
             var handler = grpcHandlerFactory_1.GrpcHandlerFactory.createHandler(mergedConfig);
-            state.handlers[state.selectedTab] = handler;
+            //console.log('this is the handler', handler)
+            handler.initiateRequest();
+            //console.log('Starting stream!')
+            var writableStream = handler.returnHandler().writableStream;
+            //console.log('writable stream:', writableStream)
+            state.handlers[state.selectedTab] = writableStream;
+            // writableStream.write({ numb: 10 });
+            // writableStream.write({ numb: 15 });
+            // writableStream.write({ numb: 20 });
+            // writableStream.end();
         }
     }; };
-    mainActions.toggleStream = function (boolean) { return ({
-        type: Type.TOGGLE_STREAM,
-        payload: boolean
-    }); };
-})(mainActions = exports.mainActions || (exports.mainActions = {}));
+})(mainRequestActions = exports.mainRequestActions || (exports.mainRequestActions = {}));
 
 
 /***/ }),
@@ -531,36 +579,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var grpcHandlerFactory_1 = __webpack_require__(/*! ../../lib/local/grpcHandlerFactory */ "./app/lib/local/grpcHandlerFactory.ts");
 function Header(props, context) {
-    var handleSendRequest = props.handleSendRequest, toggleStream = props.toggleStream, activeTab = props.activeTab, getTabState = props.getTabState, selectTab = props.selectTab, removeTab = props.removeTab, addNewTab = props.addNewTab, leftArray = props.leftArray, selectedTab = props.selectedTab;
+    var handlerInfo = props.handlerInfo, handlers = props.handlers, handleClientStreamStart = props.handleClientStreamStart, handleUnaryRequest = props.handleUnaryRequest, toggleStream = props.toggleStream, activeTab = props.activeTab, getTabState = props.getTabState, selectTab = props.selectTab, removeTab = props.removeTab, addNewTab = props.addNewTab, leftArray = props.leftArray, selectedTab = props.selectedTab;
     var sendButtonText = "SEND REQUEST";
     var userConnectType;
     var callType;
     var trail;
     if (activeTab.requestConfig) {
         callType = activeTab.requestConfig.callType;
-        trail = activeTab.baseConfig.grpcServerURI ? activeTab.baseConfig.grpcServerURI + " \u2192" : '';
-        trail += activeTab.selectedService ? "" + activeTab.selectedService : '';
-        trail += activeTab.selectedRequest ? " \u2192 " + activeTab.selectedRequest : '';
+        trail = activeTab.baseConfig.grpcServerURI ? activeTab.baseConfig.grpcServerURI + " \u2192" : "";
+        trail += activeTab.selectedService ? "" + activeTab.selectedService : "";
+        trail += activeTab.selectedRequest ? " \u2192 " + activeTab.selectedRequest : "";
     }
+    //logic for what the buttons do
+    var displayButton = (React.createElement("button", null, "SEND REQUEST"));
+    var sendRequestButton = (React.createElement("button", { className: 'send-req-btn', onClick: handleUnaryRequest }, "SEND REQUEST"));
+    var startClientStreamButton = (React.createElement("button", { className: 'start-stream-btn', onClick: function () {
+            handleClientStreamStart();
+            toggleStream(true);
+        } }, "START STREAM"));
+    var writeToStreamButton = (React.createElement("button", { className: 'write-stream-btn', onClick: function () { return handlers[selectedTab].write(activeTab.configArguments.arguments); } }, "SEND MESSAGE"));
     switch (callType) {
         case grpcHandlerFactory_1.CallType.UNARY_CALL: {
             userConnectType = "UNARY";
-            sendButtonText = "SEND REQUEST";
+            displayButton = sendRequestButton;
             break;
         }
         case grpcHandlerFactory_1.CallType.SERVER_STREAM: {
             userConnectType = "SERVER STREAM";
-            sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+            // displayButton = startServerStreamButton;
             break;
         }
         case grpcHandlerFactory_1.CallType.CLIENT_STREAM: {
             userConnectType = "CLIENT STREAM";
-            sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+            displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startClientStreamButton;
             break;
         }
         case grpcHandlerFactory_1.CallType.BIDI_STREAM: {
             userConnectType = "BIDIRECTIONAL";
-            sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+            // displayButton = startBidiStreamButton;      
             break;
         }
         default: {
@@ -569,36 +625,23 @@ function Header(props, context) {
     }
     var tabArray = [];
     leftArray.forEach(function (tab) {
-        tabArray.push(React.createElement("div", { key: 'button' + tab.key, className: tab.key === selectedTab ? 'tab selected' : 'tab', onClick: function () { return selectTab(tab.key); } },
+        tabArray.push(React.createElement("div", { key: "button" + tab.key, className: tab.key === selectedTab ? "tab selected" : "tab", onClick: function () { return selectTab(tab.key); } },
             tab.key,
-            React.createElement("button", { onClick: function (e) {
+            props.leftArray.length > 1 ? React.createElement("button", { onClick: function (e) {
                     e.stopPropagation();
                     removeTab(tab.key);
-                } }, "x")));
+                } }, "x") : ''));
     });
-    var sendButtonFunc;
-    if (props.isStreaming === true) {
-        // if we're in stream mode, Send button becomes a write
-        sendButtonFunc = function () { return props.handlers[props.selectedTab].write(props.activeTab.configArguments.arguments); };
-    }
-    else { //if not in stream mode
-        if (callType !== grpcHandlerFactory_1.CallType.UNARY_CALL) {
-            sendButtonFunc = function () {
-                toggleStream(true);
-                handleSendRequest();
-            };
-        }
-        else {
-            sendButtonFunc = handleSendRequest;
-        }
-    }
+    var disabledFlag;
+    if (handlerInfo[selectedTab])
+        disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
     return (React.createElement("div", { className: "header" },
         React.createElement("div", { className: "header-top" },
             React.createElement("div", { className: "header-left" },
                 React.createElement("div", { className: "trail" }, trail),
                 React.createElement("div", { className: "connection-display" }, userConnectType),
-                React.createElement("button", { className: "send-button", onClick: sendButtonFunc }, sendButtonText),
-                React.createElement("button", { className: "stop-button" }, "STOP STREAM")),
+                displayButton,
+                React.createElement("button", { className: "stop-button", disabled: disabledFlag, onClick: function () { handlers[selectedTab].end(); toggleStream(false); } }, "STOP STREAM")),
             React.createElement("div", { className: "header-right" },
                 React.createElement("h1", null, "MuninRPC"),
                 React.createElement("img", { className: "logo", src: "./src/assets/raven.png" }))),
@@ -656,13 +699,14 @@ exports.LeftFactory = function (props) {
             tabKey: props.tabKey,
             getTabState: props.getTabState,
             handlerContext: [],
-            filePath: '',
+            filePath: "",
             serviceList: {},
             messageList: [],
-            selectedService: '',
-            selectedRequest: '',
-            mode: 'SERVICE_AND_REQUEST',
-            baseConfig: {},
+            selectedService: "",
+            selectedRequest: "",
+            mode: "SERVICE_AND_REQUEST",
+            baseConfig: { grpcServerURI: 'localhost:50052' },
+            requestConfig: {},
             configElements: {},
             configArguments: {},
             messageRecommendations: [],
@@ -712,10 +756,18 @@ exports.LeftFactory = function (props) {
             }
             updateState(__assign({}, state, { selectedService: payload.service, baseConfig: __assign({}, state.baseConfig, { packageName: payload.service.match(/(.+)\./)[1], serviceName: payload.service.match(/\.(.+)/)[1] }) }));
         };
-        var handleServiceTrie = function (val) { return updateState(__assign({}, state, { serviceTrieInput: val, serviceRecommendations: state.serviceTrie.recommend(val) })); };
-        var handleMessageTrie = function (val) { return updateState(__assign({}, state, { messageTrieInput: val, messageRecommendations: state.messageTrie.recommend(val) })); };
-        var handleRequestTrie = function (val) { return updateState(__assign({}, state, { requestTrieInput: val })); };
-        var handleIPInput = function (val) { return updateState(__assign({}, state, { baseConfig: __assign({}, state.baseConfig, { grpcServerURI: val }) })); };
+        var handleServiceTrie = function (val) {
+            return updateState(__assign({}, state, { serviceTrieInput: val, serviceRecommendations: state.serviceTrie.recommend(val) }));
+        };
+        var handleMessageTrie = function (val) {
+            return updateState(__assign({}, state, { messageTrieInput: val, messageRecommendations: state.messageTrie.recommend(val) }));
+        };
+        var handleRequestTrie = function (val) {
+            return updateState(__assign({}, state, { requestTrieInput: val }));
+        };
+        var handleIPInput = function (val) {
+            return updateState(__assign({}, state, { baseConfig: __assign({}, state.baseConfig, { grpcServerURI: val }) }));
+        };
         var handleProtoUpload = function (file) {
             // handle file
             var filePath = file[0].path;
@@ -761,7 +813,7 @@ exports.LeftFactory = function (props) {
             // console.log(baseLoc)
             if (payload.request === "add") {
                 context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length - 1]);
-                context[baseKey][context[baseKey].length - 1] = '';
+                context[baseKey][context[baseKey].length - 1] = "";
             }
             if (payload.request === "remove") {
                 for (var i = baseLoc; i < context[baseKey].length - 1; i++) {
@@ -806,7 +858,7 @@ exports.LeftFactory = function (props) {
         var setMode = function (val) { return updateState(__assign({}, state, { mode: val })); };
         var mode;
         if (state.mode === Mode.SHOW_SERVICE) {
-            mode = React.createElement(ServiceAndRequest_1.default, __assign({}, state, { handleServiceTrie: handleServiceTrie, handleRequestTrie: handleRequestTrie, handleMessageTrie: handleMessageTrie, handleRequestClick: handleRequestClick, handleServiceClick: handleServiceClick }));
+            mode = (React.createElement(ServiceAndRequest_1.default, __assign({}, state, { handleServiceTrie: handleServiceTrie, handleRequestTrie: handleRequestTrie, handleMessageTrie: handleMessageTrie, handleRequestClick: handleRequestClick, handleServiceClick: handleServiceClick })));
         }
         if (state.mode === Mode.SHOW_MESSAGES) {
             mode = React.createElement(Messages_1.default, __assign({}, state));
@@ -815,7 +867,7 @@ exports.LeftFactory = function (props) {
             mode = React.createElement(Setup_1.default, __assign({}, state, { handleRepeatedClick: handleRepeatedClick, handleConfigInput: handleConfigInput }));
         }
         return (React.createElement("div", { id: "tab", className: state.tabKey },
-            React.createElement("h1", { onClick: function () { return console.log(state); }, style: { color: 'black' } }, state.tabKey),
+            React.createElement("h1", { onClick: function () { return console.log(state); }, style: { color: "black" } }, state.tabKey),
             React.createElement("div", { className: "input-header" },
                 React.createElement("div", { className: "address-box" },
                     React.createElement("h3", null, "Target Server IP"),
@@ -912,7 +964,7 @@ function Right(props, context) {
     return (React.createElement("div", { className: "right-half" },
         React.createElement("h2", null, "Server Response"),
         React.createElement("div", { className: "response-display" },
-            React.createElement(react_json_view_1.default, { src: props.leftArray[0] ? props.serverResponses[props.selectedTab] : {} })),
+            React.createElement(react_json_view_1.default, { src: props.leftArray[0] ? props.handlerInfo[props.selectedTab].serverResponse : {} })),
         React.createElement("div", { className: "response-metrics" }, props.responseMetrics)));
 }
 exports.Right = Right;
@@ -1175,8 +1227,6 @@ function Setup(props, context) {
     generateFields(props.configArguments.arguments, props.configElements.arguments);
     return (React.createElement("div", { className: "setup" },
         React.createElement("h2", null, "Setup"),
-        React.createElement("div", { className: "setup-header" },
-            React.createElement("input", { type: "text", placeholder: "search for messages" })),
         React.createElement("div", { className: "setup-area" }, additionalMessages)));
 }
 exports.default = Setup;
@@ -1240,9 +1290,6 @@ var redux_1 = __webpack_require__(/*! redux */ "./node_modules/redux/es/redux.js
 var main_1 = __webpack_require__(/*! ./main */ "./app/src/reducers/main.ts");
 // NOTE: current type definition of Reducer in 'redux-actions' module
 // doesn't go well with redux@4
-// type CombinedReducerState = {
-//   readonly main: RootState;
-// };
 var rootReducer = redux_1.combineReducers({
     main: main_1.mainReducer,
 });
@@ -1281,10 +1328,9 @@ var initialState = {
     selectedTab: 'tab0',
     leftArray: [],
     tabPrimaryKey: 0,
-    serverResponses: {},
+    handlerInfo: {},
     responseMetrics: '',
     activeTab: {},
-    isStreaming: false
 };
 exports.mainReducer = function (state, action) {
     if (state === void 0) { state = initialState; }
@@ -1295,15 +1341,20 @@ exports.mainReducer = function (state, action) {
         case actions_1.mainActions.Type.ADD_NEW_TAB: {
             var newLeftArray = cloneDeep(state.leftArray);
             var newSelectedTab = 'tab' + state.tabPrimaryKey;
-            var newServerResponses = cloneDeep(state.serverResponses);
-            newServerResponses[newSelectedTab] = {};
+            var newHandlerInfo = cloneDeep(state.handlerInfo);
+            // set initial handler info
+            newHandlerInfo[newSelectedTab] = {
+                serverResponse: {},
+                isStreaming: false
+            };
+            // give location for handler to be stored
             state.handlers[newSelectedTab] = null;
             var newTabPrimaryKey = state.tabPrimaryKey + 1;
             var leftEle = Left_1.LeftFactory({
                 tabKey: newSelectedTab, getTabState: action.payload
             });
             newLeftArray.push(leftEle);
-            return (__assign({}, state, { leftArray: newLeftArray, tabPrimaryKey: newTabPrimaryKey, selectedTab: newSelectedTab, serverResponses: newServerResponses }));
+            return (__assign({}, state, { leftArray: newLeftArray, tabPrimaryKey: newTabPrimaryKey, selectedTab: newSelectedTab, handlerInfo: newHandlerInfo }));
         }
         case actions_1.mainActions.Type.REMOVE_TAB: {
             // expect a payload of 'tabN' where N is the tabID
@@ -1345,51 +1396,15 @@ exports.mainReducer = function (state, action) {
             var newSelectedTab = action.payload;
             return __assign({}, state, { selectedTab: newSelectedTab });
         }
-        //Unused
-        // case mainActions.Type.HANDLE_SEND_REQUEST: {
-        //   const newHandlers = cloneDeep(state.handlers)
-        //   //Unary
-        //   if (state.activeTab.requestConfig.callType === CallType.UNARY_CALL) {
-        //     console.log('if')
-        //     const requestConfig: RequestConfig<UnaryRequestBody> = {
-        //       ...state.activeTab.requestConfig,
-        //       reqBody: { argument: state.activeTab.configArguments.arguments },
-        //     };
-        //     const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-        //       ...state.activeTab.baseConfig,
-        //       ...requestConfig,
-        //     };
-        //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        //     newHandlers[state.selectedTab] = handler;
-        //     console.log('handler:', handler)
-        //   }
-        //   //Client Stream
-        //   if (state.activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
-        //     const requestConfig: RequestConfig<ClientStreamRequestBody> = {
-        //       ...state.activeTab.requestConfig,
-        //       reqBody: {
-        //         action: StreamAction.INITIATE
-        //         //maybe callback?
-        //       }
-        //     };
-        //     const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = {
-        //       ...state.activeTab.baseConfig,
-        //       ...requestConfig
-        //     };
-        //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        //   }
-        //   return {
-        //     ...state,
-        //     handlers: newHandlers
-        //   }
-        // }
-        case actions_1.mainActions.Type.SET_GRPC_RESPONSE: {
-            var newServerResponses = cloneDeep(state.serverResponses);
-            newServerResponses[state.selectedTab] = action.payload;
-            return __assign({}, state, { serverResponses: newServerResponses });
+        case actions_1.mainRequestActions.Type.SET_GRPC_RESPONSE: {
+            var newHandlerInfo = cloneDeep(state.handlerInfo);
+            newHandlerInfo[state.selectedTab].serverResponse = action.payload;
+            return __assign({}, state, { handlerInfo: newHandlerInfo });
         }
         case actions_1.mainActions.Type.TOGGLE_STREAM: {
-            return __assign({}, state, { isStreaming: action.payload });
+            var newHandlerInfo = cloneDeep(state.handlerInfo);
+            newHandlerInfo[state.selectedTab].isStreaming = action.payload;
+            return __assign({}, state, { handlerInfo: newHandlerInfo });
         }
         default: {
             return state;
@@ -12263,7 +12278,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 exports.push([module.i, "@import url(https://fonts.googleapis.com/css?family=Open+Sans);", ""]);
 
 // module
-exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n  #app .wrapper {\n    height: 100%;\n    display: flex;\n    flex-flow: column nowrap; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  padding: 0 30px 30px 30px;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.header {\n  display: flex;\n  flex-flow: column nowrap;\n  margin-bottom: 25px; }\n  .header .header-top {\n    display: flex;\n    flex-flow: row nowrap;\n    position: sticky;\n    height: 75px;\n    width: 100%;\n    background-image: linear-gradient(to right, #434343 0%, black 100%); }\n    .header .header-top .header-left {\n      width: 70%;\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-content: space-around;\n      align-items: center;\n      margin-left: 30px; }\n      .header .header-top .header-left button {\n        min-width: 140px;\n        font-size: 0.7rem;\n        font-weight: 700;\n        margin-left: 25px;\n        margin-right: 20px;\n        padding: 4px 20px;\n        background: #2699FB;\n        color: white;\n        box-shadow: 5px;\n        border: none;\n        transition: 0.2s ease all; }\n      .header .header-top .header-left button:hover {\n        color: #2699FB;\n        background: white; }\n      .header .header-top .header-left button:active {\n        color: #0365b8; }\n      .header .header-top .header-left button:disabled {\n        background: white;\n        border: 1px solid grey;\n        color: darkgrey; }\n      .header .header-top .header-left .stop-button {\n        background: red; }\n      .header .header-top .header-left .connection-display {\n        min-width: 130px;\n        margin-left: 25px;\n        border-radius: 6px;\n        opacity: 0.9;\n        display: flex;\n        justify-content: center;\n        text-align: center;\n        align-items: center;\n        font-size: 0.7rem;\n        font-weight: 800;\n        color: #005AA7;\n        background: white;\n        padding: 7px 20px; }\n      .header .header-top .header-left .trail {\n        height: 1.7rem;\n        flex-grow: 1;\n        padding: 5px;\n        color: black;\n        background: white;\n        overflow-x: scroll;\n        overflow-y: hidden;\n        white-space: nowrap; }\n      .header .header-top .header-left .trail::-webkit-scrollbar {\n        width: auto;\n        height: 5px; }\n      .header .header-top .header-left .trail::-webkit-scrollbar-thumb {\n        background: black; }\n    .header .header-top .header-right {\n      width: 30%;\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-end;\n      align-items: center;\n      margin-right: 30px; }\n      .header .header-top .header-right img {\n        margin-left: 30px;\n        height: 30px;\n        width: 30px; }\n  .header .header-tabs .tab-box {\n    display: flex;\n    flex-flow: row wrap;\n    border-bottom: 3px solid lightgrey;\n    height: 40px;\n    padding: 0 30px;\n    margin-top: 20px; }\n    .header .header-tabs .tab-box .tab {\n      display: flex;\n      justify-content: space-between;\n      align-items: center;\n      flex-grow: 0.5;\n      padding: 0 10px;\n      margin-right: 20px;\n      transition: 0.2s ease all;\n      padding-bottom: 0px;\n      border-left: 1px solid lightgrey;\n      border-right: 1px solid lightgrey; }\n    .header .header-tabs .tab-box .tab:hover {\n      color: white;\n      background: #2699FB; }\n    .header .header-tabs .tab-box .selected {\n      color: white;\n      background: #2699FB; }\n    .header .header-tabs .tab-box .selected:hover {\n      background: #0365b8; }\n    .header .header-tabs .tab-box .selected:active {\n      background: #024986; }\n    .header .header-tabs .tab-box .add {\n      display: flex;\n      align-items: center;\n      margin-left: -10px;\n      margin-bottom: 5px;\n      padding: 0 20px;\n      font-size: 1.5rem;\n      font-weight: 600;\n      transition: 0.3s all ease; }\n    .header .header-tabs .tab-box .add:hover {\n      color: white;\n      background: #2699FB; }\n\n.left-half {\n  display: flex;\n  flex-flow: column nowrap;\n  width: 70%;\n  height: 100%;\n  margin-right: 8%; }\n  .left-half h1 {\n    margin-bottom: 20px; }\n  .left-half #tab {\n    flex-grow: 1;\n    display: flex;\n    flex-flow: column nowrap; }\n  .left-half .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-bottom: 45px; }\n    .left-half .input-header .upload-box {\n      width: 50%; }\n      .left-half .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path-spacer {\n          border-top: 1px solid black;\n          border-bottom: 1px solid black;\n          height: 2rem;\n          width: 5px; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #0365b8;\n          overflow-x: scroll;\n          padding: 5px 7px;\n          padding-right: 20px;\n          font-size: 0.7rem;\n          border-top-left-radius: 6px;\n          border-bottom-left-radius: 6px;\n          border: 1px solid black;\n          border-right: none;\n          flex-grow: 1;\n          height: 2rem;\n          white-space: nowrap;\n          display: flex;\n          align-items: center;\n          align-content: center; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: auto;\n          height: 5px; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar-thumb {\n          background: black; }\n        .left-half .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left-half .input-header .upload-box .upload-box-contents label {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          height: 2rem;\n          padding: 5px 15px;\n          background: #2699FB;\n          border: 1px solid #96CDD5;\n          border-top-right-radius: 6px;\n          border-bottom-right-radius: 6px;\n          font-size: 0.7rem;\n          font-weight: 700;\n          color: white;\n          text-align: center;\n          vertical-align: middle;\n          transition: all ease 0.2s;\n          z-index: 1; }\n        .left-half .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: white;\n          color: #2699FB;\n          cursor: pointer; }\n    .left-half .input-header .address-box {\n      width: 50%; }\n      .left-half .input-header .address-box input {\n        width: 80%;\n        border: 1px solid black;\n        border-radius: 6px;\n        padding: 5px 7px;\n        font-size: 0.7rem;\n        background: white;\n        height: 2rem;\n        color: #0365b8; }\n  .left-half .tabs button {\n    height: 2rem;\n    padding: 0 30px;\n    background: white;\n    color: #0365b8;\n    border: 1px solid #0365b8;\n    border-bottom: none;\n    font-weight: 700;\n    z-index: 1;\n    transition: 0.2s ease all; }\n  .left-half .tabs button:hover {\n    background: #0365b8;\n    color: white;\n    border-right: 1px solid white;\n    border-left: 1px solid white; }\n  .left-half .tabs button:disabled {\n    background: white;\n    border: 1px solid grey;\n    color: darkgrey; }\n  .left-half .tabs button:disabled:hover {\n    cursor: auto; }\n  .left-half .tabs .selected {\n    background: #0365b8;\n    color: white; }\n  .left-half .main {\n    flex-grow: 1;\n    display: flex;\n    flex-grow: 1;\n    width: 100%;\n    background: white;\n    border: 1px solid black;\n    border-bottom-color: white;\n    border-right-color: white; }\n    .left-half .main h2 {\n      margin-bottom: 2px; }\n    .left-half .main input {\n      border: 1px solid #bce0fe;\n      font-weight: 400;\n      font-size: 0.8rem;\n      height: 1.5rem;\n      flex-grow: 1;\n      padding-left: 8px; }\n\n.right-half {\n  height: 100%;\n  width: 30%;\n  display: flex;\n  flex-flow: column nowrap; }\n  .right-half .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid lightgrey;\n    height: 100%;\n    width: 100%;\n    overflow-x: scroll; }\n  .right-half .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid lightgrey;\n    color: darkgrey; }\n\n.service-request {\n  display: flex;\n  width: 100%;\n  padding: 22px 0px 0px 10%;\n  background: white; }\n  .service-request p {\n    display: flex;\n    align-items: center;\n    text-align: left;\n    width: 100%;\n    transition: 0.2s ease all;\n    border-bottom: 1px solid lightgrey;\n    padding: 10px 0;\n    padding-left: 5px; }\n  .service-request p:hover {\n    background: #2699FB;\n    color: white;\n    cursor: pointer; }\n  .service-request p:active {\n    background: #0365b8; }\n  .service-request .selected {\n    border-top-color: black;\n    border-bottom-color: black;\n    background: #2699FB;\n    color: white; }\n  .service-request .service-request-left {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap;\n    margin-right: 10%; }\n    .service-request .service-request-left .service-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-left .service-header img {\n        height: 1.4rem;\n        width: 1rem; }\n    .service-request .service-request-left .service-area {\n      border: 1px solid lightgrey;\n      display: flex;\n      flex-grow: 1;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n  .service-request .service-request-right {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap; }\n    .service-request .service-request-right .request-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-right .request-header img {\n        height: 1rem;\n        width: 1rem; }\n    .service-request .service-request-right .request-area {\n      border: 1px solid lightgrey;\n      flex-grow: 1;\n      display: flex;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n\n.messages {\n  height: 100%;\n  width: 100%;\n  padding: 10px;\n  padding: 22px 0px 0px 10%; }\n  .messages .message-header {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: center;\n    margin: 8px 0px; }\n    .messages .message-header img {\n      height: auto;\n      width: 1rem;\n      border: 1px solid black; }\n  .messages .message-area {\n    border: 1px solid lightgrey;\n    display: flex;\n    flex-grow: 1;\n    flex-flow: column nowrap;\n    align-items: flex-start; }\n    .messages .message-area p {\n      display: flex;\n      flex-flow: row nowrap;\n      border: 1px solid white;\n      width: 100%;\n      transition: 0.2s ease all; }\n      .messages .message-area p span {\n        display: flex;\n        align-content: center;\n        align-items: center;\n        padding: 5px; }\n      .messages .message-area p .message-name {\n        font-size: 1.1rem; }\n      .messages .message-area p .message-label {\n        font-size: 0.7rem;\n        font-weight: 700; }\n      .messages .message-area p .message-type {\n        font-size: 0.7rem;\n        font-weight: 700; }\n    .messages .message-area p:hover {\n      background: #2699FB;\n      color: white; }\n\n.setup {\n  height: 100%;\n  width: 100%;\n  background: white;\n  padding: 22px 0px 0px 10%; }\n  .setup input {\n    width: 100%; }\n  .setup button {\n    display: flex;\n    align-items: center;\n    align-content: center;\n    justify-content: center;\n    color: #0365b8;\n    height: 20px;\n    width: 20px;\n    font-weight: 600;\n    margin-right: 8px;\n    border-radius: 6px;\n    transition: 0.2s ease all; }\n  .setup button:hover {\n    color: white;\n    background: #2699FB; }\n  .setup .first {\n    margin-top: 8px; }\n  .setup .setup-area {\n    display: flex;\n    flex-flow: column nowrap;\n    padding: 0 8px;\n    padding-top: 16px; }\n    .setup .setup-area h2 {\n      border-top: 1px solid #0365b8;\n      padding-top: 8px; }\n    .setup .setup-area li {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-items: center;\n      align-content: center;\n      padding: 10px 0;\n      padding-left: 12px;\n      border-left: 1px solid #2699FB;\n      transition: 0.2s ease all; }\n      .setup .setup-area li .li-body {\n        display: flex;\n        flex-flow: column nowrap; }\n        .setup .setup-area li .li-body .li-body-top {\n          display: flex;\n          font-weight: 400;\n          color: #2699FB;\n          font-size: 1.2rem;\n          margin-bottom: 8px; }\n        .setup .setup-area li .li-body .li-body-bottom {\n          display: flex;\n          font-weight: 200;\n          color: grey;\n          font-size: 0.7rem; }\n          .setup .setup-area li .li-body .li-body-bottom .message {\n            margin-right: 10px; }\n    .setup .setup-area input {\n      margin-left: 16px;\n      flex-grow: 1; }\n    .setup .setup-area .no-fields {\n      display: flex;\n      margin-top: -4px;\n      font-size: 0.8rem; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%;\n  width: 100%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  color: white; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.3rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
+exports.push([module.i, "/* http://meyerweb.com/eric/tools/css/reset/ \n   v2.0 | 20110126\n   License: none (public domain)\n*/\nhtml, body, div, span, applet, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\na, abbr, acronym, address, big, cite, code,\ndel, dfn, em, img, ins, kbd, q, s, samp,\nsmall, strike, strong, sub, sup, tt, var,\nb, u, i, center,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, embed,\nfigure, figcaption, footer, header, hgroup,\nmenu, nav, output, ruby, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  font-size: 100%;\n  font: inherit;\n  vertical-align: baseline; }\n\n/* HTML5 display-role reset for older browsers */\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nbody {\n  line-height: 1; }\n\nol, ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n*:focus {\n  outline: none; }\n\n/* ________________________ */\n#app {\n  height: 100%;\n  width: 100%; }\n  #app .wrapper {\n    height: 100%;\n    display: flex;\n    flex-flow: column nowrap; }\n\n.app {\n  height: 100%;\n  width: 100%;\n  padding: 0 30px 30px 30px;\n  display: flex;\n  flex-flow: row nowrap; }\n\n.wrapper {\n  display: flex;\n  flex-grow: row nowrap;\n  height: 80%;\n  width: 100%; }\n\n.header {\n  display: flex;\n  flex-flow: column nowrap;\n  margin-bottom: 25px; }\n  .header .header-top {\n    display: flex;\n    flex-flow: row nowrap;\n    position: sticky;\n    height: 75px;\n    width: 100%;\n    background-image: linear-gradient(to right, #434343 0%, black 100%); }\n    .header .header-top .header-left {\n      width: 70%;\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-content: space-around;\n      align-items: center;\n      margin-left: 30px; }\n      .header .header-top .header-left button {\n        min-width: 140px;\n        font-size: 0.7rem;\n        font-weight: 700;\n        margin-left: 25px;\n        margin-right: 20px;\n        padding: 4px 20px;\n        background: #2699FB;\n        color: white;\n        box-shadow: 5px;\n        border: none;\n        transition: 0.2s ease all; }\n      .header .header-top .header-left button:hover {\n        color: #2699FB;\n        background: white; }\n      .header .header-top .header-left button:active {\n        color: #0365b8; }\n      .header .header-top .header-left button:disabled {\n        background: white;\n        border: 1px solid grey;\n        color: darkgrey; }\n      .header .header-top .header-left .stop-button {\n        background: red; }\n      .header .header-top .header-left .write-stream-btn {\n        background: green; }\n      .header .header-top .header-left .connection-display {\n        min-width: 130px;\n        margin-left: 25px;\n        border-radius: 6px;\n        opacity: 0.9;\n        display: flex;\n        justify-content: center;\n        text-align: center;\n        align-items: center;\n        font-size: 0.7rem;\n        font-weight: 800;\n        color: #005AA7;\n        background: white;\n        padding: 7px 20px; }\n      .header .header-top .header-left .trail {\n        height: 1.7rem;\n        flex-grow: 1;\n        padding: 5px;\n        color: black;\n        background: white;\n        overflow-x: scroll;\n        overflow-y: hidden;\n        white-space: nowrap; }\n      .header .header-top .header-left .trail::-webkit-scrollbar {\n        width: auto;\n        height: 5px; }\n      .header .header-top .header-left .trail::-webkit-scrollbar-thumb {\n        background: black; }\n    .header .header-top .header-right {\n      width: 30%;\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-end;\n      align-items: center;\n      margin-right: 30px; }\n      .header .header-top .header-right img {\n        margin-left: 30px;\n        height: 30px;\n        width: 30px; }\n  .header .header-tabs .tab-box {\n    display: flex;\n    flex-flow: row wrap;\n    border-bottom: 3px solid lightgrey;\n    height: 40px;\n    padding: 0 30px;\n    margin-top: 20px; }\n    .header .header-tabs .tab-box .tab {\n      display: flex;\n      justify-content: space-between;\n      align-items: center;\n      flex-grow: 0.5;\n      padding: 0 10px;\n      margin-right: 20px;\n      transition: 0.2s ease all;\n      padding-bottom: 0px;\n      border-left: 1px solid lightgrey;\n      border-right: 1px solid lightgrey; }\n    .header .header-tabs .tab-box .tab:hover {\n      color: white;\n      background: #2699FB; }\n    .header .header-tabs .tab-box .selected {\n      color: white;\n      background: #2699FB; }\n    .header .header-tabs .tab-box .selected:hover {\n      background: #0365b8; }\n    .header .header-tabs .tab-box .selected:active {\n      background: #024986; }\n    .header .header-tabs .tab-box .add {\n      display: flex;\n      align-items: center;\n      margin-left: -10px;\n      margin-bottom: 5px;\n      padding: 0 20px;\n      font-size: 1.5rem;\n      font-weight: 600;\n      transition: 0.3s all ease; }\n    .header .header-tabs .tab-box .add:hover {\n      color: white;\n      background: #2699FB; }\n\n.left-half {\n  display: flex;\n  flex-flow: column nowrap;\n  width: 70%;\n  height: 100%;\n  margin-right: 8%; }\n  .left-half h1 {\n    margin-bottom: 20px; }\n  .left-half #tab {\n    flex-grow: 1;\n    display: flex;\n    flex-flow: column nowrap; }\n  .left-half .input-header {\n    display: flex;\n    justify-content: space-between;\n    margin-bottom: 45px; }\n    .left-half .input-header .upload-box {\n      width: 50%; }\n      .left-half .input-header .upload-box .upload-box-contents {\n        display: flex;\n        align-items: center; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path-spacer {\n          border-top: 1px solid black;\n          border-bottom: 1px solid black;\n          height: 2rem;\n          width: 5px; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path {\n          background: white;\n          color: #0365b8;\n          overflow-x: scroll;\n          padding: 5px 7px;\n          padding-right: 20px;\n          font-size: 0.7rem;\n          border-top-left-radius: 6px;\n          border-bottom-left-radius: 6px;\n          border: 1px solid black;\n          border-right: none;\n          flex-grow: 1;\n          height: 2rem;\n          white-space: nowrap;\n          display: flex;\n          align-items: center;\n          align-content: center; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar {\n          width: auto;\n          height: 5px; }\n        .left-half .input-header .upload-box .upload-box-contents .file-path::-webkit-scrollbar-thumb {\n          background: black; }\n        .left-half .input-header .upload-box .upload-box-contents .hide-me {\n          height: 0.1px;\n          width: 0.1px;\n          opacity: 0;\n          overflow: hidden; }\n        .left-half .input-header .upload-box .upload-box-contents label {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          height: 2rem;\n          padding: 5px 15px;\n          background: #2699FB;\n          border: 1px solid #96CDD5;\n          border-top-right-radius: 6px;\n          border-bottom-right-radius: 6px;\n          font-size: 0.7rem;\n          font-weight: 700;\n          color: white;\n          text-align: center;\n          vertical-align: middle;\n          transition: all ease 0.2s;\n          z-index: 1; }\n        .left-half .input-header .upload-box .upload-box-contents label:hover {\n          border: 1px solid #2699FB;\n          background: white;\n          color: #2699FB;\n          cursor: pointer; }\n    .left-half .input-header .address-box {\n      width: 50%; }\n      .left-half .input-header .address-box input {\n        width: 80%;\n        border: 1px solid black;\n        border-radius: 6px;\n        padding: 5px 7px;\n        font-size: 0.7rem;\n        background: white;\n        height: 2rem;\n        color: #0365b8; }\n  .left-half .tabs button {\n    height: 2rem;\n    padding: 0 30px;\n    background: white;\n    color: #0365b8;\n    border: 1px solid #0365b8;\n    border-bottom: none;\n    font-weight: 700;\n    z-index: 1;\n    transition: 0.2s ease all; }\n  .left-half .tabs button:hover {\n    background: #0365b8;\n    color: white;\n    border-right: 1px solid white;\n    border-left: 1px solid white; }\n  .left-half .tabs button:disabled {\n    background: white;\n    border: 1px solid grey;\n    color: darkgrey; }\n  .left-half .tabs button:disabled:hover {\n    cursor: auto; }\n  .left-half .tabs .selected {\n    background: #0365b8;\n    color: white; }\n  .left-half .main {\n    flex-grow: 1;\n    display: flex;\n    flex-grow: 1;\n    width: 100%;\n    background: white;\n    border: 1px solid black;\n    border-bottom-color: white;\n    border-right-color: white; }\n    .left-half .main h2 {\n      margin-bottom: 2px; }\n    .left-half .main input {\n      border: 1px solid #bce0fe;\n      font-weight: 400;\n      font-size: 0.8rem;\n      height: 1.5rem;\n      flex-grow: 1;\n      padding-left: 8px; }\n\n.right-half {\n  height: 100%;\n  width: 30%;\n  display: flex;\n  flex-flow: column nowrap; }\n  .right-half .response-display {\n    margin: 10px 0;\n    padding: 7px;\n    background: white;\n    border: 1px solid lightgrey;\n    height: 100%;\n    width: 100%;\n    overflow-x: scroll; }\n  .right-half .response-metrics {\n    height: 1.6rem;\n    width: 100%;\n    padding: 5px;\n    background: white;\n    text-align: right;\n    border: 1px solid lightgrey;\n    color: darkgrey; }\n\n.service-request {\n  display: flex;\n  width: 100%;\n  padding: 22px 0px 0px 10%;\n  background: white; }\n  .service-request p {\n    display: flex;\n    align-items: center;\n    text-align: left;\n    width: 100%;\n    transition: 0.2s ease all;\n    border-bottom: 1px solid lightgrey;\n    padding: 10px 0;\n    padding-left: 5px; }\n  .service-request p:hover {\n    background: #2699FB;\n    color: white;\n    cursor: pointer; }\n  .service-request p:active {\n    background: #0365b8; }\n  .service-request .selected {\n    border-top-color: black;\n    border-bottom-color: black;\n    background: #2699FB;\n    color: white; }\n  .service-request .service-request-left {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap;\n    margin-right: 10%; }\n    .service-request .service-request-left .service-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-left .service-header img {\n        height: 1.4rem;\n        width: 1rem; }\n    .service-request .service-request-left .service-area {\n      border: 1px solid lightgrey;\n      display: flex;\n      flex-grow: 1;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n  .service-request .service-request-right {\n    height: 100%;\n    width: 50%;\n    display: flex;\n    flex-flow: column nowrap; }\n    .service-request .service-request-right .request-header {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: center;\n      margin: 8px 0px; }\n      .service-request .service-request-right .request-header img {\n        height: 1rem;\n        width: 1rem; }\n    .service-request .service-request-right .request-area {\n      border: 1px solid lightgrey;\n      flex-grow: 1;\n      display: flex;\n      flex-flow: column nowrap;\n      align-items: flex-start; }\n\n.messages {\n  height: 100%;\n  width: 100%;\n  padding: 10px;\n  padding: 22px 0px 0px 10%; }\n  .messages .message-header {\n    display: flex;\n    flex-flow: row nowrap;\n    justify-content: center;\n    margin: 8px 0px; }\n    .messages .message-header img {\n      height: auto;\n      width: 1rem;\n      border: 1px solid black; }\n  .messages .message-area {\n    border: 1px solid lightgrey;\n    display: flex;\n    flex-grow: 1;\n    flex-flow: column nowrap;\n    align-items: flex-start; }\n    .messages .message-area p {\n      display: flex;\n      flex-flow: row nowrap;\n      border: 1px solid white;\n      width: 100%;\n      transition: 0.2s ease all; }\n      .messages .message-area p span {\n        display: flex;\n        align-content: center;\n        align-items: center;\n        padding: 5px; }\n      .messages .message-area p .message-name {\n        font-size: 1.1rem; }\n      .messages .message-area p .message-label {\n        font-size: 0.7rem;\n        font-weight: 700; }\n      .messages .message-area p .message-type {\n        font-size: 0.7rem;\n        font-weight: 700; }\n    .messages .message-area p:hover {\n      background: #2699FB;\n      color: white; }\n\n.setup {\n  height: 100%;\n  width: 100%;\n  background: white;\n  padding: 22px 0px 0px 10%; }\n  .setup input {\n    width: 100%; }\n  .setup h2 {\n    border-bottom: 1px solid lightgray; }\n  .setup button {\n    display: flex;\n    align-items: center;\n    align-content: center;\n    justify-content: center;\n    color: #0365b8;\n    height: 20px;\n    width: 20px;\n    font-weight: 600;\n    margin-right: 8px;\n    border-radius: 6px;\n    transition: 0.2s ease all; }\n  .setup button:hover {\n    color: white;\n    background: #2699FB; }\n  .setup .first {\n    margin-top: 8px; }\n  .setup .setup-area {\n    display: flex;\n    flex-flow: column nowrap;\n    padding: 0 8px;\n    padding-top: 16px; }\n    .setup .setup-area h2 {\n      border-top: 1px solid #0365b8;\n      padding-top: 8px; }\n    .setup .setup-area li {\n      display: flex;\n      flex-flow: row nowrap;\n      justify-content: flex-start;\n      align-items: center;\n      align-content: center;\n      padding: 10px 0;\n      padding-left: 12px;\n      border-left: 1px solid #2699FB;\n      transition: 0.2s ease all; }\n      .setup .setup-area li .li-body {\n        display: flex;\n        flex-flow: column nowrap; }\n        .setup .setup-area li .li-body .li-body-top {\n          display: flex;\n          font-weight: 400;\n          color: #2699FB;\n          font-size: 1.2rem;\n          margin-bottom: 8px; }\n        .setup .setup-area li .li-body .li-body-bottom {\n          display: flex;\n          font-weight: 200;\n          color: grey;\n          font-size: 0.7rem; }\n          .setup .setup-area li .li-body .li-body-bottom .message {\n            margin-right: 10px; }\n    .setup .setup-area input {\n      margin-left: 16px;\n      flex-grow: 1; }\n    .setup .setup-area .no-fields {\n      display: flex;\n      margin-top: -4px;\n      font-size: 0.8rem; }\n\n* {\n  box-sizing: border-box; }\n\nhtml {\n  height: 100%;\n  width: 100%; }\n\nbody {\n  font-family: \"Open Sans\", sans-serif;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100%;\n  width: 100%;\n  min-width: 800px;\n  min-height: 700px; }\n\nh1 {\n  font-family: 'Open Sans', sans-serif;\n  font-size: 2rem;\n  color: white; }\n\nh2 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 1.3rem; }\n\nh3 {\n  color: #2699FB;\n  font-weight: 600;\n  font-size: 0.7rem;\n  margin-bottom: 5px; }\n\np {\n  text-align: center;\n  color: #2699FB; }\n\nbutton:hover {\n  cursor: pointer; }\n\ntextarea {\n  resize: none; }\n", ""]);
 
 // exports
 
@@ -42697,6 +42712,19 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 };
+
+
+/***/ }),
+
+/***/ "./node_modules/typesafe-actions/dist/index.umd.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/typesafe-actions/dist/index.umd.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+!function(n,t){ true?t(exports):undefined}(this,function(n){"use strict";function t(n,t){return void 0===t&&(t=1),null==n}function e(n){throw void 0===n&&(n=1),new Error("Argument "+n+" is empty.")}function r(n){throw void 0===n&&(n=1),new Error("Argument "+n+' is invalid, it should be an action-creator instance from "typesafe-actions"')}function o(n){return"string"!=typeof n&&"symbol"!=typeof n}function i(n){throw void 0===n&&(n=1),new Error("Argument "+n+" is invalid, it should be an action type of type: string | symbol")}function u(n,t){if(null==n)throw new Error("Argument contains array with empty element at index "+t);if("string"!=typeof n&&"symbol"!=typeof n)throw new Error("Argument contains array with invalid element at index "+t+", it should be of type: string | symbol")}function c(n,t){if(null==n)throw new Error("Argument contains array with empty element at index "+t);if(null==n.getType)throw new Error("Argument contains array with invalid element at index "+t+', it should be an action-creator instance from "typesafe-actions"')}function f(n,i,u,c){return t(n)&&e(1),o(n)&&r(1),{type:n,payload:i,meta:u,error:c}}function a(n,r){t(n)&&e(1),o(n)&&i(1);var u=null!=r?r(n):function(){return{type:n}};return Object.assign(u,{getType:function(){return n},toString:function(){return n}})}n.action=f,n.createAction=function(n,t){var e=null==t?function(){return f(n)}:t(f.bind(null,n));return Object.assign(e,{getType:function(){return n},toString:function(){return n}})},n.createStandardAction=function(n){return t(n)&&e(1),o(n)&&i(1),Object.assign(function(){return a(n,function(n){return function(t,e){return{type:n,payload:t,meta:e}}})},{map:function(t){return a(n,function(n){return function(e,r){return Object.assign(t(e,r),{type:n})}})}})},n.createCustomAction=a,n.createAsyncAction=function(n,t,e){return[n,t,e].forEach(u),Object.assign(function(){return{request:a(n,function(n){return function(t){return{type:n,payload:t}}}),success:a(t,function(n){return function(t){return{type:n,payload:t}}}),failure:a(e,function(n){return function(t){return{type:n,payload:t}}})}})},n.getType=function(n){var o;return t(n)&&e(1),"function"==typeof(o=n)&&"getType"in o||r(1),n.getType()},n.isOfType=function(n,r){t(n)&&e(1);var o=Array.isArray(n)?n:[n];o.forEach(u);var i=function(n){return o.includes(n.type)};return void 0===r?i:i(r)},n.isActionOf=function(n,r){t(n)&&e(1);var o=Array.isArray(n)?n:[n];o.forEach(c);var i=function(n){return o.some(function(t){return n.type===t.getType()})};return void 0===r?i:i(r)},n.createActionDeprecated=function(n,t){var e;if(null!=t){if("function"!=typeof t)throw new Error("second argument is not a function");e=t}else e=function(){return{type:n}};if(null==n)throw new Error("first argument is missing");if("string"!=typeof n&&"symbol"!=typeof n)throw new Error("first argument should be type of: string | symbol");return e},Object.defineProperty(n,"__esModule",{value:!0})});
+//# sourceMappingURL=index.umd.js.map
 
 
 /***/ }),
