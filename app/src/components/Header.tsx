@@ -1,18 +1,20 @@
 import * as React from "react";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
-
+import { MainModel } from "../models"
 export interface HeaderActions {
   getTabState: any;
   addNewTab: any;
   removeTab: any;
   selectTab: any;
   toggleStream: any;
-  handleSendRequest: any;
+  handleUnaryRequest: any;
+  handleClientStreamStart: any;
+  
 }
 
 export function Header(props: MainModel & HeaderActions, context?: any) {
 
-  const { handleSendRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
+  const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
 
 
   let sendButtonText = "SEND REQUEST";
@@ -26,25 +28,43 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     trail += activeTab.selectedRequest ? ` → ${activeTab.selectedRequest}` : "";
   }
 
+  //logic for what the buttons do
+  let displayButton = (<button>SEND REQUEST</button>);
+
+  const sendRequestButton = 
+    (<button className='send-req-btn' onClick={handleUnaryRequest}>SEND REQUEST</button>)
+
+  const startClientStreamButton = 
+    (<button 
+      className='start-stream-btn' 
+      onClick={ () => { 
+        handleClientStreamStart(); 
+        toggleStream(true); 
+      }
+    }>START STREAM</button>)
+
+  const writeToStreamButton = 
+    (<button className='write-stream-btn' onClick={() => handlers[selectedTab].write(activeTab.configArguments.arguments)}>SEND MESSAGE</button>)
+
   switch (callType) {
     case CallType.UNARY_CALL: {
       userConnectType = "UNARY";
-      sendButtonText = "SEND REQUEST";
+      displayButton = sendRequestButton;
       break;
     }
     case CallType.SERVER_STREAM: {
       userConnectType = "SERVER STREAM";
-      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+      // displayButton = startServerStreamButton;
       break;
     }
     case CallType.CLIENT_STREAM: {
       userConnectType = "CLIENT STREAM";
-      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startClientStreamButton; 
       break;
     }
     case CallType.BIDI_STREAM: {
       userConnectType = "BIDIRECTIONAL";
-      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
+      // displayButton = startBidiStreamButton;      
       break;
     }
     default: {
@@ -62,47 +82,36 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
         onClick={() => selectTab(tab.key)}
       >
         {tab.key}
-        <button
+        {props.leftArray.length > 1 ? <button
           onClick={e => {
             e.stopPropagation();
             removeTab(tab.key);
           }}
         >
           x
-        </button>
+        </button> : ''}
       </div>,
     );
   });
 
-  let sendButtonFunc;
-  if (props.isStreaming === true) {
-    // if we're in stream mode, Send button becomes a write
-    sendButtonFunc = () => props.handlers[props.selectedTab].write(props.activeTab.configArguments.arguments)
-  } else { //if not in stream mode
-    if (callType !== CallType.UNARY_CALL) {
-      sendButtonFunc = () => { // Send button becomes a start stream button
-        toggleStream(true)
-        handleSendRequest()
-      }
-    } else {
-      sendButtonFunc = handleSendRequest
-    }
-  }
+  let disabledFlag;
+  if(handlerInfo[selectedTab]) disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
   
   return (
     <div className="header">
       <div className="header-top">
         <div className="header-left">
-          <div className="trail">{trail}</div>
-          <div className="connection-display">{userConnectType}</div>
-          <button
-            className="send-button"
-            onClick={sendButtonFunc}
-            // disabled={props.baseConfig.grpcServerURI.length ? false : true}
+          <div className="trail">
+            {trail}
+          </div>
+          <div className="connection-display">
+            {userConnectType}
+          </div>
+          {displayButton}
+          <button 
+            className="stop-button" disabled={disabledFlag}
+            onClick={() => {handlers[selectedTab].end(); toggleStream(false); }}
           >
-            {sendButtonText}
-          </button>
-          <button className="stop-button">
             STOP STREAM
           </button>
         </div>

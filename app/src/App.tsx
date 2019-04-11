@@ -1,7 +1,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
-import { mainActions } from "./actions";
+import { actions } from "./actions";
 import { MainModel } from "./models";
 import { omit } from "./utils";
 import * as Types from "MyTypes";
@@ -23,12 +23,12 @@ const MapStateToProps = store => ({
   selectedTab: store.main.selectedTab,
   leftArray: store.main.leftArray,
   activeTab: store.main.activeTab,
-  serverResponses: store.main.serverResponses,
+  handlerInfo: store.main.handlerInfo,
   handlers: store.main.handlers,
   isStreaming: store.main.isStreaming
 });
 
-const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(mainActions, dispatch);
+const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(actions, dispatch);
 
 class App extends React.Component<AppProps, {}> {
   constructor(props: AppProps) {
@@ -50,7 +50,7 @@ class App extends React.Component<AppProps, {}> {
 
     return (
       <div className="wrapper">
-        <Header {...this.props} getTabState={this.props.getTabState} toggleStream={this.props.toggleStream} />
+        <Header {...this.props} />
         <div className="app">
           <div className="left-half">{this.props.leftArray[selectedIdx]}</div>
           <Right {...this.props} />

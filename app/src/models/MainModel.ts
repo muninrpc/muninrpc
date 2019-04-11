@@ -7,8 +7,7 @@ export interface MainModel {
   selectedTab: string,
   leftArray: JSX.Element[],
   tabPrimaryKey: number,
-  serverResponses: any,
+  handlerInfo: any,
   responseMetrics: string,
   activeTab: any,
-  isStreaming: boolean
 }

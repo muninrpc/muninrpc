@@ -1,6 +1,6 @@
 
 // import { RootState } from "./state";
-import { mainActions } from "../actions";
+import { mainActions, mainRequestActions } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
@@ -25,10 +25,9 @@ const initialState: MainModel = {
   selectedTab: 'tab0',
   leftArray: [],
   tabPrimaryKey: 0,
-  serverResponses: {},
+  handlerInfo: {},
   responseMetrics: '',
   activeTab: {},
-  isStreaming: false
 };
 
 export const mainReducer = (state: MainModel = initialState, action: Types.RootAction) => {
@@ -48,8 +47,13 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainActions.Type.ADD_NEW_TAB : {
       const newLeftArray = cloneDeep(state.leftArray)
       const newSelectedTab = 'tab' + state.tabPrimaryKey;
-      const newServerResponses = cloneDeep(state.serverResponses);
-      newServerResponses[newSelectedTab] = {};
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
+      // set initial handler info
+      newHandlerInfo[newSelectedTab] = {
+        serverResponse: {},
+        isStreaming: false
+      }
+      // give location for handler to be stored
       state.handlers[newSelectedTab] = null;
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
       const leftEle = LeftFactory({
@@ -62,7 +66,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
         leftArray: newLeftArray,
         tabPrimaryKey: newTabPrimaryKey,
         selectedTab: newSelectedTab,
-        serverResponses: newServerResponses
+        handlerInfo: newHandlerInfo
       })
     }
 
@@ -117,19 +121,21 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       }
     }
 
-    case mainActions.Type.SET_GRPC_RESPONSE: {
-      let newServerResponses = cloneDeep(state.serverResponses)
-      newServerResponses[state.selectedTab] = action.payload;
+    case mainRequestActions.Type.SET_GRPC_RESPONSE: {
+      let newHandlerInfo = cloneDeep(state.handlerInfo)
+      newHandlerInfo[state.selectedTab].serverResponse = action.payload;
       return {
         ...state,
-        serverResponses: newServerResponses
+        handlerInfo: newHandlerInfo
       };
     }
 
     case mainActions.Type.TOGGLE_STREAM: {
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
+      newHandlerInfo[state.selectedTab].isStreaming = action.payload;
       return {
         ...state,
-        isStreaming: action.payload
+        handlerInfo: newHandlerInfo
       }
     }
 

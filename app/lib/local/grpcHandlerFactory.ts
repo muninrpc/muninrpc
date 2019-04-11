@@ -109,6 +109,7 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
   }
 
   public initiateRequest() {
+    
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
         throw err;

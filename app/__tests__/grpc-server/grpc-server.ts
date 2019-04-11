@@ -41,10 +41,12 @@ function AddItem(call, callback) {
 function CalculateAverage(call: grpc.ServerReadableStream<any>, callback: grpc.requestCallback<{ average: number }>) {
   const numCache = [];
   call.on("data", data => {
+    console.log('receiving data:', data)
     numCache.push(data.numb);
   });
   call.on("end", () => {
     const average = numCache.reduce((acc, curr) => acc + curr) / numCache.length;
+    console.log('received end request')
     callback(null, { average });
   });
 }

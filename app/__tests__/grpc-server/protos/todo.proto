@@ -56,5 +56,5 @@ message Numbers {
 }
 
 message Average {
-  int32 average = 1;
+  int64 average = 1;
 }

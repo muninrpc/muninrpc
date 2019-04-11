@@ -106,6 +106,8 @@ describe("test gRPC unary call", () => {
     const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = { ...baseConfig, ...clientStreamConfig };
 
     const clientStreamHandler = GrpcHandlerFactory.createHandler(mergedConfig);
+    //@ts-ignore
+    console.log('client stream handler', clientStreamHandler.client)
     clientStreamHandler.initiateRequest();
     const { writableStream } = clientStreamHandler.returnHandler();
 
