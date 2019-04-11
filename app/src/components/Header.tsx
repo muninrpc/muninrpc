@@ -84,7 +84,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
       sendButtonFunc = handleSendRequest
     }
   }
-  
+
   return (
     <div className="header">
       <div className="header-top">
@@ -95,13 +95,13 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
           <div className="connection-display">
             {userConnectType}
           </div>
-          <button
+          {<button
             className="send-button"
             onClick={sendButtonFunc}
             // disabled={props.baseConfig.grpcServerURI.length ? false : true}
           >
             {sendButtonText}
-          </button>
+          </button>}
           <button className="stop-button">
             STOP STREAM
           </button>
