@@ -2,14 +2,9 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
 import { mainActions } from "./actions";
-import { RootState } from "./reducers";
 import { MainModel } from "./models";
 import { omit } from "./utils";
-import { Right, Header } from "./components";
-
 import * as Types from "MyTypes";
-import { mainActions } from "./actions";
-import { RootState } from "./models";
 
 
 // const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
@@ -17,15 +12,12 @@ import { RootState } from "./models";
 // );
 
 type AppProps = {
-  main: RootState;
+  main: MainModel;
   actions: mainActions;
 };
 
 // import components
-import { Left, Right, Header } from "./components";
-
-type AppProps = RootState & mainActions;
-
+import { Right, Header } from "./components";
 
 const MapStateToProps = store => ({
   selectedTab: store.main.selectedTab,
@@ -34,7 +26,6 @@ const MapStateToProps = store => ({
   serverResponses: store.main.serverResponses,
   handlers: store.main.handlers,
   isStreaming: store.main.isStreaming
-
 });
 
 const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(mainActions, dispatch);

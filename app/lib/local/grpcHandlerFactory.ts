@@ -88,6 +88,7 @@ class UnaryHandler extends GrpcHandler<void> {
 
   public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
+      console.log(this.args)
       this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
           reject(err);
