@@ -1,3 +1,4 @@
+
 // import { RootState } from "./state";
 import { mainActions } from "../actions";
 import { RootState, Mode } from "../models/MainModel";
@@ -14,7 +15,12 @@ import {
   GrpcHandlerFactory,
   StreamAction,
 } from "../../lib/local/grpcHandlerFactory";
-
+import { TabState, Mode } from "../models/TabModel";
+import * as pbActions from "../../lib/local/pbActions";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
+import { Trie } from "../utils/trieClass";
+import * as Types from "MyTypes";
+import { array } from "prop-types";
 
 const initialState: RootState.mainState = {
   handlers: {},
@@ -28,6 +34,8 @@ const initialState: RootState.mainState = {
 };
 
 export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
+
+
   switch (action.type) {
 
     case mainActions.Type.GET_TAB_STATE : {
@@ -112,48 +120,6 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
       }
     }
 
-    //Unused
-    // case mainActions.Type.HANDLE_SEND_REQUEST: {
-    //   const newHandlers = cloneDeep(state.handlers)
-    //   //Unary
-    //   if (state.activeTab.requestConfig.callType === CallType.UNARY_CALL) {
-    //     console.log('if')
-    //     const requestConfig: RequestConfig<UnaryRequestBody> = {
-    //       ...state.activeTab.requestConfig,
-    //       reqBody: { argument: state.activeTab.configArguments.arguments },
-    //     };
-    //     const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
-    //       ...state.activeTab.baseConfig,
-    //       ...requestConfig,
-    //     };
-    //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-    //     newHandlers[state.selectedTab] = handler;
-    //     console.log('handler:', handler)
-    //   }
-
-    //   //Client Stream
-    //   if (state.activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
-    //     const requestConfig: RequestConfig<ClientStreamRequestBody> = {
-    //       ...state.activeTab.requestConfig,
-    //       reqBody: {
-    //         action: StreamAction.INITIATE
-    //         //maybe callback?
-    //       }
-    //     };
-    //     const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = {
-    //       ...state.activeTab.baseConfig,
-    //       ...requestConfig
-    //     };
-    //     const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-        
-    //   }
-
-    //   return {
-    //     ...state,
-    //     handlers: newHandlers
-    //   }
-    // }
-
     case mainActions.Type.SET_GRPC_RESPONSE: {
       let newServerResponses = cloneDeep(state.serverResponses)
       newServerResponses[state.selectedTab] = action.payload;
@@ -172,6 +138,6 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
 
     default: {
       return state;
-    }
+    } 
   }
 };

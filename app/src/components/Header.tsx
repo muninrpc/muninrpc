@@ -1,8 +1,7 @@
 import * as React from "react";
-import { MainModel } from "../models/MainModel";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 
-export interface HeaderActions{
+export interface HeaderActions {
   getTabState: any;
   addNewTab: any;
   removeTab: any;
@@ -11,19 +10,20 @@ export interface HeaderActions{
   handleSendRequest: any;
 }
 
-
 export function Header(props: MainModel & HeaderActions, context?: any) {
+
   const { handleSendRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
+
 
   let sendButtonText = "SEND REQUEST";
   let userConnectType;
   let callType;
   let trail;
-  if(activeTab.requestConfig) {
+  if (activeTab.requestConfig) {
     callType = activeTab.requestConfig.callType;
-    trail = activeTab.baseConfig.grpcServerURI ? `${activeTab.baseConfig.grpcServerURI} →` : '';
-    trail += activeTab.selectedService ? `${activeTab.selectedService}` : '';
-    trail += activeTab.selectedRequest ? ` → ${activeTab.selectedRequest}` :'';
+    trail = activeTab.baseConfig.grpcServerURI ? `${activeTab.baseConfig.grpcServerURI} →` : "";
+    trail += activeTab.selectedService ? `${activeTab.selectedService}` : "";
+    trail += activeTab.selectedRequest ? ` → ${activeTab.selectedRequest}` : "";
   }
 
   switch (callType) {
@@ -54,20 +54,24 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
 
   const tabArray = [];
 
-  leftArray.forEach( (tab) => { 
+  leftArray.forEach(tab => {
     tabArray.push(
-      <div key={'button' + tab.key} className={tab.key === selectedTab ? 'tab selected' : 'tab'} onClick={ () => selectTab(tab.key) }>
+      <div
+        key={"button" + tab.key}
+        className={tab.key === selectedTab ? "tab selected" : "tab"}
+        onClick={() => selectTab(tab.key)}
+      >
         {tab.key}
-        <button onClick={ 
-          (e) => {
+        <button
+          onClick={e => {
             e.stopPropagation();
-            removeTab(tab.key) 
-          } 
-        }>
+            removeTab(tab.key);
+          }}
+        >
           x
         </button>
-      </div>
-    )
+      </div>,
+    );
   });
 
   let sendButtonFunc;
@@ -89,12 +93,8 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     <div className="header">
       <div className="header-top">
         <div className="header-left">
-          <div className="trail">
-            {trail}
-          </div>
-          <div className="connection-display">
-            {userConnectType}
-          </div>
+          <div className="trail">{trail}</div>
+          <div className="connection-display">{userConnectType}</div>
           <button
             className="send-button"
             onClick={sendButtonFunc}
@@ -115,10 +115,11 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
       <div className="header-tabs">
         <div className="tab-box">
           {tabArray}
-          <button className="add" onClick={() => addNewTab(getTabState)}>+</button> 
+          <button className="add" onClick={() => addNewTab(getTabState)}>
+            +
+          </button>
         </div>
       </div>
-
     </div>
   );
 }

@@ -9,43 +9,22 @@ export interface BaseConfig {
   serviceName: string; // ex: ListActions
 }
 
-//if RequestConfig that will be dynamic based on the request body:
-export interface RequestConfig<
-  T extends UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody
-> {
+
+export interface RequestConfig<T extends ClientStreamRequestBody | BidiAndServerStreamRequestBody | void> {
   requestName: string;
   callType: CallType;
-  reqBody: T;
-}
-
-export interface UnaryRequestBody {
   argument: object;
+  streamConfig?: T;
 }
 
 //if the req body has an action, then it will maintain an open connection
 export interface ClientStreamRequestBody {
-  action: StreamAction;
-  argument?: object;
-  callback?: (a: any) => any;
+  onEndCb: (a: any) => any;
 }
 
-export interface ServerStreamRequestBody {
-  action: StreamAction;
-  argument?: object;
-  callback?: (a: any) => any;
-}
-
-export interface BidiStreamRequestBody {
-  action: StreamAction;
-  argument?: object;
-  callback?: (a: any) => any;
-}
-
-//types for the req body action
-export enum StreamAction {
-  INITIATE,
-  SEND,
-  KILL,
+export interface BidiAndServerStreamRequestBody {
+  onDataCb: (a: any) => any;
+  onEndCb: (a: any) => any;
 }
 
 //enums for the 4 types of calls
@@ -56,31 +35,32 @@ export enum CallType {
   BIDI_STREAM = "BIDI_STREAM",
 }
 
-//class for the object that will represent the connection to the gRPC server
-abstract class GrpcHandler<
-  T extends UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody
-> {
-  //will have all these properties, non-readable
+export interface Observers {
+  update: (o: object[]) => any;
+  finalUpdate: (o: object[]) => any;
+}
+
+abstract class GrpcHandler<T extends void | ClientStreamRequestBody | BidiAndServerStreamRequestBody> {
   protected grpcServerURI: string;
   protected packageDefinition: protoLoader.PackageDefinition;
   protected packageName: string;
   protected serviceName: string;
   protected requestName: string;
   protected callType: string;
-  protected requestConfig: UnaryRequestBody | ClientStreamRequestBody | ServerStreamRequestBody | BidiStreamRequestBody;
+  protected requestConfig: void | ClientStreamRequestBody | BidiAndServerStreamRequestBody;
   protected loadedPackage: typeof grpc.Client;
   protected client: grpc.Client;
+  protected args: object;
 
   constructor(config: BaseConfig & RequestConfig<T>) {
     this.grpcServerURI = config.grpcServerURI;
     this.packageDefinition = config.packageDefinition;
     this.packageName = config.packageName;
     this.serviceName = config.serviceName;
-    this.requestConfig = config.reqBody;
+    this.requestConfig = config.streamConfig;
     this.requestName = config.requestName;
-    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[
-      this.packageName
-    ] as typeof grpc.Client; //check typeof?
+    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName] as typeof grpc.Client;
+    this.args = config.argument;
     this.client = new this.loadedPackage[this.serviceName](
       this.grpcServerURI,
       grpc.credentials.createInsecure(),
@@ -96,12 +76,9 @@ abstract class GrpcHandler<
   }
 }
 
-
-class UnaryHandler extends GrpcHandler<UnaryRequestBody> {
-  private args: object;
-  constructor(config: BaseConfig & RequestConfig<UnaryRequestBody>) {
+class UnaryHandler extends GrpcHandler<void> {
+  constructor(config: BaseConfig & RequestConfig<void>) {
     super(config);
-    this.args = this.requestConfig.argument;
   }
 
   /**
@@ -109,10 +86,9 @@ class UnaryHandler extends GrpcHandler<UnaryRequestBody> {
    * The argument sent is located in the configuration file
    */
 
-   //requests return a promise
-  initiateRequest(): Promise<{}> {
+  public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
-      this.client[this.requestName](this.args, (err, response) => {
+      this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
           reject(err);
         }
@@ -123,72 +99,109 @@ class UnaryHandler extends GrpcHandler<UnaryRequestBody> {
 }
 
 class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
-  private cb: (a: any) => any;
+  private onEndCb: (a: any) => any;
   private writableStream: grpc.ClientWritableStream<any>;
 
   constructor(config: BaseConfig & RequestConfig<ClientStreamRequestBody>) {
     super(config);
-    this.cb = config.reqBody.callback;
-    this.initiateRequest();
+    this.onEndCb = config.streamConfig.onEndCb;
   }
 
-  //returns a stream that can be written onto until connection closes
-  initiateRequest() {
+  public initiateRequest() {
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
         throw err;
       }
-      this.cb(response);
+      this.onEndCb(response);
     });
+    return this;
   }
-  returnHandler() {
+  public returnHandler() {
     return {
       writableStream: this.writableStream,
     };
   }
 }
 
-class ServerStreamHandler extends GrpcHandler<ServerStreamRequestBody> {
-  public cb: (a: any) => any; //make private
-  public readableStream: grpc.ClientReadableStream<any>; //make private
-
-  constructor(config: BaseConfig & RequestConfig<ServerStreamRequestBody>) {
+abstract class SubjectGrpcHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
+  private streamedData: object[];
+  private observers: Observers[];
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
     super(config);
-    this.cb = config.reqBody.callback;
-    this.initiateRequest();
+    this.streamedData = [];
+    this.observers = [];
   }
 
-  initiateRequest() {
-    this.readableStream = this.client[this.requestName](this.requestConfig.argument);
-    this.readableStream.on("data", data => {
-      this.cb(data);
-    });
-    this.readableStream.on("end", () => {
-      console.log("Connection Closed");
+  protected updateData(newData: object) {
+    this.streamedData.push(newData);
+  }
+
+  public registerObservers(obs: Observers) {
+    this.observers.push(obs);
+  }
+
+  protected notifyObservers(string?: "end") {
+    this.observers.forEach(observer => {
+      if (string === "end") {
+        observer.finalUpdate(this.streamedData);
+      } else {
+        observer.update(this.streamedData);
+      }
     });
   }
 }
 
-class BidiStreamHandler extends GrpcHandler<BidiStreamRequestBody> {
-  private cb: (a: any) => any;
+class ServerStreamHandler extends SubjectGrpcHandler {
+  private onDataCb: (a: any) => any;
+  private onEndCb: (a: any) => any;
+  private readableStream: grpc.ClientReadableStream<any>;
+
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
+    super(config);
+    this.onDataCb = config.streamConfig.onDataCb;
+    this.onEndCb = config.streamConfig.onEndCb;
+  }
+
+  public initiateRequest() {
+    this.readableStream = this.client[this.requestName](this.args);
+    this.readableStream.on("data", (data: object) => {
+      this.updateData(data);
+      this.notifyObservers();
+    });
+    this.readableStream.on("end", data => {
+      if (data) {
+        this.updateData(data);
+      }
+      this.notifyObservers("end");
+    });
+  }
+}
+
+export class BidiStreamHandler extends SubjectGrpcHandler {
+  private onDataCb: (a: any) => any;
+  private onEndCb: (a: any) => any;
   private bidiStream: grpc.ClientDuplexStream<any, any>;
 
-  constructor(config: BaseConfig & RequestConfig<BidiStreamRequestBody>) {
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
     super(config);
-    this.cb = config.reqBody.callback;
-    this.initiateRequest();
+    this.onDataCb = config.streamConfig.onDataCb;
+    this.onEndCb = config.streamConfig.onEndCb;
   }
 
-  initiateRequest() {
-    this.bidiStream = this.client[this.requestName];
+  public initiateRequest() {
+    this.bidiStream = this.client[this.requestName]();
     this.bidiStream.on("data", data => {
-      this.cb(data);
+      this.updateData(data);
+      this.notifyObservers();
     });
-    this.bidiStream.on("end", () => {
-      console.log("Connection Closed");
+    this.bidiStream.on("end", data => {
+      this.updateData(data);
+      this.notifyObservers("end");
     });
+    return this;
   }
-  returnHandler() {
+
+  public returnHandler() {
     return {
       writableStream: this.bidiStream,
     };
@@ -197,26 +210,23 @@ class BidiStreamHandler extends GrpcHandler<BidiStreamRequestBody> {
 
 //factory function to create gRPC connections
 export class GrpcHandlerFactory {
-  //overload Typescript to cover all cases
-  static createHandler(config: BaseConfig & RequestConfig<UnaryRequestBody>): UnaryHandler;
+  static createHandler(
+    config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>,
+  ): BidiStreamHandler | ServerStreamHandler;
   static createHandler(config: BaseConfig & RequestConfig<ClientStreamRequestBody>): ClientStreamHandler;
-  static createHandler(config: BaseConfig & RequestConfig<ServerStreamRequestBody>): ServerStreamHandler;
-  static createHandler(config: BaseConfig & RequestConfig<BidiStreamRequestBody>): BidiStreamHandler;
+  static createHandler(config: BaseConfig & RequestConfig<void>): UnaryHandler;
   static createHandler(config: BaseConfig & RequestConfig<any>) {
-    //returns appropriate handler, depending on the connection type required
-    switch (config.callType) {
-      case CallType.UNARY_CALL: {
-        return new UnaryHandler(config);
-      }
-      case CallType.CLIENT_STREAM: {
-        return new ClientStreamHandler(config);
-      }
-      case CallType.SERVER_STREAM: {
-        return new ServerStreamHandler(config);
-      }
-      case CallType.BIDI_STREAM: {
-        return new BidiStreamHandler(config);
-      }
+    if (config.callType === CallType.UNARY_CALL) {
+      return new UnaryHandler(config);
+    }
+    if (config.callType === CallType.CLIENT_STREAM) {
+      return new ClientStreamHandler(config);
+    }
+    if (config.callType === CallType.SERVER_STREAM) {
+      return new ServerStreamHandler(config);
+    }
+    if (config.callType === CallType.BIDI_STREAM) {
+      return new BidiStreamHandler(config);
     }
   }
 }
