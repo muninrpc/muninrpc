@@ -10,4 +10,5 @@ export interface MainModel {
   serverResponse: any,
   responseMetrics: string,
   activeTab: any,
+  isStreaming: boolean
 }

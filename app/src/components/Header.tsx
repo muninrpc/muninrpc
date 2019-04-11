@@ -7,14 +7,15 @@ export interface HeaderActions{
   addNewTab: any;
   removeTab: any;
   selectTab: any;
-  handleIPInput: any;
-  handleProtoUpload: any;
+  toggleStream: any;
+  handleSendRequest: any;
 }
 
 
 export function Header(props: MainModel & HeaderActions, context?: any) {
-  const { activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
+  const { handleSendRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
 
+  let sendButtonText = "SEND REQUEST";
   let userConnectType;
   let callType;
   let trail;
@@ -28,18 +29,22 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
   switch (callType) {
     case CallType.UNARY_CALL: {
       userConnectType = "UNARY";
+      sendButtonText = "SEND REQUEST";
       break;
     }
     case CallType.SERVER_STREAM: {
       userConnectType = "SERVER STREAM";
+      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
       break;
     }
     case CallType.CLIENT_STREAM: {
       userConnectType = "CLIENT STREAM";
+      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
       break;
     }
     case CallType.BIDI_STREAM: {
       userConnectType = "BIDIRECTIONAL";
+      sendButtonText = props.isStreaming ? "SEND MESSAGE" : "START STREAM";
       break;
     }
     default: {
@@ -65,6 +70,21 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     )
   });
 
+  let sendButtonFunc;
+  if (props.isStreaming === true) {
+    // if we're in stream mode, Send button becomes a write
+    sendButtonFunc = () => props.handlers[props.selectedTab].write(props.activeTab.configArguments.arguments)
+  } else { //if not in stream mode
+    if (callType !== CallType.UNARY_CALL) {
+      sendButtonFunc = () => { // Send button becomes a start stream button
+        toggleStream(true)
+        handleSendRequest()
+      }
+    } else {
+      sendButtonFunc = handleSendRequest
+    }
+  }
+  
   return (
     <div className="header">
       <div className="header-top">
@@ -77,10 +97,13 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
           </div>
           <button
             className="send-button"
-            // onClick={props.handleSendRequest}
+            onClick={sendButtonFunc}
             // disabled={props.baseConfig.grpcServerURI.length ? false : true}
           >
-            SEND REQUEST
+            {sendButtonText}
+          </button>
+          <button className="stop-button">
+            STOP STREAM
           </button>
         </div>
         <div className="header-right">
