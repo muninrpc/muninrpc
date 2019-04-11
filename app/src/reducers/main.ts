@@ -1,19 +1,13 @@
-// import { RootState } from "./state";
 import { mainActions } from "../actions";
-import { RootState, Mode } from "../models/MainModel";
+import { TabState, Mode } from "../models/TabModel";
 import * as pbActions from "../../lib/local/pbActions";
-import {
-  CallType,
-  BaseConfig,
-  RequestConfig,
-  UnaryRequestBody,
-  GrpcHandlerFactory,
-} from "../../lib/local/grpcHandlerFactory";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { Trie } from "../utils/trieClass";
 import * as cloneDeep from "lodash.clonedeep";
+<<<<<<< HEAD
 import * as Types from "MyTypes";
 
-const initialState: RootState = {
+const initialState: TabState = {
   baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
   configArguments: { arguments: {} },
   configElements: { arguments: {} },
@@ -33,10 +27,27 @@ const initialState: RootState = {
   selectedRequest: null,
   serviceTrie: new Trie(),
   serviceTrieInput: "",
+=======
+import { LeftFactory } from '../components/Left';
+import { array } from "prop-types";
+import ServiceAndRequest from '../components/ServiceAndRequest'
+import Messages from '../components/Messages' 
+import Setup from '../components/Setup'  
+
+const initialState: RootState.mainState = {
+  handlers: [],
+  selectedTab: 'tab0',
+  leftArray: [],
+  tabPrimaryKey: 0,
+  serverResponse: {},
+  responseMetrics: '',
+  activeTab: {}
+>>>>>>> a4647b4e77639c4d3465771312582e03c10af937
 };
 
-export const mainReducer = (state: RootState = initialState, action: Types.RootAction) => {
+export const mainReducer = (state: TabState = initialState, action: Types.RootAction) => {
   switch (action.type) {
+<<<<<<< HEAD
     case mainActions.Type.HANDLE_IP_INPUT: {
       return {
         ...state,
@@ -174,116 +185,78 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
           callType: newConnectType,
         },
       };
-    }
+=======
 
-    case mainActions.Type.HANDLE_PROTO_UPLOAD: {
-      const filePath = action.payload[0].path;
-      const packageDefinition = pbActions.loadProtoFile(filePath);
-
-      const { protoServices, protoMessages } = pbActions.parsePackageDefinition(packageDefinition);
-
-      console.log("protoservices", protoServices, "protomessages", protoMessages);
-
-      const newServiceTrie = new Trie();
-      newServiceTrie.insertArrayOfWords(Object.keys(protoServices));
-
-      let requestWordsArr: string[] = [];
-      Object.keys(protoServices).forEach(service => {
-        requestWordsArr = [...requestWordsArr, ...Object.keys(protoServices[service])];
-      });
-
-      const newRequestTrie = new Trie();
-      newRequestTrie.insertArrayOfWords(requestWordsArr);
-
-      const newMessageTrie = new Trie();
-      newMessageTrie.insertArrayOfWords(Object.keys(protoMessages));
-
+    case mainActions.Type.GET_TAB_STATE : {
       return {
         ...state,
-        filePath: filePath,
-        serviceList: protoServices,
-        serviceTrie: newServiceTrie,
-        requestTrie: newRequestTrie,
-        messageTrie: newMessageTrie,
-        messageList: protoMessages,
-        baseConfig: { ...state.baseConfig, packageDefinition: packageDefinition },
-      };
-    }
-
-    case mainActions.Type.HANDLE_SET_MODE: {
-      return {
-        ...state,
-        mode: action.payload,
-      };
-    }
-
-    case mainActions.Type.HANDLE_SERVICE_TRIE: {
-      return {
-        ...state,
-        serviceTrieInput: action.payload,
-        serviceRecommendations: state.serviceTrie.recommend(action.payload),
-      };
-    }
-
-    case mainActions.Type.HANDLE_MESSAGE_TRIE: {
-      return {
-        ...state,
-        messageTrieInput: action.payload,
-        messageRecommendations: state.messageTrie.recommend(action.payload),
-      };
-    }
-
-    case mainActions.Type.HANDLE_CONFIG_INPUT: {
-      let keys = action.payload.id.split(".").slice(1);
-      function findNestedValue(context, keyArray) {
-        // base case
-        if (keyArray.length === 1) {
-          return context;
+        activeTab: {
+          ...state.activeTab,
+          ...action.payload
         }
-        // recu case
-        if (keyArray[0].match("@")) {
-          let loc = Number(keyArray[0].match(/\d+$/)[0]);
-          let con = keyArray[0];
-          con = con.match(/(.+)@/)[1];
-          return findNestedValue(context[con][loc], keyArray.slice(1));
+      }
+>>>>>>> a4647b4e77639c4d3465771312582e03c10af937
+    }
+
+    case mainActions.Type.ADD_NEW_TAB : {
+      const newLeftArray = cloneDeep(state.leftArray)
+      const newSelectedTab = 'tab' + state.tabPrimaryKey;
+      const newTabPrimaryKey = state.tabPrimaryKey + 1;
+      const leftEle = LeftFactory({
+        tabKey: newSelectedTab, getTabState: action.payload
+      })
+      newLeftArray.push(leftEle)
+
+      return ({
+        ...state,
+        leftArray: newLeftArray,
+        tabPrimaryKey: newTabPrimaryKey,
+        selectedTab: newSelectedTab,
+      })
+    }
+
+    case mainActions.Type.REMOVE_TAB : {
+
+      // expect a payload of 'tabN' where N is the tabID
+      let newLeftArray = cloneDeep(state.leftArray);
+      let removeIdx;
+      let newSelectedTab = state.selectedTab;
+
+      // first search for the tab to delete
+      newLeftArray.forEach( (ele, idx) => {
+        if(ele.key === action.payload) {
+          removeIdx = idx;
+        }
+      })
+      // logic if the deleted tab is currently selected
+
+      if( state.selectedTab === action.payload) {
+        // case - where there's nothing left to select
+        if(state.leftArray.length === 1) {
+          console.log('case0')
+          newSelectedTab = '';
+        // case - where you delete the last tab
+        } else if(removeIdx === newLeftArray.length - 1) {
+          console.log('case1')
+          newSelectedTab = state.leftArray[removeIdx - 1].key;
+        // all other cases
         } else {
-          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+          console.log('case2')
+          newSelectedTab = state.leftArray[removeIdx + 1].key;
         }
       }
-
-      // find the correct location
-      let context = findNestedValue(state.configArguments.arguments, keys);
-
-      if (keys[keys.length - 1].includes("@")) {
-        let key = keys[keys.length - 1].match(/(.+)@/)[1];
-        let pos = Number(keys[keys.length - 1].match(/\d+$/)[0]);
-        context[key][pos] = action.payload.value;
-      } else {
-        context[keys[keys.length - 1]] = action.payload.value;
+      // overwrite it with the consecutive elements
+      for(let i=removeIdx; i<newLeftArray.length - 1; i++) {
+        newLeftArray[i] = newLeftArray[i+1];
       }
+      newLeftArray.pop();
 
       return {
         ...state,
-      };
-    }
-
-    case mainActions.Type.HANDLE_REPEATED_CLICK: {
-      let keys = action.payload.id.split(".").slice(1);
-      function findNestedValue(context, keyArray) {
-        // base case
-        if (keyArray.length === 1) {
-          return context;
-        }
-        // recu case
-        if (keyArray[0].match("@")) {
-          let loc = Number(keyArray[0].match(/\d+$/)[0]);
-          let con = keyArray[0];
-          con = con.match(/(.+)@/)[1];
-          return findNestedValue(context[con][loc], keyArray.slice(1));
-        } else {
-          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
-        }
+        leftArray: newLeftArray,
+        selectedTab: newSelectedTab,
       }
+<<<<<<< HEAD
 
       // find the correct location
       let context = findNestedValue(state.configArguments.arguments, keys);
@@ -338,6 +311,16 @@ export const mainReducer = (state: RootState = initialState, action: Types.RootA
         ...state,
         serverResponse: action.payload,
       };
+=======
+    }
+
+    case mainActions.Type.SELECT_TAB : {
+      const newSelectedTab = action.payload
+      return {
+        ...state,
+        selectedTab: newSelectedTab
+      }
+>>>>>>> a4647b4e77639c4d3465771312582e03c10af937
     }
 
     default: {
