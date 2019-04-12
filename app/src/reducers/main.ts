@@ -1,24 +1,8 @@
-
-// import { RootState } from "./state";
 import { mainActions, mainRequestActions } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
-import {
-  CallType,
-  BaseConfig,
-  RequestConfig,
-  UnaryRequestBody,
-  ClientStreamRequestBody,
-  ServerStreamRequestBody,
-  BidiStreamRequestBody,
-  GrpcHandlerFactory,
-  StreamAction,
-} from "../../lib/local/grpcHandlerFactory";
-import * as pbActions from "../../lib/local/pbActions";
-import { Trie } from "../utils/trieClass";
 import * as Types from "MyTypes";
-import { array } from "prop-types";
 
 const initialState: MainModel = {
   handlers: {},
@@ -26,7 +10,7 @@ const initialState: MainModel = {
   leftArray: [],
   tabPrimaryKey: 0,
   handlerInfo: {},
-  responseMetrics: '',
+  // responseMetrics: '', //move to inside of handlerInfo
   activeTab: {},
 };
 
@@ -51,7 +35,8 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       // set initial handler info
       newHandlerInfo[newSelectedTab] = {
         serverResponse: {},
-        isStreaming: false
+        isStreaming: false,
+        responseMetrics: ''
       }
       // give location for handler to be stored
       state.handlers[newSelectedTab] = null;
@@ -124,6 +109,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainRequestActions.Type.SET_GRPC_RESPONSE: {
       let newHandlerInfo = cloneDeep(state.handlerInfo)
       newHandlerInfo[state.selectedTab].serverResponse = action.payload;
+      newHandlerInfo[state.selectedTab].responseMetrics = "Success";
       return {
         ...state,
         handlerInfo: newHandlerInfo

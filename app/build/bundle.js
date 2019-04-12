@@ -535,7 +535,6 @@ var mainRequestActions;
             var mergedConfig = __assign({}, activeTab.baseConfig, requestConfig);
             var handler = grpcHandlerFactory_1.GrpcHandlerFactory.createHandler(mergedConfig);
             state.handlers[state.selectedTab] = handler;
-            // const newHandlers = cloneDeep(state.handlers)
             handler.initiateRequest().then(function (response) {
                 dispatch(mainRequestActions.setGRPCResponse(response));
             });
@@ -547,18 +546,14 @@ var mainRequestActions;
         if (activeTab.requestConfig.callType === grpcHandlerFactory_1.CallType.CLIENT_STREAM) {
             var requestConfig = __assign({}, activeTab.requestConfig, { streamConfig: { onEndCb: function (res) { return dispatch(mainRequestActions.setGRPCResponse(res)); } }, argument: {} });
             var mergedConfig = __assign({}, activeTab.baseConfig, requestConfig);
-            //console.log('the merged config is...',mergedConfig)
             var handler = grpcHandlerFactory_1.GrpcHandlerFactory.createHandler(mergedConfig);
-            //console.log('this is the handler', handler)
             handler.initiateRequest();
+            var now = new Date();
+            state.handlerInfo[state.selectedTab].responseMetrics = "Stream started at: " + now.toLocaleTimeString();
             //console.log('Starting stream!')
             var writableStream = handler.returnHandler().writableStream;
             //console.log('writable stream:', writableStream)
             state.handlers[state.selectedTab] = writableStream;
-            // writableStream.write({ numb: 10 });
-            // writableStream.write({ numb: 15 });
-            // writableStream.write({ numb: 20 });
-            // writableStream.end();
         }
     }; };
 })(mainRequestActions = exports.mainRequestActions || (exports.mainRequestActions = {}));
@@ -580,13 +575,12 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var grpcHandlerFactory_1 = __webpack_require__(/*! ../../lib/local/grpcHandlerFactory */ "./app/lib/local/grpcHandlerFactory.ts");
 function Header(props, context) {
     var handlerInfo = props.handlerInfo, handlers = props.handlers, handleClientStreamStart = props.handleClientStreamStart, handleUnaryRequest = props.handleUnaryRequest, toggleStream = props.toggleStream, activeTab = props.activeTab, getTabState = props.getTabState, selectTab = props.selectTab, removeTab = props.removeTab, addNewTab = props.addNewTab, leftArray = props.leftArray, selectedTab = props.selectedTab;
-    var sendButtonText = "SEND REQUEST";
     var userConnectType;
     var callType;
     var trail;
     if (activeTab.requestConfig) {
         callType = activeTab.requestConfig.callType;
-        trail = activeTab.baseConfig.grpcServerURI ? activeTab.baseConfig.grpcServerURI + " \u2192" : "";
+        trail = activeTab.baseConfig.grpcServerURI ? activeTab.baseConfig.grpcServerURI + " \u2192 " : "";
         trail += activeTab.selectedService ? "" + activeTab.selectedService : "";
         trail += activeTab.selectedRequest ? " \u2192 " + activeTab.selectedRequest : "";
     }
@@ -626,7 +620,7 @@ function Header(props, context) {
     var tabArray = [];
     leftArray.forEach(function (tab) {
         tabArray.push(React.createElement("div", { key: "button" + tab.key, className: tab.key === selectedTab ? "tab selected" : "tab", onClick: function () { return selectTab(tab.key); } },
-            tab.key,
+            tab.props.tabKey,
             props.leftArray.length > 1 ? React.createElement("button", { onClick: function (e) {
                     e.stopPropagation();
                     removeTab(tab.key);
@@ -641,7 +635,12 @@ function Header(props, context) {
                 React.createElement("div", { className: "trail" }, trail),
                 React.createElement("div", { className: "connection-display" }, userConnectType),
                 displayButton,
-                React.createElement("button", { className: "stop-button", disabled: disabledFlag, onClick: function () { handlers[selectedTab].end(); toggleStream(false); } }, "STOP STREAM")),
+                React.createElement("button", { className: "stop-button", disabled: disabledFlag, onClick: function () {
+                        handlers[selectedTab].end();
+                        var endTime = new Date();
+                        handlerInfo[selectedTab].responseMetrics = "Stream ended at: " + endTime.toLocaleTimeString();
+                        toggleStream(false);
+                    } }, "STOP STREAM")),
             React.createElement("div", { className: "header-right" },
                 React.createElement("h1", null, "MuninRPC"),
                 React.createElement("img", { className: "logo", src: "./src/assets/raven.png" }))),
@@ -866,7 +865,7 @@ exports.LeftFactory = function (props) {
         if (state.mode === Mode.SHOW_SETUP) {
             mode = React.createElement(Setup_1.default, __assign({}, state, { handleRepeatedClick: handleRepeatedClick, handleConfigInput: handleConfigInput }));
         }
-        return (React.createElement("div", { id: "tab", className: state.tabKey },
+        return (React.createElement("div", { id: "tab" },
             React.createElement("h1", { onClick: function () { return console.log(state); }, style: { color: "black" } }, state.tabKey),
             React.createElement("div", { className: "input-header" },
                 React.createElement("div", { className: "address-box" },
@@ -965,7 +964,7 @@ function Right(props, context) {
         React.createElement("h2", null, "Server Response"),
         React.createElement("div", { className: "response-display" },
             React.createElement(react_json_view_1.default, { src: props.leftArray[0] ? props.handlerInfo[props.selectedTab].serverResponse : {} })),
-        React.createElement("div", { className: "response-metrics" }, props.responseMetrics)));
+        React.createElement("div", { className: "response-metrics" }, props.leftArray[0] ? props.handlerInfo[props.selectedTab].responseMetrics : '')));
 }
 exports.Right = Right;
 
@@ -1319,7 +1318,6 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import { RootState } from "./state";
 var actions_1 = __webpack_require__(/*! ../actions */ "./app/src/actions/index.ts");
 var cloneDeep = __webpack_require__(/*! lodash.clonedeep */ "./node_modules/lodash.clonedeep/index.js");
 var Left_1 = __webpack_require__(/*! ../components/Left */ "./app/src/components/Left.tsx");
@@ -1329,7 +1327,7 @@ var initialState = {
     leftArray: [],
     tabPrimaryKey: 0,
     handlerInfo: {},
-    responseMetrics: '',
+    // responseMetrics: '', //move to inside of handlerInfo
     activeTab: {},
 };
 exports.mainReducer = function (state, action) {
@@ -1345,7 +1343,8 @@ exports.mainReducer = function (state, action) {
             // set initial handler info
             newHandlerInfo[newSelectedTab] = {
                 serverResponse: {},
-                isStreaming: false
+                isStreaming: false,
+                responseMetrics: ''
             };
             // give location for handler to be stored
             state.handlers[newSelectedTab] = null;
@@ -1399,6 +1398,7 @@ exports.mainReducer = function (state, action) {
         case actions_1.mainRequestActions.Type.SET_GRPC_RESPONSE: {
             var newHandlerInfo = cloneDeep(state.handlerInfo);
             newHandlerInfo[state.selectedTab].serverResponse = action.payload;
+            newHandlerInfo[state.selectedTab].responseMetrics = "Success";
             return __assign({}, state, { handlerInfo: newHandlerInfo });
         }
         case actions_1.mainActions.Type.TOGGLE_STREAM: {

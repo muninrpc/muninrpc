@@ -119,7 +119,7 @@ export const LeftFactory = props => {
           ...state.requestConfig,
           requestName: payload.request,
           callType: newConnectType,
-        },
+        }
       });
     };
 
@@ -134,6 +134,7 @@ export const LeftFactory = props => {
           requestConfig: { ...state.requestConfig, requestName: "", callType: null },
         });
       }
+
       updateState({
         ...state,
         selectedService: payload.service,
@@ -141,7 +142,7 @@ export const LeftFactory = props => {
           ...state.baseConfig,
           packageName: payload.service.match(/(.+)\./)[1],
           serviceName: payload.service.match(/\.(.+)/)[1],
-        },
+        }
       });
     };
 
@@ -163,11 +164,12 @@ export const LeftFactory = props => {
         requestTrieInput: val,
         // requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
       });
-    const handleIPInput = val =>
+    const handleIPInput = val => 
       updateState({
         ...state,
         baseConfig: { ...state.baseConfig, grpcServerURI: val },
       });
+    
     const handleProtoUpload = file => {
       // handle file
       const filePath = file[0].path;
@@ -300,10 +302,10 @@ export const LeftFactory = props => {
     if (state.mode === Mode.SHOW_SETUP) {
       mode = <Setup {...state} handleRepeatedClick={handleRepeatedClick} handleConfigInput={handleConfigInput} />;
     }
-
+  
     return (
-      <div id="tab" className={state.tabKey}>
-        <h1 onClick={() => console.log(state)} style={{ color: "black" }}>
+      <div id="tab">
+        <h1 onClick={() => console.log(state)} style={{ color: "black" }}> 
           {state.tabKey}
         </h1>
         <div className="input-header">
