@@ -3,17 +3,10 @@ import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
 import { actions } from "./actions";
 import { MainModel } from "./models";
-import { omit } from "./utils";
-import * as Types from "MyTypes";
-
-
-// const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
-//   key => MainModel.Mode[key],
-// );
+import MyTypes from "./store"
 
 type AppProps = {
   main: MainModel;
-  actions: mainActions;
 };
 
 // import components

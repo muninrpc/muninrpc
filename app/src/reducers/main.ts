@@ -4,21 +4,7 @@ import { mainActions, mainRequestActions } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from '../components/Left';
-import {
-  CallType,
-  BaseConfig,
-  RequestConfig,
-  UnaryRequestBody,
-  ClientStreamRequestBody,
-  ServerStreamRequestBody,
-  BidiStreamRequestBody,
-  GrpcHandlerFactory,
-  StreamAction,
-} from "../../lib/local/grpcHandlerFactory";
-import * as pbActions from "../../lib/local/pbActions";
-import { Trie } from "../utils/trieClass";
 import * as Types from "MyTypes";
-import { array } from "prop-types";
 
 const initialState: MainModel = {
   handlers: {},
@@ -93,11 +79,11 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
         // case - where you delete the last tab
         } else if(removeIdx === newLeftArray.length - 1) {
           console.log('case1')
-          newSelectedTab = state.leftArray[removeIdx - 1].key;
+          newSelectedTab = state.leftArray[removeIdx - 1].key.toString();
         // all other cases
         } else {
           console.log('case2')
-          newSelectedTab = state.leftArray[removeIdx + 1].key;
+          newSelectedTab = state.leftArray[removeIdx + 1].key.toString();
         }
       }
       // overwrite it with the consecutive elements

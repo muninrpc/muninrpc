@@ -17,7 +17,6 @@ export namespace ServiceAndRequestProps {
     serviceRecommendations: string[];
     serviceTrieInput: string;
     requestTrieInput: string;
-    
   }
 }
 
@@ -89,6 +88,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
         <div
           className="service-area"
           onClick={e => {
+            //@ts-ignore
             if (e.target.className === "service-area") {
               props.handleServiceClick({ service: "" });
             }

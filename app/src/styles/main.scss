@@ -25,7 +25,7 @@ body {
   height: 100%;
   width: 100%;
 
-  min-width: 800px;
+  min-width: 700px;
   min-height: 700px;
 }
 
@@ -59,4 +59,20 @@ button:hover {
 
 textarea {
   resize: none;
+}
+
+@media (max-width: 1000px) {
+  .header {
+    h1 {
+      opacity: 0;
+    }
+  }
+}
+
+@media (max-width: 800px) {
+  .header {
+    img {
+      opacity: 0;
+    }
+  }
 }

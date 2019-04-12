@@ -117,6 +117,9 @@
 
   .tabs {
 
+    display: flex;
+    flex-flow: row nowrap;
+
     button {
       height: 2rem;
       padding: 0 30px;

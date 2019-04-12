@@ -26,7 +26,6 @@
         font-size: 0.7rem;
         font-weight: 700;
         margin-left: 25px;
-        margin-right: 20px;
         padding: 4px 20px;
         background: $primary-color;
         color: white;
@@ -37,7 +36,6 @@
       button:hover {
         color: $primary-color;
         background: white;
-
       }
       button:active {
         color: darken($primary-color, 20%);
@@ -71,6 +69,7 @@
       }
       .trail {
         height: 1.7rem;
+        min-width: 200px;
         flex-grow: 1;
         padding: 5px;
         color: black;
@@ -110,7 +109,7 @@
       display: flex;
       flex-flow: row wrap;
       border-bottom: 3px solid lightgrey; 
-      height: 40px;
+      height: auto;
       padding: 0 30px;
       margin-top: 20px;
       
@@ -118,17 +117,21 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-grow: 0.5;
-        padding: 0 10px;
-        margin-right: 20px;
-        transition: 0.2s ease all;
+        flex-grow: 1;
+        min-width: 130px;
+        padding: 6px 10px;
         padding-bottom: 0px;
+        margin-right: 20px;
+        margin-bottom: 3px;
+        transition: 0.2s ease all;
         border-left: 1px solid lightgrey;
         border-right: 1px solid lightgrey;
+        border-top: 1px solid lightgray;
       }
       .tab:hover {
         color: white;
         background: $primary-color;
+        cursor: pointer;
       }
 
       .selected {
@@ -161,3 +164,4 @@
     }
   }
 }
+

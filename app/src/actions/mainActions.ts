@@ -1,10 +1,4 @@
 import { action } from "typesafe-actions";
-import { Mode } from "../models";
-import { MainModel } from "../models/MainModel";
-import {
-  mainRequestActions
-} from "./mainRequestActions"
-import { cloneDeep } from "@babel/types";
 
 export namespace mainActions {
   export enum Type {

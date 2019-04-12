@@ -1,13 +1,8 @@
 import * as React from "react";
 import ReactJson from 'react-json-view';
+import { MainModel } from "../models"
 
-export interface RightProps {
-  serverResponse: object;
-  responseMetrics: string;
-}
-
-
-export function Right(props: RightProps, context?: any) {
+export function Right(props: MainModel, context?: any) {
   
   return (
     <div className="right-half">

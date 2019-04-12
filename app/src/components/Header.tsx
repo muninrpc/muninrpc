@@ -9,13 +9,11 @@ export interface HeaderActions {
   toggleStream: any;
   handleUnaryRequest: any;
   handleClientStreamStart: any;
-  
 }
 
 export function Header(props: MainModel & HeaderActions, context?: any) {
 
   const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
-
 
   let sendButtonText = "SEND REQUEST";
   let userConnectType;

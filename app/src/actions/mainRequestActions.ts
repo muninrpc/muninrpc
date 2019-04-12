@@ -57,19 +57,10 @@ export namespace mainRequestActions {
         ...activeTab.baseConfig,
         ...requestConfig
       };
-      //console.log('the merged config is...',mergedConfig)
       const handler = GrpcHandlerFactory.createHandler(mergedConfig);
-      //console.log('this is the handler', handler)
       handler.initiateRequest()
-      //console.log('Starting stream!')
       const { writableStream } =  handler.returnHandler();
-      //console.log('writable stream:', writableStream)
       state.handlers[state.selectedTab] = writableStream;
-
-      // writableStream.write({ numb: 10 });
-      // writableStream.write({ numb: 15 });
-      // writableStream.write({ numb: 20 });
-      // writableStream.end();
     }
   };
   
