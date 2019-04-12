@@ -109,7 +109,6 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainRequestActions.Type.SET_GRPC_RESPONSE: {
       let newHandlerInfo = cloneDeep(state.handlerInfo)
       newHandlerInfo[state.selectedTab].serverResponse = action.payload;
-      newHandlerInfo[state.selectedTab].responseMetrics = "Success";
       return {
         ...state,
         handlerInfo: newHandlerInfo
@@ -119,6 +118,16 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainActions.Type.TOGGLE_STREAM: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].isStreaming = action.payload;
+      return {
+        ...state,
+        handlerInfo: newHandlerInfo
+      }
+    }
+
+    case mainRequestActions.Type.HANDLE_SEND_MESSAGE: {
+      state.handlers[state.selectedTab].write(state.activeTab.configArguments.arguments)
+      let newHandlerInfo = cloneDeep(state.handlerInfo);
+      newHandlerInfo[state.selectedTab].responseMetrics = `Message sent at: ${(new Date()).toLocaleTimeString()}`
       return {
         ...state,
         handlerInfo: newHandlerInfo

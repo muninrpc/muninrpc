@@ -17,6 +17,7 @@ export namespace mainRequestActions {
     HANDLE_UNARY_REQUEST = "HANDLE_UNARY_REQUEST",
     HANDLE_CLIENT_STREAM_START = "HANDLE_CLIENT_STREAM_START",
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
+    HANDLE_SEND_MESSAGE = "HANDLE_SEND_MESSAGE"
   }
 
   export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response)
@@ -36,6 +37,7 @@ export namespace mainRequestActions {
       };
       const handler = GrpcHandlerFactory.createHandler(mergedConfig);
       state.handlers[state.selectedTab] = handler;
+      state.handlerInfo[state.selectedTab].responseMetrics =  `Request called at: ${(new Date()).toLocaleTimeString()}`;
       
       handler.initiateRequest().then(response => {
         dispatch(setGRPCResponse(response));
@@ -59,14 +61,15 @@ export namespace mainRequestActions {
       };
       const handler = GrpcHandlerFactory.createHandler(mergedConfig);
       handler.initiateRequest();
-      let now = new Date();
-      state.handlerInfo[state.selectedTab].responseMetrics =  `Stream started at: ${now.toLocaleTimeString()}`;
+      state.handlerInfo[state.selectedTab].responseMetrics =  `Stream started at: ${(new Date()).toLocaleTimeString()}`;
       //console.log('Starting stream!')
       const { writableStream } =  handler.returnHandler();
       //console.log('writable stream:', writableStream)
       state.handlers[state.selectedTab] = writableStream;
     }
   };
+
+  export const handleSendMessage = () => action(Type.HANDLE_SEND_MESSAGE)
   
 
 }

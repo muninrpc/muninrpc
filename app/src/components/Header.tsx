@@ -9,6 +9,7 @@ export interface HeaderActions {
   toggleStream: any;
   handleUnaryRequest: any;
   handleClientStreamStart: any;
+  handleSendMessage: any;
   
 }
 
@@ -42,7 +43,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     }>START STREAM</button>)
 
   const writeToStreamButton = 
-    (<button className='write-stream-btn' onClick={() => handlers[selectedTab].write(activeTab.configArguments.arguments)}>SEND MESSAGE</button>)
+    (<button className='write-stream-btn' onClick={props.handleSendMessage}>SEND MESSAGE</button>)
 
   switch (callType) {
     case CallType.UNARY_CALL: {
@@ -110,8 +111,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
             className="stop-button" disabled={disabledFlag}
             onClick={() => {
               handlers[selectedTab].end();
-              let endTime = new Date();
-              handlerInfo[selectedTab].responseMetrics = `Stream ended at: ${endTime.toLocaleTimeString()}`
+              handlerInfo[selectedTab].responseMetrics = `Stream ended at: ${(new Date()).toLocaleTimeString()}`
               toggleStream(false);
              }}
           >
