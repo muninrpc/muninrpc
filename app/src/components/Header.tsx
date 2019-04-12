@@ -9,6 +9,7 @@ export interface HeaderActions {
   toggleStream: any;
   handleUnaryRequest: any;
   handleClientStreamStart: any;
+  handleSendMessage: any;
   
 }
 
@@ -16,14 +17,12 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
 
   const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
 
-
-  let sendButtonText = "SEND REQUEST";
   let userConnectType;
   let callType;
   let trail;
   if (activeTab.requestConfig) {
     callType = activeTab.requestConfig.callType;
-    trail = activeTab.baseConfig.grpcServerURI ? `${activeTab.baseConfig.grpcServerURI} →` : "";
+    trail = activeTab.baseConfig.grpcServerURI ? `${activeTab.baseConfig.grpcServerURI} → ` : "";
     trail += activeTab.selectedService ? `${activeTab.selectedService}` : "";
     trail += activeTab.selectedRequest ? ` → ${activeTab.selectedRequest}` : "";
   }
@@ -44,7 +43,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     }>START STREAM</button>)
 
   const writeToStreamButton = 
-    (<button className='write-stream-btn' onClick={() => handlers[selectedTab].write(activeTab.configArguments.arguments)}>SEND MESSAGE</button>)
+    (<button className='write-stream-btn' onClick={props.handleSendMessage}>SEND MESSAGE</button>)
 
   switch (callType) {
     case CallType.UNARY_CALL: {
@@ -81,7 +80,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
         className={tab.key === selectedTab ? "tab selected" : "tab"}
         onClick={() => selectTab(tab.key)}
       >
-        {tab.key}
+        {tab.props.tabKey}
         {props.leftArray.length > 1 ? <button
           onClick={e => {
             e.stopPropagation();
@@ -90,7 +89,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
         >
           x
         </button> : ''}
-      </div>,
+      </div>
     );
   });
 
@@ -110,7 +109,11 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
           {displayButton}
           <button 
             className="stop-button" disabled={disabledFlag}
-            onClick={() => {handlers[selectedTab].end(); toggleStream(false); }}
+            onClick={() => {
+              handlers[selectedTab].end();
+              handlerInfo[selectedTab].responseMetrics = `Stream ended at: ${(new Date()).toLocaleTimeString()}`
+              toggleStream(false);
+             }}
           >
             STOP STREAM
           </button>
