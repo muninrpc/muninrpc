@@ -10,12 +10,12 @@ export interface HeaderActions {
   handleUnaryRequest: any;
   handleClientStreamStart: any;
   handleSendMessage: any;
-  
+  handleStopStream: any;
 }
 
 export function Header(props: MainModel & HeaderActions, context?: any) {
 
-  const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab } = props; 
+  const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab, handleStopStream } = props; 
 
   let userConnectType;
   let callType;
@@ -109,11 +109,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
           {displayButton}
           <button 
             className="stop-button" disabled={disabledFlag}
-            onClick={() => {
-              handlers[selectedTab].end();
-              handlerInfo[selectedTab].responseMetrics = `Stream ended at: ${(new Date()).toLocaleTimeString()}`
-              toggleStream(false);
-             }}
+            onClick={handleStopStream}
           >
             STOP STREAM
           </button>

@@ -17,11 +17,37 @@
   .response-metrics {
     height: 1.6rem;
     width: 100%;
-    padding: 5px;
+    // padding: 5px;
     background: white;
     text-align: right;
     border: 1px solid lightgrey;
     color: darkgrey;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow-y: scroll;
+    overflow-x: scroll;
+
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  .response-metrics::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+  }
+
+  .metrics-time {
+    font-size: 0.8rem;
+  }
+
+  .metrics-request {
+    margin-right: 5px;
+    font-size: 0.8rem;
+    flex-grow: 1;
+
   }
 
 }
