@@ -10,7 +10,7 @@ export function Right(props: MainModel, context?: any) {
       <div className="response-display">
         <ReactJson src={props.leftArray[0] ? props.handlerInfo[props.selectedTab].serverResponse : {}} />
       </div>
-      <div className="response-metrics">{props.responseMetrics}</div>
+      <div className="response-metrics">{props.leftArray[0] ? props.handlerInfo[props.selectedTab].responseMetrics : ''}</div>
     </div>
   );
 }
