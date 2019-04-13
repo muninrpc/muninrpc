@@ -8,7 +8,8 @@
     "serve": "electron .",
     "start": "npm-run-all --parallel bundle serve",
     "test": "jest",
-    "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron"
+    "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron",
+    "grpcserver": "node app/__tests__/grpc-server/grpc-server.js"
   },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",

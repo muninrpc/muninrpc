@@ -241,9 +241,6 @@ export default function Setup(props: SetupProps, context?: any) {
   return (
     <div className="setup">
       <h2>Setup</h2>
-      <div className="setup-header">
-        <input type="text" placeholder="search for messages" />
-      </div>
       <div className="setup-area">{additionalMessages}</div>
     </div>
   );

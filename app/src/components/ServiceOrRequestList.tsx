@@ -31,7 +31,7 @@ export function ServiceOrRequestList(props: ServiceOrRequestListProps.Props) {
           onClick={() => props.onClickHandler({ request: item, service: props.selectedService })}
           className={props.selectedRequest === item ? "selected" : ""}
         >
-          {props.selectedService} → {item}
+          {props.selectedService} →  {item}
         </p>,
       );
     }

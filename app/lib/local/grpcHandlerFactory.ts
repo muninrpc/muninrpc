@@ -2,6 +2,7 @@ import * as grpc from "grpc";
 import * as protoLoader from "@grpc/proto-loader";
 import { applyMixins } from "../../src/utils/";
 
+//base config: properties that all config objects will have
 export interface BaseConfig {
   grpcServerURI: string;
   packageDefinition: protoLoader.PackageDefinition;
@@ -30,6 +31,7 @@ export interface BidiAndServerStreamCbs {
   onDataWriteCb?: (a: any) => void;
 }
 
+//enums for the 4 types of calls
 export enum CallType {
   UNARY_CALL = "UNARY_CALL",
   CLIENT_STREAM = "CLIENT_STREAM",
@@ -123,8 +125,10 @@ abstract class GrpcHandler {
     ) as grpc.Client;
   }
 
+  //all handlers will be able to initiate a request
   abstract initiateRequest();
 
+  //all handlers will close in the same way
   closeConnection() {
     this.client.close();
   }
@@ -137,6 +141,7 @@ class UnaryHandler extends GrpcHandler {
 
   public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
+      console.log(this.args)
       this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
           reject(err);
@@ -169,6 +174,7 @@ class ClientStreamHandler extends GrpcHandler implements GrpcWriter {
   upgradeWrite: (base: grpc.ClientWritableStream<any>) => grpc.ClientWritableStream<any>;
 
   public initiateRequest() {
+    
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
         throw err;
@@ -267,6 +273,7 @@ class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
   }
 }
 
+//factory function to create gRPC connections
 export class GrpcHandlerFactory {
   static createHandler(
     config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>,
