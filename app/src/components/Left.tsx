@@ -162,7 +162,7 @@ export const LeftFactory = props => {
       updateState({
         ...state,
         requestTrieInput: val,
-        // requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
+        requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
       });
     const handleIPInput = val => 
       updateState({

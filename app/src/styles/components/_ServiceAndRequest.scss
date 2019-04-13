@@ -50,17 +50,18 @@
     }
     .service-area {
       border: 1px solid lightgrey;
-      display: flex;
-      flex-grow: 1;
+      // display: flex;
+      overflow-y: scroll;
       flex-flow: column nowrap;
       align-items: flex-start;
+      height: 80%;
     }
   }
 
   .service-request-right {
     height: 100%;
     width: 50%;
-    display: flex;
+    // display: flex;
     flex-flow: column nowrap;
 
     .request-header {
@@ -76,10 +77,16 @@
     }
     .request-area {
       border: 1px solid lightgrey;
-      flex-grow: 1;
-      display: flex;
+      // display: flex;
+      overflow-y: scroll;
       flex-flow: column nowrap;
       align-items: flex-start;
+      height: 80%;
+
+      p {
+        flex-basis: content;
+      }
+
     }
   }
 
