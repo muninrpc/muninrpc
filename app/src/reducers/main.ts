@@ -127,7 +127,25 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainRequestActions.Type.HANDLE_SEND_MESSAGE: {
       state.handlers[state.selectedTab].write(state.activeTab.configArguments.arguments)
       let newHandlerInfo = cloneDeep(state.handlerInfo);
-      newHandlerInfo[state.selectedTab].responseMetrics = `Message sent at: ${(new Date()).toLocaleTimeString()}`
+      newHandlerInfo[state.selectedTab].responseMetrics = {
+        timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+        request: 'Message sent'
+      }
+      return {
+        ...state,
+        handlerInfo: newHandlerInfo
+      }
+    }
+
+    case mainRequestActions.Type.HANDLE_STOP_STREAM: {
+      state.handlers[state.selectedTab].end();
+      let newHandlerInfo = cloneDeep(state.handlerInfo);
+      newHandlerInfo[state.selectedTab].responseMetrics = {
+        timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+        request: `${state.activeTab.selectedRequest} stopped`
+      }
+      newHandlerInfo[state.selectedTab].isStreaming = false;
+
       return {
         ...state,
         handlerInfo: newHandlerInfo
