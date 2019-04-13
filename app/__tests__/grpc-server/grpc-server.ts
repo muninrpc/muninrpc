@@ -2,6 +2,7 @@ const path = require("path");
 const PROTO_PATH = path.resolve(__dirname, "./protos/todo.proto");
 import * as grpc from "grpc";
 const async = require("async");
+import * as _ from 'lodash';
 
 const protoLoader = require("@grpc/proto-loader");
 
@@ -59,9 +60,12 @@ function CalculateAverage(call: grpc.ServerReadableStream<any>, callback: grpc.r
 
 function TestServerStream(call: grpc.ServerWriteableStream<any>) {
   const responseArr = [{ numb: 1 }, { numb: 2 }, { numb: 3 }, { numb: 4 }, { numb: 5 }];
-  responseArr.forEach(val => {
-    call.write(val);
-  });
+  call.write(responseArr[0])
+    _.delay(() => call.write(responseArr[1]), 2000)
+    _.delay(() => call.write(responseArr[2]), 3000)
+    _.delay(() => call.write(responseArr[3]), 4000)
+    _.delay(() => call.write(responseArr[4]), 5000)
+    
   call.end();
 }
 

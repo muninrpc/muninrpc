@@ -27,7 +27,7 @@ export interface BidiAndServerStreamCbs {
   // on end to fire any intermediate render updates
   onDataReadCb: (a: any) => void;
   // on end to fire off any final render updates or tests
-  onEndReadCb: (a: any) => void;
+  onEndReadCb?: (a: any) => void;
   onDataWriteCb?: (a: any) => void;
 }
 
@@ -46,7 +46,7 @@ class GrpcReader {
   onEndReadCb: (o: object[]) => void;
 
   updateReadData(newData: object) {
-    this.data.push({ type: "read", payload: newData });
+    this.data = [({ type: "read", payload: newData }), ...this.data];
   }
 
   // registerObservers(obs: Observer) {
@@ -70,7 +70,7 @@ class GrpcWriter {
   onDataWriteCb: (data: object) => void;
 
   updateWriteData(newData: object) {
-    this.data.push(newData);
+    this.data = [({ type: "write", payload: newData }), ...this.data];
   }
 
   // registerObservers(obs: Observer) {

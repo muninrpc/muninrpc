@@ -89,9 +89,12 @@ export namespace mainRequestActions {
 
       const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
-        streamConfig: { 
-          onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
-          onEndCb: () => null
+        callbacks: {
+          onDataReadCb: (res) => {
+            console.log('Recieving streamed server data', res)
+            dispatch(setGRPCResponse(res); 
+          }), 
+          onEndReadCb: (res) => dispatch(setGRPCResponse(res)),
         },
         argument: {},
       };
@@ -117,9 +120,10 @@ export namespace mainRequestActions {
 
       const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
-        streamConfig: { 
-          onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
-          onEndCb: () => null 
+        callbacks: { 
+          onDataReadCb:(res) => dispatch(setGRPCResponse(res)),
+          onDataWriteCb: (res) => { console.log('Writing data from client to server:', res[res.length-1][1].payload) },
+          onEndReadCb: () => { console.log('Ending Stream') }
         },
         argument: {},
       };

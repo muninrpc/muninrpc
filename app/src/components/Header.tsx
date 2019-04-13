@@ -71,7 +71,7 @@ export function Header(props: MainModel & actions, context?: any) {
     }
     case CallType.BIDI_STREAM: {
       userConnectType = "BIDIRECTIONAL";
-      displayButton = startBidiStreamButton;      
+      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startBidiStreamButton;      
       break;
     }
     default: {
