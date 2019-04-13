@@ -16,6 +16,17 @@ service MathOperations {
   rpc Subtract(NoFields) returns (NoFields) {}
   rpc Multiply(NoFields) returns (NoFields) {}
   rpc Divide(NoFields) returns (NoFields) {}
+
+  rpc Garbage1(NoFields) returns (NoFields) {}
+  rpc Garbage2(NoFields) returns (NoFields) {}
+  rpc Garbage3(NoFields) returns (NoFields) {}
+  rpc Garbage4(NoFields) returns (NoFields) {}
+  rpc Garbage5(NoFields) returns (NoFields) {}
+  rpc Garbage6(NoFields) returns (NoFields) {}
+  rpc Garbage7(NoFields) returns (NoFields) {}
+  rpc Garbage8(NoFields) returns (NoFields) {}
+  rpc Garbage9(NoFields) returns (NoFields) {}
+  rpc Garbage0(NoFields) returns (NoFields) {}
 }
 
 message MessageRepeating {
