@@ -8,6 +8,14 @@
   h1 {
     margin-bottom: 20px;
   }
+
+  .tab-header {
+
+    border: none;
+    font-size: 2rem;
+    margin-bottom: 18px;
+
+  }
   
 
   #tab {
@@ -116,6 +124,9 @@
   }
 
   .tabs {
+
+    display: flex;
+    flex-flow: row nowrap;
 
     button {
       height: 2rem;

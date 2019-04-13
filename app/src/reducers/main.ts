@@ -12,6 +12,7 @@ const initialState: MainModel = {
   handlerInfo: {},
   // responseMetrics: '', //move to inside of handlerInfo
   activeTab: {},
+  tabInfo: {}
 };
 
 export const mainReducer = (state: MainModel = initialState, action: Types.RootAction) => {
@@ -32,9 +33,10 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       const newLeftArray = cloneDeep(state.leftArray)
       const newSelectedTab = 'tab' + state.tabPrimaryKey;
       const newHandlerInfo = cloneDeep(state.handlerInfo);
+
       // set initial handler info
       newHandlerInfo[newSelectedTab] = {
-        serverResponse: {},
+        serverResponse: [],
         isStreaming: false,
         responseMetrics: ''
       }
@@ -42,16 +44,21 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       state.handlers[newSelectedTab] = null;
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
       const leftEle = LeftFactory({
-        tabKey: newSelectedTab, getTabState: action.payload
+        tabKey: newSelectedTab, getTabState: action.payload.getTabState, updateTabNames: action.payload.updateTabNames
       })
       newLeftArray.push(leftEle)
+
+      // create location for tab names to be stored
+      const newTabInfo = cloneDeep(state.tabInfo);
+      newTabInfo[newSelectedTab] = 'New Connection';
 
       return ({
         ...state,
         leftArray: newLeftArray,
         tabPrimaryKey: newTabPrimaryKey,
         selectedTab: newSelectedTab,
-        handlerInfo: newHandlerInfo
+        handlerInfo: newHandlerInfo,
+        tabInfo: newTabInfo
       })
     }
 
@@ -78,11 +85,11 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
         // case - where you delete the last tab
         } else if(removeIdx === newLeftArray.length - 1) {
           console.log('case1')
-          newSelectedTab = state.leftArray[removeIdx - 1].key;
+          newSelectedTab = state.leftArray[removeIdx - 1].key.toString();
         // all other cases
         } else {
           console.log('case2')
-          newSelectedTab = state.leftArray[removeIdx + 1].key;
+          newSelectedTab = state.leftArray[removeIdx + 1].key.toString();
         }
       }
       // overwrite it with the consecutive elements
@@ -103,6 +110,15 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       return {
         ...state,
         selectedTab: newSelectedTab
+      }
+    }
+
+    case mainActions.Type.UPDATE_TAB_NAMES : {
+      const newTabInfo = cloneDeep(state.tabInfo)
+      newTabInfo[action.payload.tabKey] = action.payload.val;
+      return {
+        ...state,
+        tabInfo: newTabInfo
       }
     }
 

@@ -1,9 +1,13 @@
 import * as React from "react";
 import ReactJson from 'react-json-view';
+import { MainModel } from "../models"
 
 export interface RightProps {
   serverResponse: object;
   responseMetrics: string;
+  handlerInfo: any;
+  selectedTab: string;
+  leftArray: any;
 }
 
 
@@ -17,7 +21,7 @@ export function Right(props: RightProps, context?: any) {
     <div className="right-half">
       <h2>Server Response</h2>
       <div className="response-display">
-        <ReactJson src={props.leftArray[0] ? props.handlerInfo[props.selectedTab].serverResponse : {}} />
+        <ReactJson theme={"monokai"} iconStyle={"circle"} indentWidth={2} displayDataTypes={false} src={props.leftArray[0] ? props.handlerInfo[props.selectedTab].serverResponse : {}} />
       </div>
       <div className="response-metrics" >
         {leftArray[0] ? <span className="metrics-time">{timeStamp}</span> : ''}

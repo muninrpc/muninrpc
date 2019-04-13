@@ -1,10 +1,4 @@
 import { action } from "typesafe-actions";
-import { Mode } from "../models";
-import { MainModel } from "../models/MainModel";
-import {
-  mainRequestActions
-} from "./mainRequestActions"
-import { cloneDeep } from "@babel/types";
 
 export namespace mainActions {
   export enum Type {
@@ -13,18 +7,28 @@ export namespace mainActions {
     SELECT_TAB = "SELECT_TAB",
     GET_TAB_STATE = "GET_TAB_STATE",
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
-    TOGGLE_STREAM = "TOGGLE_STREAM"
+    TOGGLE_STREAM = "TOGGLE_STREAM",
+    UPDATE_TAB_NAMES = "UPDATE_TAB_NAMES"
   }
 
   export const getTabState = (state) => action(Type.GET_TAB_STATE, state);
 
-  export const addNewTab = (reducerFunc) => action(Type.ADD_NEW_TAB, reducerFunc);
+  export const addNewTab = (
+    reducerFunc: { 
+      [funcName: string]: {
+        getTabState: mainActions['getTabState'], 
+        updateTabNames: mainActions['updateTabNames']
+      } 
+    } 
+  ) => action(Type.ADD_NEW_TAB, reducerFunc);
 
-  export const removeTab = (id) => action(Type.REMOVE_TAB, id);
+  export const removeTab = (id: string) => action(Type.REMOVE_TAB, id);
 
-  export const selectTab = (id) => action(Type.SELECT_TAB, id);
+  export const selectTab = (id: string) => action(Type.SELECT_TAB, id);
 
-  export const toggleStream = (boolean) => action(Type.TOGGLE_STREAM, boolean)
+  export const toggleStream = (boolean: boolean) => action(Type.TOGGLE_STREAM, boolean)
+
+  export const updateTabNames = (obj: {[key: string]: string}) => action(Type.UPDATE_TAB_NAMES, obj)
 
 }
 

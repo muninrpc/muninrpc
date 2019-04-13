@@ -3,10 +3,8 @@ import {
   CallType,
   BaseConfig,
   RequestConfig,
-  UnaryRequestBody,
-  ClientStreamRequestBody,
-  ServerStreamRequestBody,
-  BidiStreamRequestBody,
+  ClientStreamCbs,
+  BidiAndServerStreamCbs,
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { cloneDeep } from "@babel/types";
@@ -16,6 +14,8 @@ export namespace mainRequestActions {
   export enum Type {
     HANDLE_UNARY_REQUEST = "HANDLE_UNARY_REQUEST",
     HANDLE_CLIENT_STREAM_START = "HANDLE_CLIENT_STREAM_START",
+    HANDLE_SERVER_STREAM_START = "HANDLE_SERVER_STREAM_START",
+    HANDLE_BIDI_STREAM_START = "HANDLE_BIDI_STREAM_START",
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
     HANDLE_SEND_MESSAGE = "HANDLE_SEND_MESSAGE",
     HANDLE_STOP_STREAM = "HANDLE_STOP_STREAM"
@@ -28,11 +28,11 @@ export namespace mainRequestActions {
     const state = getState().main
 
     if (activeTab.requestConfig.callType === CallType.UNARY_CALL) {
-      const requestConfig: RequestConfig<UnaryRequestBody> = {
+      const requestConfig: RequestConfig<void> = {
         ...activeTab.requestConfig,
         argument: activeTab.configArguments.arguments,
       };
-      const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<void> = {
         ...activeTab.baseConfig,
         ...requestConfig,
       };
@@ -57,12 +57,73 @@ export namespace mainRequestActions {
     const state = getState().main
     
     if (activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
-      const requestConfig: RequestConfig<ClientStreamRequestBody> = {
+      const requestConfig: RequestConfig<ClientStreamCbs> = {
         ...activeTab.requestConfig,
-        streamConfig: { onEndCb: (res) => dispatch(setGRPCResponse(res) ) },
+        callbacks: { 
+          onEndReadCb: (res) => dispatch(setGRPCResponse(res) ),
+          onDataWriteCb: (res) => {console.log('Writing data from client to server:', res)}  
+        },
         argument: {},
       };
-      const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<ClientStreamCbs> = {
+        ...activeTab.baseConfig,
+        ...requestConfig
+      };
+      const handler = GrpcHandlerFactory.createHandler(mergedConfig);
+      handler.initiateRequest();
+      state.handlerInfo[state.selectedTab].responseMetrics =  {
+        timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+        request: `${activeTab.selectedRequest} started on ${activeTab.baseConfig.grpcServerURI}` 
+      }
+      const { writableStream } =  handler.returnHandler();
+      state.handlers[state.selectedTab] = writableStream;
+    }
+  };
+
+  export const handleServerStreamStart = () => (dispatch, getState) => {
+    const activeTab = getState().main.activeTab;
+    const state = getState().main
+    const selectedTab = state.selectedTab;
+
+    if (activeTab.requestConfig.callType === CallType.SERVER_STREAM) {
+
+      const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
+        ...activeTab.requestConfig,
+        streamConfig: { 
+          onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
+          onEndCb: () => null
+        },
+        argument: {},
+      };
+      const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamCbs> = {
+        ...activeTab.baseConfig,
+        ...requestConfig
+      };
+      const handler = GrpcHandlerFactory.createHandler(mergedConfig);
+      handler.initiateRequest();
+      state.handlerInfo[state.selectedTab].responseMetrics =  {
+        timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+        request: `${activeTab.selectedRequest} started on ${activeTab.baseConfig.grpcServerURI}` 
+      }
+    }
+  };
+
+  export const handleBidiStreamStart = () => (dispatch, getState) => {
+    const activeTab = getState().main.activeTab;
+    const state = getState().main
+    const selectedTab = state.selectedTab;
+
+    if (activeTab.requestConfig.callType === CallType.BIDI_STREAM) {
+
+      const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
+        ...activeTab.requestConfig,
+        streamConfig: { 
+          onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
+          onEndCb: () => null 
+        },
+        argument: {},
+      };
+      const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.baseConfig,
         ...requestConfig
       };
@@ -81,7 +142,6 @@ export namespace mainRequestActions {
   
   export const handleStopStream = () => action(Type.HANDLE_STOP_STREAM)
   
-
 }
 
 export type mainRequestActions = Omit<typeof mainRequestActions, "Type">;

@@ -7,10 +7,11 @@
   .response-display {
     margin: 10px 0;
     padding: 7px;
-    background: white;
+    background: black;
     border: 1px solid lightgrey;
-    height: 100%;
+    height: 85%;
     width: 100%;
+    border-radius: 6px;
     overflow-x: scroll;
   }
 
@@ -18,10 +19,11 @@
     height: 1.6rem;
     width: 100%;
     // padding: 5px;
-    background: white;
+    border-radius: 6px;
+    background: black;
     text-align: right;
     border: 1px solid lightgrey;
-    color: darkgrey;
+    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;

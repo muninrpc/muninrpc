@@ -3,17 +3,10 @@ import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
 import { actions } from "./actions";
 import { MainModel } from "./models";
-import { omit } from "./utils";
-import * as Types from "MyTypes";
-
-
-// const MODE_VALUES = (Object.keys(MainModel.Mode) as (keyof typeof MainModel.Mode)[]).map(
-//   key => MainModel.Mode[key],
-// );
+import MyTypes from "./store"
 
 type AppProps = {
   main: MainModel;
-  actions: mainActions;
 };
 
 // import components
@@ -25,15 +18,16 @@ const MapStateToProps = store => ({
   activeTab: store.main.activeTab,
   handlerInfo: store.main.handlerInfo,
   handlers: store.main.handlers,
-  isStreaming: store.main.isStreaming
+  isStreaming: store.main.isStreaming,
+  tabInfo: store.main.tabInfo
 });
 
 const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(actions, dispatch);
 
-class App extends React.Component<AppProps, {}> {
-  constructor(props: AppProps) {
+class App extends React.Component<AppProps & actions, {}> {
+  constructor(props: AppProps & actions) {
     super(props);
-    this.props.addNewTab(this.props.getTabState);
+    this.props.addNewTab({getTabState: this.props.getTabState, updateTabNames: this.props.updateTabNames});
   }
 
   componentDidMount() {

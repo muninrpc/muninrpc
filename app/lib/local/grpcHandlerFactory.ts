@@ -70,7 +70,7 @@ class GrpcWriter {
   onDataWriteCb: (data: object) => void;
 
   updateWriteData(newData: object) {
-    this.data.push({ type: "write", payload: newData });
+    this.data.push(newData);
   }
 
   // registerObservers(obs: Observer) {
