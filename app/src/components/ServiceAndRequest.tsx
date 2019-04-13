@@ -17,6 +17,8 @@ export namespace ServiceAndRequestProps {
     serviceRecommendations: string[];
     serviceTrieInput: string;
     requestTrieInput: string;
+    requestRecommendations: string[];
+    
   }
 }
 
@@ -29,6 +31,18 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
     props.serviceRecommendations,
     props.serviceTrieInput,
   );
+  let requestList = {};
+  Object.values(props.serviceList).forEach(serviceObj => {
+    Object.keys(serviceObj).forEach( requestName => {
+      requestList[requestName] = true;
+    })
+  })
+  const filteredRequests = filterObject(
+    requestList,
+    props.requestRecommendations,
+    props.requestTrieInput
+  )
+  let filteredRequestsArray = Object.keys(filteredRequests);
 
   /*
    * if we did not select a service, display all requests
@@ -39,7 +53,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
       const [service, request] = kv;
       requestListJSX.push(
         <ServiceOrRequestList
-          List={Object.keys(request)}
+          List={Object.keys(request).filter(elem => filteredRequestsArray.includes(elem))}
           ListType="request"
           onClickHandler={props.handleRequestClick}
           selectedService={service} //??
@@ -53,7 +67,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
      */
     requestListJSX.push(
       <ServiceOrRequestList
-        List={Object.keys(filteredServices[props.selectedService])}
+        List={Object.keys(filteredServices[props.selectedService]).filter(elem => filteredRequestsArray.includes(elem))}
         ListType="request"
         onClickHandler={props.handleRequestClick}
         selectedService={props.selectedService}
@@ -63,7 +77,7 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   } else {
     requestListJSX.push(
       <ServiceOrRequestList
-        List={Object.keys(props.serviceList[props.selectedService])}
+        List={Object.keys(props.serviceList[props.selectedService]).filter(elem => filteredRequestsArray.includes(elem))}
         ListType="request"
         onClickHandler={props.handleRequestClick}
         selectedService={props.selectedService}
@@ -112,7 +126,9 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
             value={props.requestTrieInput}
           />
         </div>
-        <div className="request-area">{requestListJSX}</div>
+        <div className="request-area">
+          {requestListJSX}
+        </div>
       </div>
     </div>
   );
