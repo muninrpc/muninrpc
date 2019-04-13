@@ -1,5 +1,6 @@
 import * as grpc from "grpc";
 import * as protoLoader from "@grpc/proto-loader";
+import { applyMixins } from "../../src/utils/";
 
 //base config: properties that all config objects will have
 export interface BaseConfig {
@@ -9,22 +10,25 @@ export interface BaseConfig {
   serviceName: string; // ex: ListActions
 }
 
-
-export interface RequestConfig<T extends ClientStreamRequestBody | BidiAndServerStreamRequestBody | void> {
+export interface RequestConfig<T extends void | ClientStreamCbs | BidiAndServerStreamCbs> {
   requestName: string;
   callType: CallType;
   argument: object;
-  streamConfig?: T;
+  callbacks: T;
 }
 
-//if the req body has an action, then it will maintain an open connection
-export interface ClientStreamRequestBody {
-  onEndCb: (a: any) => any;
+export interface ClientStreamCbs {
+  // on end to fire of any render udpates or tests
+  onEndReadCb: (a: any) => void;
+  onDataWriteCb?: (a: any) => void;
 }
 
-export interface BidiAndServerStreamRequestBody {
-  onDataCb: (a: any) => any;
-  onEndCb: (a: any) => any;
+export interface BidiAndServerStreamCbs {
+  // on end to fire any intermediate render updates
+  onDataReadCb: (a: any) => void;
+  // on end to fire off any final render updates or tests
+  onEndReadCb: (a: any) => void;
+  onDataWriteCb?: (a: any) => void;
 }
 
 //enums for the 4 types of calls
@@ -35,34 +39,88 @@ export enum CallType {
   BIDI_STREAM = "BIDI_STREAM",
 }
 
-export interface Observers {
-  update: (o: object[]) => any;
-  finalUpdate: (o: object[]) => any;
+class GrpcReader {
+  data: { type: string; payload: object }[];
+  // observers: Observer;
+  onDataReadCb: (o: object[]) => void;
+  onEndReadCb: (o: object[]) => void;
+
+  updateReadData(newData: object) {
+    this.data.push({ type: "read", payload: newData });
+  }
+
+  // registerObservers(obs: Observer) {
+  // this.observers = obs;
+  // }
+
+  notifyObservers(type: string, string?: "end") {
+    if (type === "read") {
+      if (string === "end") {
+        this.onEndReadCb(this.data);
+      } else {
+        this.onDataReadCb(this.data);
+      }
+    }
+  }
 }
 
-abstract class GrpcHandler<T extends void | ClientStreamRequestBody | BidiAndServerStreamRequestBody> {
-  protected grpcServerURI: string;
-  protected packageDefinition: protoLoader.PackageDefinition;
+class GrpcWriter {
+  data: { type: string; payload: object }[];
+  // observers: Observer;
+  onDataWriteCb: (data: object) => void;
+
+  updateWriteData(newData: object) {
+    this.data.push({ type: "write", payload: newData });
+  }
+
+  // registerObservers(obs: Observer) {
+  // this.observers = obs;
+  // }
+
+  notifyObservers(type: string) {
+    if (type === "write") {
+      this.onDataWriteCb(this.data);
+    }
+  }
+
+  upgradeWrite(base: grpc.ClientWritableStream<any>) {
+    const _baseWrite = base.write;
+    const upgradedWrite = (data: object) => {
+      const result = _baseWrite.call(base, data);
+      if (result) {
+        this.updateWriteData({ type: "write", payload: data });
+        this.notifyObservers("write");
+      }
+      return result;
+    };
+    base.write = upgradedWrite;
+    return base;
+  }
+}
+
+abstract class GrpcHandler {
+  // protected grpcServerURI: string;
+  // protected packageDefinition: protoLoader.PackageDefinition;
   protected packageName: string;
   protected serviceName: string;
   protected requestName: string;
-  protected callType: string;
-  protected requestConfig: void | ClientStreamRequestBody | BidiAndServerStreamRequestBody;
+  // protected callType: string;
+
   protected loadedPackage: typeof grpc.Client;
-  protected client: grpc.Client;
+  public client: grpc.Client;
   protected args: object;
 
-  constructor(config: BaseConfig & RequestConfig<T>) {
-    this.grpcServerURI = config.grpcServerURI;
-    this.packageDefinition = config.packageDefinition;
+  constructor(config: BaseConfig & RequestConfig<any>) {
+    // this.grpcServerURI = config.grpcServerURI;
+    // this.packageDefinition = config.packageDefinition;
     this.packageName = config.packageName;
     this.serviceName = config.serviceName;
-    this.requestConfig = config.streamConfig;
+
     this.requestName = config.requestName;
-    this.loadedPackage = grpc.loadPackageDefinition(this.packageDefinition)[this.packageName] as typeof grpc.Client;
+    this.loadedPackage = grpc.loadPackageDefinition(config.packageDefinition)[this.packageName] as typeof grpc.Client;
     this.args = config.argument;
     this.client = new this.loadedPackage[this.serviceName](
-      this.grpcServerURI,
+      config.grpcServerURI,
       grpc.credentials.createInsecure(),
     ) as grpc.Client;
   }
@@ -76,15 +134,10 @@ abstract class GrpcHandler<T extends void | ClientStreamRequestBody | BidiAndSer
   }
 }
 
-class UnaryHandler extends GrpcHandler<void> {
+class UnaryHandler extends GrpcHandler {
   constructor(config: BaseConfig & RequestConfig<void>) {
     super(config);
   }
-
-  /**
-   * InitiateRequest will send the unary request to the gRPC server.
-   * The argument sent is located in the configuration file
-   */
 
   public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
@@ -99,14 +152,26 @@ class UnaryHandler extends GrpcHandler<void> {
   }
 }
 
-class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
-  private onEndCb: (a: any) => any;
+class ClientStreamHandler extends GrpcHandler implements GrpcWriter {
+  private onEndReadCb: (a: any) => any;
+  public onDataWriteCb: (data: object) => void;
   private writableStream: grpc.ClientWritableStream<any>;
+  public data: { type: string; payload: object }[];
+  // public observers: Observer;
 
-  constructor(config: BaseConfig & RequestConfig<ClientStreamRequestBody>) {
+  constructor(config: BaseConfig & RequestConfig<ClientStreamCbs>) {
     super(config);
-    this.onEndCb = config.streamConfig.onEndCb;
+    this.onEndReadCb = config.callbacks.onEndReadCb;
+    this.onDataWriteCb = config.callbacks.onDataWriteCb;
+    this.data = [];
   }
+
+  // create stand-in properties and methods to initially satisfy the interface contract
+  // mixins will be used to properly assign functionality
+  updateWriteData: () => void;
+  // registerObservers: (o: Observer) => void;
+  notifyObservers: (type: string) => void;
+  upgradeWrite: (base: grpc.ClientWritableStream<any>) => grpc.ClientWritableStream<any>;
 
   public initiateRequest() {
     
@@ -114,98 +179,96 @@ class ClientStreamHandler extends GrpcHandler<ClientStreamRequestBody> {
       if (err) {
         throw err;
       }
-      this.onEndCb(response);
+      this.onEndReadCb(response);
     });
     return this;
   }
+
   public returnHandler() {
     return {
-      writableStream: this.writableStream,
+      writableStream: this.upgradeWrite(this.writableStream),
     };
   }
 }
 
-abstract class SubjectGrpcHandler extends GrpcHandler<BidiAndServerStreamRequestBody> {
-  private streamedData: object[];
-  private observers: Observers[];
-  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
-    super(config);
-    this.streamedData = [];
-    this.observers = [];
-  }
-
-  protected updateData(newData: object) {
-    this.streamedData.push(newData);
-  }
-
-  public registerObservers(obs: Observers) {
-    this.observers.push(obs);
-  }
-
-  protected notifyObservers(string?: "end") {
-    this.observers.forEach(observer => {
-      if (string === "end") {
-        observer.finalUpdate(this.streamedData);
-      } else {
-        observer.update(this.streamedData);
-      }
-    });
-  }
-}
-
-class ServerStreamHandler extends SubjectGrpcHandler {
-  private onDataCb: (a: any) => any;
-  private onEndCb: (a: any) => any;
+class ServerStreamHandler extends GrpcHandler implements GrpcReader {
+  public onDataReadCb: (a: object) => void;
+  public onEndReadCb: (a: object) => void;
   private readableStream: grpc.ClientReadableStream<any>;
+  public data: { type: string; payload: object }[];
+  // public observers: Observer;
 
-  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>) {
     super(config);
-    this.onDataCb = config.streamConfig.onDataCb;
-    this.onEndCb = config.streamConfig.onEndCb;
+    this.onDataReadCb = config.callbacks.onDataReadCb;
+    this.onEndReadCb = config.callbacks.onEndReadCb;
+    this.data = [];
+    // this.observers = [];
   }
+
+  // create stand-in properties and methods to initially satisfy the interface contract
+  // mixins will be used to properly assign functionality
+  updateReadData: (a: any) => void;
+  registerObservers: (o: Observer) => void;
+  notifyObservers: (type: string, string?: "end") => void;
 
   public initiateRequest() {
     this.readableStream = this.client[this.requestName](this.args);
     this.readableStream.on("data", (data: object) => {
-      this.updateData(data);
-      this.notifyObservers();
+      this.updateReadData(data);
+      this.notifyObservers("read");
     });
     this.readableStream.on("end", data => {
-      if (data) {
-        this.updateData(data);
-      }
-      this.notifyObservers("end");
+      this.updateReadData(data);
+      this.notifyObservers("read", "end");
     });
   }
 }
 
-export class BidiStreamHandler extends SubjectGrpcHandler {
-  private onDataCb: (a: any) => any;
-  private onEndCb: (a: any) => any;
-  private bidiStream: grpc.ClientDuplexStream<any, any>;
+type GrpcReaderWriter = GrpcReader & GrpcWriter;
 
-  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>) {
+class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
+  public onDataReadCb: (a: any) => any;
+  public onEndReadCb: (a: any) => any;
+  public onDataWriteCb: (a: any) => void;
+  private bidiStream: grpc.ClientDuplexStream<any, any>;
+  public data: { type: string; payload: object }[];
+  // public observers: Observers[];
+
+  constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>) {
     super(config);
-    this.onDataCb = config.streamConfig.onDataCb;
-    this.onEndCb = config.streamConfig.onEndCb;
+    this.onDataReadCb = config.callbacks.onDataReadCb;
+    this.onEndReadCb = config.callbacks.onEndReadCb;
+    this.data = [];
+    // this.observers = [];
   }
+
+  // create stand-in properties and methods to initially satisfy the interface contract
+  // mixins will be used to properly assign functionality
+  updateReadData: (newData: object) => void;
+  updateWriteData: (newData: object) => void;
+  // registerObservers: (o: Observers) => void;
+  notifyObservers: (type: string, string?: "end") => void;
+  upgradeWrite: (base: grpc.ClientWritableStream<any>) => grpc.ClientWritableStream<any>;
 
   public initiateRequest() {
     this.bidiStream = this.client[this.requestName]();
     this.bidiStream.on("data", data => {
-      this.updateData(data);
-      this.notifyObservers();
+      this.updateReadData(data);
+      this.notifyObservers("read");
     });
     this.bidiStream.on("end", data => {
-      this.updateData(data);
-      this.notifyObservers("end");
+      if (data) {
+        this.updateReadData(data);
+      }
+      this.notifyObservers("read", "end");
     });
     return this;
   }
 
   public returnHandler() {
     return {
-      writableStream: this.bidiStream,
+      writableStream: this.upgradeWrite(this.bidiStream),
     };
   }
 }
@@ -213,9 +276,9 @@ export class BidiStreamHandler extends SubjectGrpcHandler {
 //factory function to create gRPC connections
 export class GrpcHandlerFactory {
   static createHandler(
-    config: BaseConfig & RequestConfig<BidiAndServerStreamRequestBody>,
+    config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>,
   ): BidiStreamHandler | ServerStreamHandler;
-  static createHandler(config: BaseConfig & RequestConfig<ClientStreamRequestBody>): ClientStreamHandler;
+  static createHandler(config: BaseConfig & RequestConfig<ClientStreamCbs>): ClientStreamHandler;
   static createHandler(config: BaseConfig & RequestConfig<void>): UnaryHandler;
   static createHandler(config: BaseConfig & RequestConfig<any>) {
     if (config.callType === CallType.UNARY_CALL) {
@@ -232,3 +295,7 @@ export class GrpcHandlerFactory {
     }
   }
 }
+
+applyMixins(ClientStreamHandler, [GrpcWriter]);
+applyMixins(ServerStreamHandler, [GrpcReader]);
+applyMixins(BidiStreamHandler, [GrpcWriter, GrpcReader]);
