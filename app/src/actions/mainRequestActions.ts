@@ -3,10 +3,8 @@ import {
   CallType,
   BaseConfig,
   RequestConfig,
-  UnaryRequestBody,
-  ClientStreamRequestBody,
-  ServerStreamRequestBody,
-  BidiStreamRequestBody,
+  ClientStreamCbs,
+  BidiAndServerStreamCbs,
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import { cloneDeep } from "@babel/types";
@@ -30,11 +28,11 @@ export namespace mainRequestActions {
     const state = getState().main
 
     if (activeTab.requestConfig.callType === CallType.UNARY_CALL) {
-      const requestConfig: RequestConfig<UnaryRequestBody> = {
+      const requestConfig: RequestConfig<void> = {
         ...activeTab.requestConfig,
         argument: activeTab.configArguments.arguments,
       };
-      const mergedConfig: BaseConfig & RequestConfig<UnaryRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<void> = {
         ...activeTab.baseConfig,
         ...requestConfig,
       };
@@ -59,12 +57,15 @@ export namespace mainRequestActions {
     const state = getState().main
     
     if (activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
-      const requestConfig: RequestConfig<ClientStreamRequestBody> = {
+      const requestConfig: RequestConfig<ClientStreamCbs> = {
         ...activeTab.requestConfig,
-        streamConfig: { onEndCb: (res) => dispatch(setGRPCResponse(res) ) },
+        callbacks: { 
+          onEndReadCb: (res) => dispatch(setGRPCResponse(res) ),
+          onDataWriteCb: (res) => {console.log('Writing data from client to server:', res)}  
+        },
         argument: {},
       };
-      const mergedConfig: BaseConfig & RequestConfig<ClientStreamRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<ClientStreamCbs> = {
         ...activeTab.baseConfig,
         ...requestConfig
       };
@@ -86,7 +87,7 @@ export namespace mainRequestActions {
 
     if (activeTab.requestConfig.callType === CallType.SERVER_STREAM) {
 
-      const requestConfig: RequestConfig<ServerStreamRequestBody> = {
+      const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
         streamConfig: { 
           onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
@@ -94,7 +95,7 @@ export namespace mainRequestActions {
         },
         argument: {},
       };
-      const mergedConfig: BaseConfig & RequestConfig<ServerStreamRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.baseConfig,
         ...requestConfig
       };
@@ -114,7 +115,7 @@ export namespace mainRequestActions {
 
     if (activeTab.requestConfig.callType === CallType.BIDI_STREAM) {
 
-      const requestConfig: RequestConfig<BidiStreamRequestBody> = {
+      const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
         streamConfig: { 
           onDataCb:(res) => state.handlerInfo[selectedTab].serverResponse.push(res),
@@ -122,7 +123,7 @@ export namespace mainRequestActions {
         },
         argument: {},
       };
-      const mergedConfig: BaseConfig & RequestConfig<BidiStreamRequestBody> = {
+      const mergedConfig: BaseConfig & RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.baseConfig,
         ...requestConfig
       };

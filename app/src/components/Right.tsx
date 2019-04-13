@@ -5,6 +5,9 @@ import { MainModel } from "../models"
 export interface RightProps {
   serverResponse: object;
   responseMetrics: string;
+  handlerInfo: any;
+  selectedTab: string;
+  leftArray: any;
 }
 
 
