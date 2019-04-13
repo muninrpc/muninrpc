@@ -1,21 +1,11 @@
 import * as React from "react";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 import { MainModel } from "../models"
-export interface HeaderActions {
-  getTabState: any;
-  addNewTab: any;
-  removeTab: any;
-  selectTab: any;
-  toggleStream: any;
-  handleUnaryRequest: any;
-  handleClientStreamStart: any;
-  handleSendMessage: any;
-  handleStopStream: any;
-}
+import { actions, mainActions } from "../actions"
 
-export function Header(props: MainModel & HeaderActions, context?: any) {
+export function Header(props: MainModel & actions, context?: any) {
 
-  const { handlerInfo, handlers, handleClientStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab, handleStopStream } = props; 
+  const { updateTabNames, handlerInfo, handleClientStreamStart, handleServerStreamStart, handleBidiStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab, handleStopStream } = props; 
 
   let userConnectType;
   let callType;
@@ -42,6 +32,24 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
       }
     }>START STREAM</button>)
 
+    const startServerStreamButton = 
+    (<button 
+      className='start-stream-btn' 
+      onClick={ () => { 
+        handleServerStreamStart(); 
+        toggleStream(true); 
+      }
+    }>START STREAM</button>)
+
+    const startBidiStreamButton = 
+    (<button 
+      className='start-stream-btn' 
+      onClick={ () => { 
+        handleBidiStreamStart(); 
+        toggleStream(true); 
+      }
+    }>START STREAM</button>)
+
   const writeToStreamButton = 
     (<button className='write-stream-btn' onClick={props.handleSendMessage}>SEND MESSAGE</button>)
 
@@ -53,7 +61,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     }
     case CallType.SERVER_STREAM: {
       userConnectType = "SERVER STREAM";
-      // displayButton = startServerStreamButton;
+      displayButton = startServerStreamButton;
       break;
     }
     case CallType.CLIENT_STREAM: {
@@ -63,7 +71,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
     }
     case CallType.BIDI_STREAM: {
       userConnectType = "BIDIRECTIONAL";
-      // displayButton = startBidiStreamButton;      
+      displayButton = startBidiStreamButton;      
       break;
     }
     default: {
@@ -74,17 +82,20 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
   const tabArray = [];
 
   leftArray.forEach(tab => {
+    let tabKey = tab.props.tabKey;
+    let displayedTabName;
+    props.tabInfo[tabKey] ? displayedTabName = props.tabInfo[tabKey] : displayedTabName = 'New Tab';
     tabArray.push(
       <div
         key={"button" + tab.key}
         className={tab.key === selectedTab ? "tab selected" : "tab"}
-        onClick={() => selectTab(tab.key)}
+        onClick={() => selectTab(tab.key as string)}
       >
-        {tab.props.tabKey}
+        {props.tabInfo[tabKey] ? props.tabInfo[tabKey] : 'Connection'}
         {props.leftArray.length > 1 ? <button
           onClick={e => {
             e.stopPropagation();
-            removeTab(tab.key);
+            removeTab(tab.key as string);
           }}
         >
           x
@@ -123,7 +134,7 @@ export function Header(props: MainModel & HeaderActions, context?: any) {
       <div className="header-tabs">
         <div className="tab-box">
           {tabArray}
-          <button className="add" onClick={() => addNewTab(getTabState)}>
+          <button className="add" onClick={() => addNewTab({getTabState: getTabState, updateTabNames: updateTabNames})}>
             +
           </button>
         </div>

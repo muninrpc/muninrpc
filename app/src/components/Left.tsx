@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
@@ -10,7 +10,6 @@ import {
   CallType,
   BaseConfig,
   RequestConfig,
-  UnaryRequestBody,
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 import * as cloneDeep from "lodash.clonedeep";
@@ -18,6 +17,7 @@ import * as cloneDeep from "lodash.clonedeep";
 interface LeftProps {
   handlerContext: [];
   tabKey: string;
+  tabName: string;
   filePath: string;
   serviceList: [];
   messageList: [];
@@ -41,7 +41,9 @@ export const LeftFactory = props => {
     closureState = {
       tabKey: props.tabKey,
       getTabState: props.getTabState,
+      updateTabNames: props.updateTabNames,
 
+      tabName: "New Connection",
       handlerContext: [],
       filePath: "",
       serviceList: {},
@@ -167,6 +169,17 @@ export const LeftFactory = props => {
         ...state,
         baseConfig: { ...state.baseConfig, grpcServerURI: val },
       });
+    const handleTabNameChange = val => {
+      state.updateTabNames({
+        val: val,
+        tabKey: state.tabKey
+      })
+      updateState({
+        ...state,
+        tabName: val
+      })
+    }
+      
     
     const handleProtoUpload = file => {
       // handle file
@@ -303,9 +316,13 @@ export const LeftFactory = props => {
   
     return (
       <div id="tab">
-        <h1 onClick={() => console.log(state)} style={{ color: "black" }}> 
-          {state.tabKey}
-        </h1>
+        <input
+          className={"tab-header"}
+          value={state.tabName}
+          onClick={() => console.log(state)}
+          onChange={(e) => handleTabNameChange(e.target.value)}
+          style={{ color: "black" }}
+        />
         <div className="input-header">
           <div className="address-box">
             <h3>Target Server IP</h3>

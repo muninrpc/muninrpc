@@ -13,4 +13,10 @@ export interface MainModel {
   },
   responseMetrics: string,
   activeTab: any,
+  tabInfo: {
+    [key: string] : {
+      val: string,
+      tabKey: string
+    }
+  }
 }
