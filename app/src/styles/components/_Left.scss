@@ -132,9 +132,10 @@
       height: 2rem;
       padding: 0 30px;
       background: white;
+      margin-bottom: -1px;
       color: darken($primary-color, 20%);
       border: 1px solid darken($primary-color, 20%);
-      border-bottom: none;
+      border-bottom: 1px solid black;
       font-weight: 700;
       z-index: 1;
       transition: 0.2s ease all;
@@ -185,7 +186,7 @@
     }
 
     input {
-      border: 1px solid lighten($primary-color, 30%);
+      border: 1px solid lightgrey;
       font-weight: 400;
       font-size: 0.8rem;
       height: 1.5rem;

@@ -1,10 +1,12 @@
 import { action } from "typesafe-actions";
+import { MainModel } from "../models";
 
 export namespace mainActions {
   export enum Type {
     ADD_NEW_TAB = "ADD_NEW_TAB",
     REMOVE_TAB = "REMOVE_TAB",
     SELECT_TAB = "SELECT_TAB",
+    SELECT_RESPONSE_TAB = "SELECT_RESPONSE_TAB",
     GET_TAB_STATE = "GET_TAB_STATE",
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
     TOGGLE_STREAM = "TOGGLE_STREAM",
@@ -29,6 +31,8 @@ export namespace mainActions {
   export const toggleStream = (boolean: boolean) => action(Type.TOGGLE_STREAM, boolean)
 
   export const updateTabNames = (obj: {[key: string]: string}) => action(Type.UPDATE_TAB_NAMES, obj)
+
+  export const selectResponseTab = (obj: {[key:string]: MainModel['selectedTab'], val: string}) => action(Type.SELECT_RESPONSE_TAB, obj)
 
 }
 
