@@ -39,6 +39,8 @@ export enum CallType {
   BIDI_STREAM = "BIDI_STREAM",
 }
 
+type GrpcReaderWriter = GrpcReader & GrpcWriter;
+
 class GrpcReader {
   data: { type: string; payload: object }[];
   // observers: Observer;
@@ -46,21 +48,30 @@ class GrpcReader {
   onEndReadCb: (o: object[]) => void;
 
   updateReadData(newData: object) {
-    this.data = [({ type: "read", payload: newData }), ...this.data];
+    this.data = [{ type: "read", payload: newData }, ...this.data];
   }
 
-  // registerObservers(obs: Observer) {
-  // this.observers = obs;
+  /**
+   *
+   * @param type expects "read" or "write" depending whether the data is read from the server, or written to the server
+   * @param string used when the first argument is read, and expects either "end" or null. "end" indicates whether the
+   * data from the RPC call includes an end signal
+   *
+   */
+
+  // notifyObservers(type: string, string?: "end") {
+  //   if (type === "read") {
+  //     if (string === "end") {
+  //       this.onEndReadCb(this.data);
+  //     } else {
+  //       this.onDataReadCb(this.data);
+  //     }
+  //   }
   // }
 
-  notifyObservers(type: string, string?: "end") {
-    if (type === "read") {
-      if (string === "end") {
-        this.onEndReadCb(this.data);
-      } else {
-        this.onDataReadCb(this.data);
-      }
-    }
+  notifyObservers(cb: (data: any) => void) {
+    console.log(cb);
+    cb(this.data);
   }
 }
 
@@ -70,17 +81,17 @@ class GrpcWriter {
   onDataWriteCb: (data: object) => void;
 
   updateWriteData(newData: object) {
-    this.data = [({ type: "write", payload: newData }), ...this.data];
+    this.data = [{ type: "write", payload: newData }, ...this.data];
   }
 
-  // registerObservers(obs: Observer) {
-  // this.observers = obs;
+  // notifyObservers(type: string) {
+  //   if (type === "write") {
+  //     this.onDataWriteCb(this.data);
+  //   }
   // }
 
-  notifyObservers(type: string) {
-    if (type === "write") {
-      this.onDataWriteCb(this.data);
-    }
+  notifyObservers(cb: (data: any) => void) {
+    cb(this.data);
   }
 
   upgradeWrite(base: grpc.ClientWritableStream<any>) {
@@ -89,7 +100,7 @@ class GrpcWriter {
       const result = _baseWrite.call(base, data);
       if (result) {
         this.updateWriteData(data);
-        this.notifyObservers("write");
+        this.notifyObservers(this.onDataWriteCb);
       }
       return result;
     };
@@ -99,23 +110,16 @@ class GrpcWriter {
 }
 
 abstract class GrpcHandler {
-  // protected grpcServerURI: string;
-  // protected packageDefinition: protoLoader.PackageDefinition;
   protected packageName: string;
   protected serviceName: string;
   protected requestName: string;
-  // protected callType: string;
-
   protected loadedPackage: typeof grpc.Client;
   public client: grpc.Client;
   protected args: object;
 
   constructor(config: BaseConfig & RequestConfig<any>) {
-    // this.grpcServerURI = config.grpcServerURI;
-    // this.packageDefinition = config.packageDefinition;
     this.packageName = config.packageName;
     this.serviceName = config.serviceName;
-
     this.requestName = config.requestName;
     this.loadedPackage = grpc.loadPackageDefinition(config.packageDefinition)[this.packageName] as typeof grpc.Client;
     this.args = config.argument;
@@ -141,7 +145,7 @@ class UnaryHandler extends GrpcHandler {
 
   public initiateRequest(): Promise<{}> {
     return new Promise((resolve, reject) => {
-      console.log(this.args)
+      console.log(this.args);
       this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
           reject(err);
@@ -170,11 +174,10 @@ class ClientStreamHandler extends GrpcHandler implements GrpcWriter {
   // mixins will be used to properly assign functionality
   updateWriteData: () => void;
   // registerObservers: (o: Observer) => void;
-  notifyObservers: (type: string) => void;
+  notifyObservers: (cb: (data: any) => void) => void;
   upgradeWrite: (base: grpc.ClientWritableStream<any>) => grpc.ClientWritableStream<any>;
 
   public initiateRequest() {
-    
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
         throw err;
@@ -209,23 +212,29 @@ class ServerStreamHandler extends GrpcHandler implements GrpcReader {
   // create stand-in properties and methods to initially satisfy the interface contract
   // mixins will be used to properly assign functionality
   updateReadData: (a: any) => void;
-  registerObservers: (o: Observer) => void;
+  // registerObservers: (o: Observer) => void;
   notifyObservers: (type: string, string?: "end") => void;
 
   public initiateRequest() {
     this.readableStream = this.client[this.requestName](this.args);
     this.readableStream.on("data", (data: object) => {
       this.updateReadData(data);
-      this.notifyObservers("read");
+      this.notifyObservers(this.onDataReadCb);
     });
     this.readableStream.on("end", data => {
       this.updateReadData(data);
-      this.notifyObservers("read", "end");
+      // this.notifyObservers("read", "end");
+      this.notifyObservers(this.onEndReadCb);
     });
+    // this.readableStream.cancel();
+  }
+
+  returnHandler() {
+    return {
+      readableStream: this.readableStream,
+    };
   }
 }
-
-type GrpcReaderWriter = GrpcReader & GrpcWriter;
 
 class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
   public onDataReadCb: (a: any) => any;
@@ -248,21 +257,24 @@ class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
   updateReadData: (newData: object) => void;
   updateWriteData: (newData: object) => void;
   // registerObservers: (o: Observers) => void;
-  notifyObservers: (type: string, string?: "end") => void;
+  notifyObservers: (cb: (data: any) => void) => void;
   upgradeWrite: (base: grpc.ClientWritableStream<any>) => grpc.ClientWritableStream<any>;
 
   public initiateRequest() {
     this.bidiStream = this.client[this.requestName]();
     this.bidiStream.on("data", data => {
       this.updateReadData(data);
-      this.notifyObservers("read");
+      // this.notifyObservers("read");
+      this.notifyObservers(this.onDataReadCb);
     });
     this.bidiStream.on("end", data => {
       if (data) {
         this.updateReadData(data);
       }
-      this.notifyObservers("read", "end");
+      // this.notifyObservers("read", "end");
+      this.notifyObservers(this.onEndReadCb);
     });
+    this.bidiStream.on("error", err => console.error("Error message in bidistream:", err));
     return this;
   }
 
