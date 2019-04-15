@@ -1,11 +1,26 @@
 import * as React from "react";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
-import { MainModel } from "../models"
-import { actions, mainActions } from "../actions"
+import { MainModel } from "../models";
+import { actions, mainActions } from "../actions";
 
 export function Header(props: MainModel & actions, context?: any) {
-
-  const { updateTabNames, handlerInfo, handleClientStreamStart, handleServerStreamStart, handleBidiStreamStart, handleUnaryRequest, toggleStream, activeTab, getTabState, selectTab, removeTab, addNewTab, leftArray, selectedTab, handleStopStream } = props; 
+  const {
+    updateTabNames,
+    handlerInfo,
+    handleClientStreamStart,
+    handleServerStreamStart,
+    handleBidiStreamStart,
+    handleUnaryRequest,
+    toggleStream,
+    activeTab,
+    getTabState,
+    selectTab,
+    removeTab,
+    addNewTab,
+    leftArray,
+    selectedTab,
+    handleStopStream,
+  } = props;
 
   let userConnectType;
   let callType;
@@ -18,40 +33,55 @@ export function Header(props: MainModel & actions, context?: any) {
   }
 
   //logic for what the buttons do
-  let displayButton = (<button>SEND REQUEST</button>);
+  let displayButton = <button>SEND REQUEST</button>;
 
-  const sendRequestButton = 
-    (<button className='send-req-btn' onClick={handleUnaryRequest}>SEND REQUEST</button>)
+  const sendRequestButton = (
+    <button className="send-req-btn" onClick={handleUnaryRequest}>
+      SEND REQUEST
+    </button>
+  );
 
-  const startClientStreamButton = 
-    (<button 
-      className='start-stream-btn' 
-      onClick={ () => { 
-        handleClientStreamStart(); 
-        toggleStream(true); 
-      }
-    }>START STREAM</button>)
+  const startClientStreamButton = (
+    <button
+      className="start-stream-btn"
+      onClick={() => {
+        handleClientStreamStart();
+        toggleStream(true);
+      }}
+    >
+      START STREAM
+    </button>
+  );
 
-    const startServerStreamButton = 
-    (<button 
-      className='start-stream-btn' 
-      onClick={ () => { 
-        handleServerStreamStart(); 
-        toggleStream(true); 
-      }
-    }>START STREAM</button>)
+  const startServerStreamButton = (
+    <button
+      className="start-stream-btn"
+      onClick={() => {
+        handleServerStreamStart();
+        toggleStream(true);
+      }}
+    >
+      START STREAM
+    </button>
+  );
 
-    const startBidiStreamButton = 
-    (<button 
-      className='start-stream-btn' 
-      onClick={ () => { 
-        handleBidiStreamStart(); 
-        toggleStream(true); 
-      }
-    }>START STREAM</button>)
+  const startBidiStreamButton = (
+    <button
+      className="start-stream-btn"
+      onClick={() => {
+        handleBidiStreamStart();
+        toggleStream(true);
+      }}
+    >
+      START STREAM
+    </button>
+  );
 
-  const writeToStreamButton = 
-    (<button className='write-stream-btn' onClick={props.handleSendMessage}>SEND MESSAGE</button>)
+  const writeToStreamButton = (
+    <button className="write-stream-btn" onClick={props.handleSendMessage}>
+      SEND MESSAGE
+    </button>
+  );
 
   switch (callType) {
     case CallType.UNARY_CALL: {
@@ -66,12 +96,12 @@ export function Header(props: MainModel & actions, context?: any) {
     }
     case CallType.CLIENT_STREAM: {
       userConnectType = "CLIENT STREAM";
-      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startClientStreamButton; 
+      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startClientStreamButton;
       break;
     }
     case CallType.BIDI_STREAM: {
       userConnectType = "BIDIRECTIONAL";
-      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startBidiStreamButton;      
+      displayButton = handlerInfo[selectedTab].isStreaming ? writeToStreamButton : startBidiStreamButton;
       break;
     }
     default: {
@@ -84,44 +114,41 @@ export function Header(props: MainModel & actions, context?: any) {
   leftArray.forEach(tab => {
     let tabKey = tab.props.tabKey;
     let displayedTabName;
-    props.tabInfo[tabKey] ? displayedTabName = props.tabInfo[tabKey] : displayedTabName = 'New Tab';
+    props.tabInfo[tabKey] ? (displayedTabName = props.tabInfo[tabKey]) : (displayedTabName = "New Tab");
     tabArray.push(
       <div
         key={"button" + tab.key}
         className={tab.key === selectedTab ? "tab selected" : "tab"}
         onClick={() => selectTab(tab.key as string)}
       >
-        {props.tabInfo[tabKey] ? props.tabInfo[tabKey].name : 'Connection'}
-        {props.leftArray.length > 1 ? <button
-          onClick={e => {
-            e.stopPropagation();
-            removeTab(tab.key as string);
-          }}
-        >
-          x
-        </button> : ''}
-      </div>
+        {props.tabInfo[tabKey] ? props.tabInfo[tabKey].name : "Connection"}
+        {props.leftArray.length > 1 ? (
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              removeTab(tab.key as string);
+            }}
+          >
+            x
+          </button>
+        ) : (
+          ""
+        )}
+      </div>,
     );
   });
 
   let disabledFlag;
-  if(handlerInfo[selectedTab]) disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
-  
+  if (handlerInfo[selectedTab]) disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
+
   return (
     <div className="header">
       <div className="header-top">
         <div className="header-left">
-          <div className="trail">
-            {trail}
-          </div>
-          <div className="connection-display">
-            {userConnectType}
-          </div>
+          <div className="trail">{trail}</div>
+          <div className="connection-display">{userConnectType}</div>
           {displayButton}
-          <button 
-            className="stop-button" disabled={disabledFlag}
-            onClick={handleStopStream}
-          >
+          <button className="stop-button" disabled={disabledFlag} onClick={handleStopStream}>
             STOP STREAM
           </button>
         </div>
@@ -134,7 +161,10 @@ export function Header(props: MainModel & actions, context?: any) {
       <div className="header-tabs">
         <div className="tab-box">
           {tabArray}
-          <button className="add" onClick={() => addNewTab({getTabState: getTabState, updateTabNames: updateTabNames})}>
+          <button
+            className="add"
+            onClick={() => addNewTab({ getTabState: getTabState, updateTabNames: updateTabNames })}
+          >
             +
           </button>
         </div>
