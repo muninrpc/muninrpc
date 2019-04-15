@@ -91,7 +91,7 @@ export function Header(props: MainModel & actions, context?: any) {
         className={tab.key === selectedTab ? "tab selected" : "tab"}
         onClick={() => selectTab(tab.key as string)}
       >
-        {props.tabInfo[tabKey] ? props.tabInfo[tabKey] : 'Connection'}
+        {props.tabInfo[tabKey] ? props.tabInfo[tabKey].name : 'Connection'}
         {props.leftArray.length > 1 ? <button
           onClick={e => {
             e.stopPropagation();

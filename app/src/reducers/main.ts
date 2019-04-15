@@ -10,7 +10,6 @@ const initialState: MainModel = {
   leftArray: [],
   tabPrimaryKey: 0,
   handlerInfo: {},
-  // responseMetrics: '', //move to inside of handlerInfo
   activeTab: {},
   tabInfo: {}
 };
@@ -50,7 +49,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
 
       // create location for tab names to be stored
       const newTabInfo = cloneDeep(state.tabInfo);
-      newTabInfo[newSelectedTab] = 'New Connection';
+      newTabInfo[newSelectedTab] = { name: 'New Connection', activeResponseTab: 'server' }
 
       return ({
         ...state,
@@ -113,9 +112,18 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       }
     }
 
+    case mainActions.Type.SELECT_RESPONSE_TAB : {
+      const newTabInfo = cloneDeep(state.tabInfo)
+      newTabInfo[action.payload.selectedTab].activeResponseTab = action.payload.mode;
+      return {
+        ...state,
+        tabInfo: newTabInfo
+      }
+    } 
+
     case mainActions.Type.UPDATE_TAB_NAMES : {
       const newTabInfo = cloneDeep(state.tabInfo)
-      newTabInfo[action.payload.tabKey] = action.payload.val;
+      newTabInfo[action.payload.tabKey].name = action.payload.val;
       return {
         ...state,
         tabInfo: newTabInfo
@@ -125,7 +133,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainRequestActions.Type.SET_GRPC_RESPONSE: {
       let newHandlerInfo = cloneDeep(state.handlerInfo)
       newHandlerInfo[state.selectedTab].serverResponse = action.payload;
-      console.log('action.payload inside of reducer', action.payload instanceof Error)
+      // console.log('action.payload inside of reducer', action.payload instanceof Error)
       if (action.payload instanceof Error) newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR"
       return {
         ...state,
@@ -136,6 +144,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     case mainActions.Type.TOGGLE_STREAM: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].isStreaming = action.payload;
+      newHandlerInfo[state.selectedTab].serverResponse = {}
       return {
         ...state,
         handlerInfo: newHandlerInfo
@@ -143,25 +152,49 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     }
 
     case mainRequestActions.Type.HANDLE_SEND_MESSAGE: {
+      
       state.handlers[state.selectedTab].write(state.activeTab.configArguments.arguments)
       let newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].responseMetrics = {
         timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
-        request: 'Message sent'
+        request: `${state.activeTab.selectedRequest}: message sent.`,
       }
+        
       return {
         ...state,
         handlerInfo: newHandlerInfo
       }
     }
 
-    case mainRequestActions.Type.HANDLE_STOP_STREAM: {
-      state.handlers[state.selectedTab].end();
+    case mainRequestActions.Type.HANDLE_RECIEVE_MESSAGE: {
       let newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].responseMetrics = {
         timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
-        request: `${state.activeTab.selectedRequest} stopped`
+        request: `${state.activeTab.selectedRequest}: message recieved from server.`
       }
+      return {
+        ...state,
+        handlerInfo: newHandlerInfo
+      }
+    } 
+
+    case mainRequestActions.Type.HANDLE_STOP_STREAM: {
+      let newHandlerInfo = cloneDeep(state.handlerInfo);
+      // case - stopping a client push or bidi stream
+      if(state.handlers[state.selectedTab]){
+        state.handlers[state.selectedTab].end()
+        newHandlerInfo[state.selectedTab].responseMetrics = {
+          timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+          request: `${state.activeTab.selectedRequest}: con. terminated by client.`
+        }
+        // case - stopping a server push stream
+      } else {
+        newHandlerInfo[state.selectedTab].responseMetrics = {
+          timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
+          request: `${state.activeTab.selectedRequest}: con. terminated by server.`
+        }
+      }
+
       newHandlerInfo[state.selectedTab].isStreaming = false;
 
       return {

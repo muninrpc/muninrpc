@@ -4,11 +4,44 @@
   display: flex;
   flex-flow: column nowrap;
 
+  .right-header-box {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+
+    .tab {
+      text-align: center;
+      flex-grow: 1;
+      margin-bottom: 2px;
+      margin-left: -1px;
+      padding: 6px 14px;
+      background: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: darken($primary-color,20%);
+      border: 1px solid black;
+      transition: 0.3s ease all;
+    }
+    .tab:hover {
+      background: $primary-color;      
+      color: white;
+      cursor: pointer;
+    }
+    .tab:active {
+      background: darken($primary-color,20%);
+    }
+    .selected {
+      color: white;
+      background: darken($primary-color,20%);
+    }
+  }
+
   .response-display {
-    margin: 10px 0;
+    margin-bottom: 10px;
     padding: 7px;
     background: black;
     border: 1px solid lightgrey;
+    border-top: 1px solid black;
     height: 85%;
     width: 100%;
     border-radius: 6px;
@@ -16,9 +49,11 @@
   }
 
   .response-metrics {
-    height: 1.6rem;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    height: 1.8rem;
     width: 100%;
-    // padding: 5px;
     border-radius: 6px;
     background: black;
     text-align: right;
@@ -47,9 +82,8 @@
 
   .metrics-request {
     margin-right: 5px;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     flex-grow: 1;
-
   }
 
 }

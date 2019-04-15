@@ -18,7 +18,8 @@ export namespace mainRequestActions {
     HANDLE_BIDI_STREAM_START = "HANDLE_BIDI_STREAM_START",
     SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
     HANDLE_SEND_MESSAGE = "HANDLE_SEND_MESSAGE",
-    HANDLE_STOP_STREAM = "HANDLE_STOP_STREAM"
+    HANDLE_STOP_STREAM = "HANDLE_STOP_STREAM",
+    HANDLE_RECIEVE_MESSAGE = "HANDLE_RECIEVE_MESSAGE"
   }
 
   export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response)
@@ -44,7 +45,8 @@ export namespace mainRequestActions {
       }
       // `${activeTab.selectedRequest} called: [${(new Date()).toLocaleTimeString("en-US", {hour12: false} )}]`;
       handler.initiateRequest().then(response => {
-        dispatch(setGRPCResponse(response));
+        console.log()
+        dispatch(setGRPCResponse([{type: 'read', payload: response}, {type: 'write', payload: {payload: activeTab.configArguments.arguments}}] ) );
       })
       .catch(error => {
         dispatch(setGRPCResponse(error))
@@ -61,7 +63,7 @@ export namespace mainRequestActions {
         ...activeTab.requestConfig,
         callbacks: { 
           onEndReadCb: (res) => dispatch(setGRPCResponse(res) ),
-          onDataWriteCb: (res) => {console.log('Writing data from client to server:', res)}  
+          onDataWriteCb: (res) => console.log('client message', res)
         },
         argument: {},
       };
@@ -91,10 +93,13 @@ export namespace mainRequestActions {
         ...activeTab.requestConfig,
         callbacks: {
           onDataReadCb: (res) => {
-            console.log('Recieving streamed server data', res)
-            dispatch(setGRPCResponse(res); 
-          }), 
-          onEndReadCb: (res) => dispatch(setGRPCResponse(res)),
+            // console.log('Recieving streamed server data', res)
+            dispatch(setGRPCResponse(res));
+            dispatch(handleRecieveMessage());
+          }, 
+          onEndReadCb: (res) => {
+            dispatch(handleStopStream())
+          }
         },
         argument: {},
       };
@@ -108,6 +113,7 @@ export namespace mainRequestActions {
         timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
         request: `${activeTab.selectedRequest} started on ${activeTab.baseConfig.grpcServerURI}` 
       }
+
     }
   };
 
@@ -122,8 +128,10 @@ export namespace mainRequestActions {
         ...activeTab.requestConfig,
         callbacks: { 
           onDataReadCb:(res) => dispatch(setGRPCResponse(res)),
-          onDataWriteCb: (res) => { console.log('Writing data from client to server:', res[res.length-1][1].payload) },
-          onEndReadCb: () => { console.log('Ending Stream') }
+          onDataWriteCb: (res) => { console.log('Writing data from client to server:', res) },
+          onEndReadCb: () => { 
+            dispatch(handleStopStream())
+          }
         },
         argument: {},
       };
@@ -143,6 +151,8 @@ export namespace mainRequestActions {
   };
 
   export const handleSendMessage = () => action(Type.HANDLE_SEND_MESSAGE)
+
+  export const handleRecieveMessage = () => action(Type.HANDLE_RECIEVE_MESSAGE)
   
   export const handleStopStream = () => action(Type.HANDLE_STOP_STREAM)
   

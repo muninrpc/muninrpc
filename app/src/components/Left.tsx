@@ -301,14 +301,18 @@ export const LeftFactory = props => {
           {...state}
           handleServiceTrie={handleServiceTrie}
           handleRequestTrie={handleRequestTrie}
-          handleMessageTrie={handleMessageTrie}
           handleRequestClick={handleRequestClick}
           handleServiceClick={handleServiceClick}
         />
       );
     }
     if (state.mode === Mode.SHOW_MESSAGES) {
-      mode = <Messages {...state} />;
+      mode = (
+        <Messages 
+          {...state} 
+          handleMessageTrie={handleMessageTrie}     
+        />
+      )
     }
     if (state.mode === Mode.SHOW_SETUP) {
       mode = <Setup {...state} handleRepeatedClick={handleRepeatedClick} handleConfigInput={handleConfigInput} />;
