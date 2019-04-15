@@ -88,7 +88,7 @@ class GrpcWriter {
     const upgradedWrite = (data: object) => {
       const result = _baseWrite.call(base, data);
       if (result) {
-        this.updateWriteData({ type: "write", payload: data });
+        this.updateWriteData(data);
         this.notifyObservers("write");
       }
       return result;

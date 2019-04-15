@@ -157,9 +157,9 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       let newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].responseMetrics = {
         timeStamp: (new Date()).toLocaleTimeString("en-US", {hour12: false} ),
-        request: `${state.activeTab.selectedRequest}: message sent.`,
+        request: `${state.activeTab.selectedRequest}: message sent from client.`,
       }
-        
+
       return {
         ...state,
         handlerInfo: newHandlerInfo
