@@ -68,8 +68,10 @@ export namespace mainRequestActions {
       const requestConfig: RequestConfig<ClientStreamCbs> = {
         ...activeTab.requestConfig,
         callbacks: {
-          onEndReadCb: res => dispatch(setGRPCResponse(res)),
-          onDataWriteCb: res => console.log("client message", res),
+          onEndReadCb: res => {
+            dispatch(setGRPCResponse([{type: 'read', payload: res}, ...getState().main.handlerInfo[state.selectedTab].serverResponse]))
+          },
+          onDataWriteCb: res => setTimeout(() => { dispatch(setGRPCResponse(res))}, 1)
         },
         argument: {},
       };
@@ -98,7 +100,6 @@ export namespace mainRequestActions {
         ...activeTab.requestConfig,
         callbacks: {
           onDataReadCb: res => {
-            // console.log('Recieving streamed server data', res)
             dispatch(setGRPCResponse(res));
             dispatch(handleRecieveMessage());
           },

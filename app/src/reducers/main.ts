@@ -178,9 +178,15 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
 
     case mainRequestActions.Type.HANDLE_STOP_STREAM: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
-      // case - stopping a client push or bidi stream
-      console.log("stopping stream");
-      state.handlers[state.selectedTab].cancel();
+
+      // case - stopping a client push from client side
+      if(state.activeTab.requestConfig.callType === "CLIENT_STREAM") {
+        state.handlers[state.selectedTab].end();
+      // case - stopping bidi / server push stream from client side
+      } else {
+        state.handlers[state.selectedTab].cancel();
+      }
+      
       let request;
       if (action.payload === "server_end") {
         request = `${state.activeTab.selectedRequest}: con. terminated by server.`;
