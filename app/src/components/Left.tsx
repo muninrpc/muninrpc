@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
@@ -7,9 +7,7 @@ import * as pbActions from "../../lib/local/pbActions";
 import { Trie } from "../utils/trieClass";
 import { parseService } from "../utils/parseService";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
-import { actions } from "../actions";
 import * as cloneDeep from "lodash.clonedeep";
-import { loadPackageDefinition } from "grpc";
 
 interface LeftProps {
   handlerContext: [];
@@ -34,8 +32,9 @@ interface LeftProps {
   serviceRecommendations: string[];
   serviceTrie: Trie;
   serviceTrieInput: string;
+  cleanConfigArgs: {};
   getTabState: (state: LeftProps) => { type: string; payload: LeftProps };
-  updateTabNames: (obj: { tabKey: string; val: string }) => { type: string; payload: { tabKey: string; val: string } };
+  updateTabNames: { getTabState: (state: any) => any; updateTabNames: (state: any) => any };
 }
 
 enum Mode {
@@ -64,7 +63,6 @@ export const LeftFactory = (props: LeftProps) => {
       configElements: {},
       configArguments: {},
       cleanConfigArgs: {},
-
       messageRecommendations: [],
       messageTrie: new Trie(),
       messageTrieInput: "",

@@ -10,23 +10,22 @@ import {
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
 
-export namespace mainRequestActions {
-  export enum Type {
-    HANDLE_UNARY_REQUEST = "HANDLE_UNARY_REQUEST",
-    HANDLE_CLIENT_STREAM_START = "HANDLE_CLIENT_STREAM_START",
-    HANDLE_SERVER_STREAM_START = "HANDLE_SERVER_STREAM_START",
-    HANDLE_BIDI_STREAM_START = "HANDLE_BIDI_STREAM_START",
-    SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
-    HANDLE_SEND_MESSAGE = "HANDLE_SEND_MESSAGE",
-    HANDLE_STOP_STREAM = "HANDLE_STOP_STREAM",
-    HANDLE_RECIEVE_MESSAGE = "HANDLE_RECIEVE_MESSAGE",
-  }
-
-  export const handleSendMessage = () => action(Type.HANDLE_SEND_MESSAGE);
-  export const handleRecieveMessage = () => action(Type.HANDLE_RECIEVE_MESSAGE);
-  export const handleStopStream = (type?: string) => action(Type.HANDLE_STOP_STREAM, type);
-  export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
-  export const handleUnaryRequest = () => (dispatch, getState) => {
+export enum mainRequestActionType {
+  HANDLE_UNARY_REQUEST = "HANDLE_UNARY_REQUEST",
+  HANDLE_CLIENT_STREAM_START = "HANDLE_CLIENT_STREAM_START",
+  HANDLE_SERVER_STREAM_START = "HANDLE_SERVER_STREAM_START",
+  HANDLE_BIDI_STREAM_START = "HANDLE_BIDI_STREAM_START",
+  SET_GRPC_RESPONSE = "SET_GRPC_RESPONSE",
+  HANDLE_SEND_MESSAGE = "HANDLE_SEND_MESSAGE",
+  HANDLE_STOP_STREAM = "HANDLE_STOP_STREAM",
+  HANDLE_RECIEVE_MESSAGE = "HANDLE_RECIEVE_MESSAGE",
+}
+export const mainRequestActions = {
+  handleSendMessage: () => action(mainRequestActionType.HANDLE_SEND_MESSAGE),
+  handleRecieveMessage: () => action(mainRequestActionType.HANDLE_RECIEVE_MESSAGE),
+  handleStopStream: (type?: string) => action(mainRequestActionType.HANDLE_STOP_STREAM, type),
+  setGRPCResponse: (response: object) => action(mainRequestActionType.SET_GRPC_RESPONSE, response),
+  handleUnaryRequest: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
 
@@ -49,15 +48,15 @@ export namespace mainRequestActions {
       handler
         .initiateRequest()
         .then(response => {
-          dispatch(setGRPCResponse(response));
+          dispatch(mainRequestActions.setGRPCResponse(response));
         })
         .catch(error => {
-          dispatch(setGRPCResponse(error));
+          dispatch(mainRequestActions.setGRPCResponse(error));
         });
     }
-  };
+  },
 
-  export const handleClientStreamStart = () => (dispatch, getState) => {
+  handleClientStreamStart: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
 
@@ -67,7 +66,7 @@ export namespace mainRequestActions {
         callbacks: {
           onEndReadCb: res => {
             dispatch(
-              setGRPCResponse([
+              mainRequestActions.setGRPCResponse([
                 { type: "read", payload: res },
                 ...getState().main.handlerInfo[state.selectedTab].serverResponse,
               ]),
@@ -75,7 +74,7 @@ export namespace mainRequestActions {
           },
           onDataWriteCb: res =>
             setTimeout(() => {
-              dispatch(setGRPCResponse(res));
+              dispatch(mainRequestActions.setGRPCResponse(res));
             }, 1),
         },
         argument: {},
@@ -93,9 +92,9 @@ export namespace mainRequestActions {
       const { writableStream } = handler.getEmitters();
       state.handlers[state.selectedTab] = writableStream;
     }
-  };
+  },
 
-  export const handleServerStreamStart = () => (dispatch, getState) => {
+  handleServerStreamStart: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
     const selectedTab = state.selectedTab;
@@ -105,11 +104,11 @@ export namespace mainRequestActions {
         ...activeTab.requestConfig,
         callbacks: {
           onDataReadCb: res => {
-            dispatch(setGRPCResponse(res));
-            dispatch(handleRecieveMessage());
+            dispatch(mainRequestActions.setGRPCResponse(res));
+            dispatch(mainRequestActions.handleRecieveMessage());
           },
           onEndReadCb: res => {
-            dispatch(handleStopStream("server_end"));
+            dispatch(mainRequestActions.handleStopStream("server_end"));
           },
         },
         argument: {},
@@ -128,9 +127,9 @@ export namespace mainRequestActions {
         request: `${activeTab.selectedRequest} started on ${activeTab.baseConfig.grpcServerURI}`,
       };
     }
-  };
+  },
 
-  export const handleBidiStreamStart = () => (dispatch, getState) => {
+  handleBidiStreamStart: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
     const selectedTab = state.selectedTab;
@@ -139,10 +138,10 @@ export namespace mainRequestActions {
       const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
         callbacks: {
-          onDataReadCb: res => dispatch(setGRPCResponse(res)),
+          onDataReadCb: res => dispatch(mainRequestActions.setGRPCResponse(res)),
           onDataWriteCb: res => {},
           onEndReadCb: () => {
-            dispatch(handleStopStream());
+            dispatch(mainRequestActions.handleStopStream());
           },
         },
         argument: {},
@@ -160,7 +159,6 @@ export namespace mainRequestActions {
       const { writableStream } = handler.getEmitters();
       state.handlers[state.selectedTab] = writableStream;
     }
-  };
-} // mainRequestionActions
-
-export type mainRequestActions = Omit<typeof mainRequestActions, "Type">;
+  },
+};
+// export type mainRequestActions = typeof mainRequestActions;
