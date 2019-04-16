@@ -58,7 +58,7 @@ export const LeftFactory = (props: LeftProps) => {
       selectedService: "",
       selectedRequest: "",
       mode: "SERVICE_AND_REQUEST",
-      baseConfig: { grpcServerURI: "localhost:50052", packageDefinition: null, packageName: "", serviceName: "" },
+      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
       requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
       configArguments: {},
