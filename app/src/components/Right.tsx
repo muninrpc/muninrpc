@@ -1,12 +1,13 @@
 import * as React from "react";
 import ReactJson from "react-json-view";
 import { MainModel } from "../models";
+import { actions } from "../actions";
 
-interface RightActions {
-  selectResponseTab: any;
-}
+// interface RightActions {
+//   selectResponseTab: ({ selectedTab: string; mode: string }) => void;
+// }
 
-export function Right(props: MainModel & RightActions, context?: any) {
+export function Right(props: MainModel & actions, context?: any) {
   const { selectResponseTab, tabInfo, handlerInfo, selectedTab, leftArray } = props;
 
   let timeStamp = leftArray[0] ? handlerInfo[selectedTab].responseMetrics.timeStamp : "";
@@ -26,16 +27,20 @@ export function Right(props: MainModel & RightActions, context?: any) {
   }
 
   // logic for parsing correct response json
-  let serverJSON: [] | {} = [];
-  let clientJSON: [] | {} = [];
+  let serverJSON = [];
+  const clientJSON = [];
   let displayedJSON: [] | {} = [];
 
   if (props.leftArray[0]) {
     if (Array.isArray(props.handlerInfo[props.selectedTab].serverResponse)) {
       props.handlerInfo[props.selectedTab].serverResponse.forEach(message => {
         // console.log('message:', message)
-        if (message.type === "read") serverJSON.push(message.payload);
-        if (message.type === "write") clientJSON.push(message.payload);
+        if (message.type === "read") {
+          serverJSON.push(message.payload);
+        }
+        if (message.type === "write") {
+          clientJSON.push(message.payload);
+        }
       });
     } else {
       serverJSON = props.handlerInfo[props.selectedTab].serverResponse;

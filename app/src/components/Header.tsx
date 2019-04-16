@@ -1,7 +1,7 @@
 import * as React from "react";
-import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
+import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { MainModel } from "../models";
-import { actions, mainActions } from "../actions";
+import { actions } from "../actions";
 
 export function Header(props: MainModel & actions, context?: any) {
   const {
@@ -22,9 +22,9 @@ export function Header(props: MainModel & actions, context?: any) {
     handleStopStream,
   } = props;
 
-  let userConnectType;
-  let callType;
-  let trail;
+  let userConnectType: string;
+  let callType: CallType;
+  let trail: string;
   if (activeTab.requestConfig) {
     callType = activeTab.requestConfig.callType;
     trail = activeTab.baseConfig.grpcServerURI ? `${activeTab.baseConfig.grpcServerURI} → ` : "";
@@ -112,9 +112,9 @@ export function Header(props: MainModel & actions, context?: any) {
   const tabArray = [];
 
   leftArray.forEach(tab => {
-    let tabKey = tab.props.tabKey;
-    let displayedTabName;
-    props.tabInfo[tabKey] ? (displayedTabName = props.tabInfo[tabKey]) : (displayedTabName = "New Tab");
+    const tabKey = tab.props.tabKey;
+    let displayedTabName: string;
+    props.tabInfo[tabKey] ? (displayedTabName = props.tabInfo[tabKey].name) : (displayedTabName = "New Tab");
     tabArray.push(
       <div
         key={"button" + tab.key}
@@ -138,8 +138,10 @@ export function Header(props: MainModel & actions, context?: any) {
     );
   });
 
-  let disabledFlag;
-  if (handlerInfo[selectedTab]) disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
+  let disabledFlag: boolean;
+  if (handlerInfo[selectedTab]) {
+    disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
+  }
 
   return (
     <div className="header">
@@ -148,7 +150,7 @@ export function Header(props: MainModel & actions, context?: any) {
           <div className="trail">{trail}</div>
           <div className="connection-display">{userConnectType}</div>
           {displayButton}
-          <button className="stop-button" disabled={disabledFlag} onClick={handleStopStream}>
+          <button className="stop-button" disabled={disabledFlag} onClick={() => handleStopStream()}>
             STOP STREAM
           </button>
         </div>
