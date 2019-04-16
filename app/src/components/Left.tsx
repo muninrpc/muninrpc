@@ -63,6 +63,8 @@ export const LeftFactory = (props: LeftProps) => {
       requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
       configArguments: {},
+      cleanConfigArgs: {},
+
       messageRecommendations: [],
       messageTrie: new Trie(),
       messageTrieInput: "",
@@ -114,6 +116,7 @@ export const LeftFactory = (props: LeftProps) => {
         selectedService: payload.service,
         selectedRequest: payload.request,
         configArguments: newConfigArguments,
+        cleanConfigArgs: cloneDeep(newConfigArguments),
         configElements: newConfigElements,
         baseConfig: {
           ...state.baseConfig,
@@ -220,35 +223,33 @@ export const LeftFactory = (props: LeftProps) => {
     };
 
     const handleRepeatedClick = payload => {
-      const keys = payload.id.split(".").slice(1);
-      function findNestedValue(context, keyArray) {
+      let keys = payload.id.split(".").slice(1);
+
+      function findNestedValue(context, keyArray, clean = false) {
         // base case
         if (keyArray.length === 1) {
           return context;
         }
         // recu case
         if (keyArray[0].match("@")) {
-          const loc = Number(keyArray[0].match(/\d+$/)[0]);
+          let loc = clean ? 0 : Number(keyArray[0].match(/\d+$/)[0]);
           let con = keyArray[0];
           con = con.match(/(.+)@/)[1];
-          return findNestedValue(context[con][loc], keyArray.slice(1));
+          return findNestedValue(context[con][loc], keyArray.slice(1), clean);
         } else {
-          return findNestedValue(context[keyArray[0]], keyArray.slice(1));
+          return findNestedValue(context[keyArray[0]], keyArray.slice(1), clean);
         }
       }
 
       // find the correct location
-      const context = findNestedValue(state.configArguments.arguments, keys);
-      const baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
-      const baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
-
-      // console.log(context)
-      // console.log(baseKey)
-      // console.log(baseLoc)
+      let context = findNestedValue(state.configArguments.arguments, keys);
+      let cleanContext = findNestedValue(state.cleanConfigArgs.arguments, keys, true);
+      let baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
+      let baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
 
       if (payload.request === "add") {
-        context[baseKey][context[baseKey].length] = cloneDeep(context[baseKey][context[baseKey].length - 1]);
-        context[baseKey][context[baseKey].length - 1] = "";
+        context[baseKey][context[baseKey].length] = cloneDeep(cleanContext[baseKey][0]);
+        // context[baseKey][context[baseKey].length - 1] = "";
       }
 
       if (payload.request === "remove") {
@@ -295,8 +296,11 @@ export const LeftFactory = (props: LeftProps) => {
         context[keys[keys.length - 1]] = payload.value;
       }
 
+      const newConfigArguments = cloneDeep(state.configArguments);
+
       updateState({
         ...state,
+        configArguments: newConfigArguments,
       });
     };
 
