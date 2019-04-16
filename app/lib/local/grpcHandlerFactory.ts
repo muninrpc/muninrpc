@@ -70,7 +70,9 @@ class GrpcReader {
   // }
 
   notifyObservers(cb: (data: any) => void) {
-    cb(this.data);
+    if (cb) {
+      cb(this.data);
+    }
   }
 }
 
@@ -90,7 +92,9 @@ class GrpcWriter {
   // }
 
   notifyObservers(cb: (data: any) => void) {
-    cb(this.data);
+    if (cb) {
+      cb(this.data);
+    }
   }
 
   upgradeWrite(base: grpc.ClientWritableStream<any>) {

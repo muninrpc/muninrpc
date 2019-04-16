@@ -42,12 +42,10 @@ function AddItem(call, callback) {
 function CalculateAverage(call: grpc.ServerReadableStream<any>, callback: grpc.requestCallback<{ average: number }>) {
   const numCache = [];
   call.on("data", data => {
-    console.log("receiving data:", data);
     numCache.push(data.numb);
   });
   call.on("end", () => {
     const average = numCache.reduce((acc, curr) => acc + curr) / numCache.length;
-    console.log("received end request");
     callback(null, { average });
   });
 }
@@ -60,18 +58,16 @@ function CalculateAverage(call: grpc.ServerReadableStream<any>, callback: grpc.r
 
 function TestServerStream(call: grpc.ServerWriteableStream<any>) {
   call.on("cancelled", () => {
-    console.log("client cancelled");
     call.end();
   });
   const stopID = setInterval(() => {
     const randomInt = Math.floor(Math.random() * 100);
-    console.log("sending random int:", randomInt);
-    call.write({ numb: randomInt });
+    call.write({ numb: 3 });
   }, 500);
   setTimeout(() => {
     clearInterval(stopID);
     call.end();
-  }, 1000 * 30);
+  }, 1000 * 3);
 }
 
 /**
