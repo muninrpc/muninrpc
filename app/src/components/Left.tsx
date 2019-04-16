@@ -1,17 +1,12 @@
 import * as React from "react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import ServiceAndRequest from "./ServiceAndRequest";
 import Messages from "./Messages";
 import Setup from "./Setup";
 import * as pbActions from "../../lib/local/pbActions";
 import { Trie } from "../utils/trieClass";
 import { parseService } from "../utils/parseService";
-import {
-  CallType,
-  BaseConfig,
-  RequestConfig,
-  GrpcHandlerFactory,
-} from "../../lib/local/grpcHandlerFactory";
+import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 import * as cloneDeep from "lodash.clonedeep";
 
 interface LeftProps {
@@ -19,14 +14,27 @@ interface LeftProps {
   tabKey: string;
   tabName: string;
   filePath: string;
-  serviceList: [];
+  serviceList: {};
   messageList: [];
   selectedService: string;
   selectedRequest: string;
   mode: string;
-  baseConfig: {};
+  baseConfig: BaseConfig;
+  requestConfig: RequestConfig<any>;
   configElements: {};
   configArguments: {};
+  messageRecommendations: string[];
+  messageTrie: Trie;
+  messageTrieInput: string;
+  requestRecommendations: string[];
+  requestTrie: Trie;
+  requestTrieInput: string;
+  serviceRecommendations: string[];
+  serviceTrie: Trie;
+  serviceTrieInput: string;
+  cleanConfigArgs: {};
+  getTabState: (state: LeftProps) => { type: string; payload: LeftProps };
+  updateTabNames: { getTabState: (state: any) => any; updateTabNames: (state: any) => any };
 }
 
 enum Mode {
@@ -35,14 +43,13 @@ enum Mode {
   SHOW_SETUP = "SETUP",
 }
 
-export const LeftFactory = props => {
-  let closureState;
-  if (!closureState)
+export const LeftFactory = (props: LeftProps) => {
+  let closureState: LeftProps;
+  if (!closureState) {
     closureState = {
       tabKey: props.tabKey,
       getTabState: props.getTabState,
       updateTabNames: props.updateTabNames,
-
       tabName: "New Connection",
       handlerContext: [],
       filePath: "",
@@ -51,26 +58,22 @@ export const LeftFactory = props => {
       selectedService: "",
       selectedRequest: "",
       mode: "SERVICE_AND_REQUEST",
-      baseConfig: { grpcServerURI: 'localhost:50052' },
-      requestConfig: {},
-
+      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
+      requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
       configArguments: {},
       cleanConfigArgs: {},
-
       messageRecommendations: [],
       messageTrie: new Trie(),
       messageTrieInput: "",
-
       requestRecommendations: [],
       requestTrie: new Trie(),
       requestTrieInput: "",
-
       serviceRecommendations: [],
       serviceTrie: new Trie(),
       serviceTrieInput: "",
     };
-
+  }
   function Left(props: LeftProps) {
     // state management
     const [state, updateState] = useState(closureState);
@@ -78,9 +81,9 @@ export const LeftFactory = props => {
     state.getTabState({ ...cloneDeep(closureState) });
 
     // user input management
-    const handleRequestClick = payload => {
+    const handleRequestClick = (payload: { service: string; request: string }) => {
       const { requestStream, responseStream } = state.serviceList[payload.service][payload.request];
-      let newConnectType: string;
+      let newConnectType: CallType;
 
       if (requestStream && responseStream) {
         newConnectType = CallType.BIDI_STREAM;
@@ -91,11 +94,12 @@ export const LeftFactory = props => {
       } else if (!requestStream && responseStream) {
         newConnectType = CallType.SERVER_STREAM;
       } else {
+        // @ts-ignore
         newConnectType = "ERROR";
       }
 
-      let newConfigArguments = { arguments: {} };
-      let newConfigElements = { arguments: {} };
+      const newConfigArguments = { arguments: {} };
+      const newConfigElements = { arguments: {} };
 
       // mutates newConfigArgs and newConfigEles to reflect the proto file
       parseService(
@@ -110,7 +114,7 @@ export const LeftFactory = props => {
         selectedService: payload.service,
         selectedRequest: payload.request,
         configArguments: newConfigArguments,
-        cleanConfigArgs: cloneDeep(newConfigArguments), 
+        cleanConfigArgs: cloneDeep(newConfigArguments),
         configElements: newConfigElements,
         baseConfig: {
           ...state.baseConfig,
@@ -121,11 +125,11 @@ export const LeftFactory = props => {
           ...state.requestConfig,
           requestName: payload.request,
           callType: newConnectType,
-        }
+        },
       });
     };
 
-    const handleServiceClick = payload => {
+    const handleServiceClick = (payload: { service: string }) => {
       //deselects service upon clicking outside of service list
       if (payload.service === "") {
         updateState({
@@ -144,46 +148,49 @@ export const LeftFactory = props => {
           ...state.baseConfig,
           packageName: payload.service.match(/(.+)\./)[1],
           serviceName: payload.service.match(/\.(.+)/)[1],
-        }
+        },
       });
     };
 
-    const handleServiceTrie = val =>
+    const handleServiceTrie = (val: string) =>
       updateState({
         ...state,
         serviceTrieInput: val,
         serviceRecommendations: state.serviceTrie.recommend(val),
       });
+
     const handleMessageTrie = val =>
       updateState({
         ...state,
         messageTrieInput: val,
         messageRecommendations: state.messageTrie.recommend(val),
       });
+
     const handleRequestTrie = val =>
       updateState({
         ...state,
         requestTrieInput: val,
-        requestRecommendations: state.requestTrie.recommend(val) // NOT YET IMPLEMENTED
+        requestRecommendations: state.requestTrie.recommend(val), // NOT YET IMPLEMENTED
       });
-    const handleIPInput = val => 
+
+    const handleIPInput = val =>
       updateState({
         ...state,
         baseConfig: { ...state.baseConfig, grpcServerURI: val },
       });
+
     const handleTabNameChange = val => {
       state.updateTabNames({
         val: val,
-        tabKey: state.tabKey
-      })
+        tabKey: state.tabKey,
+      });
       updateState({
         ...state,
-        tabName: val
-      })
-    }
-      
-    
-    const handleProtoUpload = file => {
+        tabName: val,
+      });
+    };
+
+    const handleProtoUpload = (file: FileList) => {
       // handle file
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
@@ -259,7 +266,7 @@ export const LeftFactory = props => {
     };
 
     const handleConfigInput = payload => {
-      let keys = payload.id.split(".").slice(1);
+      const keys = payload.id.split(".").slice(1);
       function findNestedValue(context, keyArray) {
         // base case
         if (keyArray.length === 1) {
@@ -267,7 +274,7 @@ export const LeftFactory = props => {
         }
         // recu case
         if (keyArray[0].match("@")) {
-          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+          const loc = Number(keyArray[0].match(/\d+$/)[0]);
           let con = keyArray[0];
           con = con.match(/(.+)@/)[1];
           return findNestedValue(context[con][loc], keyArray.slice(1));
@@ -277,11 +284,11 @@ export const LeftFactory = props => {
       }
 
       // find the correct location
-      let context = findNestedValue(state.configArguments.arguments, keys);
+      const context = findNestedValue(state.configArguments.arguments, keys);
 
       if (keys[keys.length - 1].includes("@")) {
-        let key = keys[keys.length - 1].match(/(.+)@/)[1];
-        let pos = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+        const key = keys[keys.length - 1].match(/(.+)@/)[1];
+        const pos = Number(keys[keys.length - 1].match(/\d+$/)[0]);
         context[key][pos] = payload.value;
       } else {
         context[keys[keys.length - 1]] = payload.value;
@@ -291,7 +298,7 @@ export const LeftFactory = props => {
 
       updateState({
         ...state,
-        configArguments: newConfigArguments
+        configArguments: newConfigArguments,
       });
     };
 
@@ -310,24 +317,19 @@ export const LeftFactory = props => {
       );
     }
     if (state.mode === Mode.SHOW_MESSAGES) {
-      mode = (
-        <Messages 
-          {...state} 
-          handleMessageTrie={handleMessageTrie}     
-        />
-      )
+      mode = <Messages {...state} handleMessageTrie={handleMessageTrie} />;
     }
     if (state.mode === Mode.SHOW_SETUP) {
       mode = <Setup {...state} handleRepeatedClick={handleRepeatedClick} handleConfigInput={handleConfigInput} />;
     }
-  
+
     return (
       <div id="tab">
         <input
           className={"tab-header"}
           value={state.tabName}
           onClick={() => console.log(state)}
-          onChange={(e) => handleTabNameChange(e.target.value)}
+          onChange={e => handleTabNameChange(e.target.value)}
           style={{ color: "black" }}
         />
         <div className="input-header">
@@ -376,12 +378,9 @@ export const LeftFactory = props => {
           </button>
         </div>
 
-        <div className="main">
-          {mode}
-        </div>
+        <div className="main">{mode}</div>
       </div>
     );
   }
   return <Left key={props.tabKey} {...props} />;
 };
-

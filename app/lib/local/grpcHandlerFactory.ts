@@ -70,7 +70,6 @@ class GrpcReader {
   // }
 
   notifyObservers(cb: (data: any) => void) {
-    console.log(cb);
     cb(this.data);
   }
 }
@@ -143,14 +142,13 @@ class UnaryHandler extends GrpcHandler {
     super(config);
   }
 
-  public initiateRequest(): Promise<{}> {
+  public initiateRequest(): Promise<{}[]> {
     return new Promise((resolve, reject) => {
-      console.log(this.args);
       this.client[this.requestName](this.args, (err: Error, response) => {
         if (err) {
           reject(err);
         }
-        resolve(response);
+        resolve([{ type: "read", payload: response }, { type: "write", payload: this.args }]);
       });
     });
   }
@@ -187,33 +185,31 @@ class ClientStreamHandler extends GrpcHandler implements GrpcWriter {
     return this;
   }
 
-  public returnHandler() {
+  public getEmitters() {
     return {
       writableStream: this.upgradeWrite(this.writableStream),
     };
   }
 }
 
-class ServerStreamHandler extends GrpcHandler implements GrpcReader {
+export class ServerStreamHandler extends GrpcHandler implements GrpcReader {
   public onDataReadCb: (a: object) => void;
   public onEndReadCb: (a: object) => void;
   private readableStream: grpc.ClientReadableStream<any>;
   public data: { type: string; payload: object }[];
-  // public observers: Observer;
 
   constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>) {
     super(config);
     this.onDataReadCb = config.callbacks.onDataReadCb;
     this.onEndReadCb = config.callbacks.onEndReadCb;
     this.data = [];
-    // this.observers = [];
   }
 
   // create stand-in properties and methods to initially satisfy the interface contract
   // mixins will be used to properly assign functionality
   updateReadData: (a: any) => void;
   // registerObservers: (o: Observer) => void;
-  notifyObservers: (type: string, string?: "end") => void;
+  notifyObservers: (cb: (data: any) => void) => void;
 
   public initiateRequest() {
     this.readableStream = this.client[this.requestName](this.args);
@@ -221,35 +217,31 @@ class ServerStreamHandler extends GrpcHandler implements GrpcReader {
       this.updateReadData(data);
       this.notifyObservers(this.onDataReadCb);
     });
-    this.readableStream.on("end", data => {
+    this.readableStream.on("end", (data: object) => {
       this.updateReadData(data);
-      // this.notifyObservers("read", "end");
       this.notifyObservers(this.onEndReadCb);
     });
-    // this.readableStream.cancel();
   }
 
-  returnHandler() {
+  public getEmitters() {
     return {
       readableStream: this.readableStream,
     };
   }
 }
 
-class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
+export class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
   public onDataReadCb: (a: any) => any;
   public onEndReadCb: (a: any) => any;
   public onDataWriteCb: (a: any) => void;
   private bidiStream: grpc.ClientDuplexStream<any, any>;
   public data: { type: string; payload: object }[];
-  // public observers: Observers[];
 
   constructor(config: BaseConfig & RequestConfig<BidiAndServerStreamCbs>) {
     super(config);
     this.onDataReadCb = config.callbacks.onDataReadCb;
     this.onEndReadCb = config.callbacks.onEndReadCb;
     this.data = [];
-    // this.observers = [];
   }
 
   // create stand-in properties and methods to initially satisfy the interface contract
@@ -278,7 +270,7 @@ class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
     return this;
   }
 
-  public returnHandler() {
+  public getEmitters() {
     return {
       writableStream: this.upgradeWrite(this.bidiStream),
     };
