@@ -7,7 +7,6 @@ import {
   BidiAndServerStreamCbs,
   GrpcHandlerFactory,
 } from "../../lib/local/grpcHandlerFactory";
-import { cloneDeep } from "@babel/types";
 
 export namespace mainRequestActions {
   export enum Type {
@@ -21,8 +20,10 @@ export namespace mainRequestActions {
     HANDLE_RECIEVE_MESSAGE = "HANDLE_RECIEVE_MESSAGE",
   }
 
+  export const handleSendMessage = () => action(Type.HANDLE_SEND_MESSAGE);
+  export const handleRecieveMessage = () => action(Type.HANDLE_RECIEVE_MESSAGE);
+  export const handleStopStream = (type?: string) => action(Type.HANDLE_STOP_STREAM, type);
   export const setGRPCResponse = (response: object) => action(Type.SET_GRPC_RESPONSE, response);
-
   export const handleUnaryRequest = () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
@@ -157,12 +158,6 @@ export namespace mainRequestActions {
       state.handlers[state.selectedTab] = writableStream;
     }
   };
-
-  export const handleSendMessage = () => action(Type.HANDLE_SEND_MESSAGE);
-
-  export const handleRecieveMessage = () => action(Type.HANDLE_RECIEVE_MESSAGE);
-
-  export const handleStopStream = (type?: string) => action(Type.HANDLE_STOP_STREAM, type);
 }
 
 export type mainRequestActions = Omit<typeof mainRequestActions, "Type">;

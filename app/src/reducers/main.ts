@@ -63,8 +63,8 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
 
     case mainActions.Type.REMOVE_TAB: {
       // expect a payload of 'tabN' where N is the tabID
-      let newLeftArray = cloneDeep(state.leftArray);
-      let removeIdx;
+      const newLeftArray: MainModel["leftArray"] = cloneDeep(state.leftArray);
+      let removeIdx: number;
       let newSelectedTab = state.selectedTab;
 
       // first search for the tab to delete
@@ -130,10 +130,12 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
     }
 
     case mainRequestActions.Type.SET_GRPC_RESPONSE: {
-      let newHandlerInfo = cloneDeep(state.handlerInfo);
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].serverResponse = action.payload;
       // console.log('action.payload inside of reducer', action.payload instanceof Error)
-      if (action.payload instanceof Error) newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR";
+      if (action.payload instanceof Error) {
+        newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR";
+      }
       return {
         ...state,
         handlerInfo: newHandlerInfo,
@@ -181,7 +183,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       // case - stopping a client push or bidi stream
       console.log("stopping stream");
       state.handlers[state.selectedTab].cancel();
-      let request;
+      let request: string;
       if (action.payload === "server_end") {
         request = `${state.activeTab.selectedRequest}: con. terminated by server.`;
       } else {

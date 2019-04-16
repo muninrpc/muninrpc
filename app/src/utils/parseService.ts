@@ -45,7 +45,7 @@ export function parseService(typeArray, configArguments, configElements, state) 
         parseService(state.messageList[f.typeName].type, configArguments[f.name], configElements[f.name], state);
       }
       // case: message and repeating
-      if (f.type == "TYPE_MESSAGE" && f.label == "LABEL_REPEATED") {
+      if (f.type === "TYPE_MESSAGE" && f.label === "LABEL_REPEATED") {
         configArguments[f.name] = [{}];
         configElements[f.name] = [
           {

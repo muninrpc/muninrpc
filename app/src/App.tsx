@@ -3,35 +3,30 @@ import { connect } from "react-redux";
 import { bindActionCreators, Dispatch } from "redux";
 import { actions } from "./actions";
 import { MainModel } from "./models";
-import MyTypes from "./store"
-
-type AppProps = {
-  main: MainModel;
-};
+import * as Types from "MyTypes";
 
 // import components
 import { Right, Header } from "./components";
 
-const MapStateToProps = store => ({
-  selectedTab: store.main.selectedTab,
-  leftArray: store.main.leftArray,
-  activeTab: store.main.activeTab,
-  handlerInfo: store.main.handlerInfo,
-  handlers: store.main.handlers,
-  isStreaming: store.main.isStreaming,
-  tabInfo: store.main.tabInfo
-});
+type AppProps = MainModel & actions;
 
-const MapDispatchToProps = (dispatch: Dispatch<RootAction>) => bindActionCreators(actions, dispatch);
+const MapStateToProps = (store: Types.ReducerState) => {
+  return {
+    selectedTab: store.main.selectedTab,
+    leftArray: store.main.leftArray,
+    activeTab: store.main.activeTab,
+    handlerInfo: store.main.handlerInfo,
+    handlers: store.main.handlers,
+    tabInfo: store.main.tabInfo,
+  };
+};
 
-class App extends React.Component<AppProps & actions, {}> {
-  constructor(props: AppProps & actions) {
+const MapDispatchToProps = (dispatch: Dispatch<Types.RootAction>) => bindActionCreators(actions, dispatch);
+
+class App extends React.Component<AppProps, {}> {
+  constructor(props: AppProps) {
     super(props);
-    this.props.addNewTab({getTabState: this.props.getTabState, updateTabNames: this.props.updateTabNames});
-  }
-
-  componentDidMount() {
-    
+    this.props.addNewTab({ getTabState: this.props.getTabState, updateTabNames: this.props.updateTabNames });
   }
 
   render() {

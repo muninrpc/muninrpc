@@ -30,7 +30,7 @@ export namespace mainActions {
 
   export const updateTabNames = (obj: { [key: string]: string }) => action(Type.UPDATE_TAB_NAMES, obj);
 
-  export const selectResponseTab = (obj: { [key: string]: MainModel["selectedTab"]; val: string }) =>
+  export const selectResponseTab = (obj: { [key: string]: MainModel["selectedTab"]; mode: string }) =>
     action(Type.SELECT_RESPONSE_TAB, obj);
 }
 

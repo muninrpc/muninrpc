@@ -9,15 +9,6 @@ export namespace TestProps {
   }
 }
 
-
 export function Test(props) {
-  return (
-    <div className={'tab' + props.tabKey}>
-      my primary key is {props.tabKey}
-    </div>
-  )
-} 
-
-
-
-
+  return <div className={"tab" + props.tabKey}>my primary key is {props.tabKey}</div>;
+}
