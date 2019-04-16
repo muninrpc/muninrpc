@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
-    "sourceMap": true,
+    "sourceMap": false,
     "noImplicitAny": false,
     "module": "commonjs",
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
-    "experimentalDecorators": true
-  }
+    "experimentalDecorators": true,
+  },
+  "include": [
+    "./types/global.d.ts", 
+    "./types/react-redux.d.ts", 
+    "./store/types.d.ts",
+  ]
 }

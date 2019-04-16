@@ -51,7 +51,7 @@ export const LeftFactory = props => {
       selectedService: "",
       selectedRequest: "",
       mode: "SERVICE_AND_REQUEST",
-      baseConfig: { grpcServerURI: 'localhost:50052' },
+      baseConfig: { grpcServerURI: '' },
       requestConfig: {},
 
       configElements: {},

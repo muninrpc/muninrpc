@@ -18,21 +18,21 @@
       background: white;
       font-size: 0.7rem;
       font-weight: 700;
-      color: darken($primary-color,20%);
+      color: darken(#2699FB,20%);
       border: 1px solid black;
       transition: 0.3s ease all;
     }
     .tab:hover {
-      background: $primary-color;      
+      background: #2699FB;      
       color: white;
       cursor: pointer;
     }
     .tab:active {
-      background: darken($primary-color,20%);
+      background: darken(#2699FB,20%);
     }
     .selected {
       color: white;
-      background: darken($primary-color,20%);
+      background: darken(#2699FB,20%);
     }
   }
 

@@ -2,14 +2,16 @@
   "name": "munin-rpc",
   "version": "1.0.0",
   "description": "protobuf and HTTP2 testing tool",
-  "main": "main_process.js",
+  "main": "./app/src/main_process.js",
   "scripts": {
-    "bundle": "webpack --mode development",
+    "bundle": "webpack --mode production",
     "serve": "electron .",
-    "start": "npm-run-all --parallel bundle serve",
+    "start": "electron-forge start",
     "test": "jest",
     "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron",
-    "grpcserver": "node app/__tests__/grpc-server/grpc-server.js"
+    "grpcserver": "node app/__tests__/grpc-server/grpc-server.js",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
@@ -29,29 +31,32 @@
     "@types/webpack": "^4.4.26",
     "@types/webpack-env": "^1.13.9",
     "babel-loader": "^8.0.5",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.11",
-    "electron": "4.0.0",
-    "electron-devtools-installer": "^2.2.4",
-    "electron-reload": "^1.4.0",
+    "electron-forge": "^5.2.4",
+    "electron-prebuilt-compile": "4.0.0",
     "file-loader": "^1.1.10",
     "jest": "^24.5.0",
-    "lodash": "^4.17.11",
     "node-sass": "^4.11.0",
     "npm-run-all": "^4.1.2",
     "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.3",
     "typesafe-actions": "^4.0.0",
-    "typescript": "^3.3.4000",
+    "typescript": "^3.4.3",
+    "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.1.1",
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
-    "express": "^4.16.4",
+    "electron-compile": "^6.4.4",
+    "electron-compiler": "^1.0.9",
+    "electron-squirrel-startup": "^1.0.0",
     "grpc": "^1.19.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -59,5 +64,30 @@
     "react-redux": "^6.0.1",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"
+  },
+  "config": {
+    "forge": {
+      "make_targets": {
+        "linux": ["deb", "rpm", "flatpak"],
+        "win32": ["squirrel"]
+      },
+      "electronPackagerConfig": {
+        "packageManager": "npm",
+        "icon": "raven.icns"
+      },
+      "electronWinstallerConfig": {
+        "name": "munin_rpc"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "",
+        "name": ""
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "muninrpc"
+      }
+    }
   }
 }

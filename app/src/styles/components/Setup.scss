@@ -17,7 +17,7 @@
     align-items: center;
     align-content: center;
     justify-content: center;
-    color: darken($primary-color, 20%);
+    color: darken(#2699FB, 20%);
     height: 20px;
     width: 20px;
     font-weight: 600;
@@ -27,7 +27,7 @@
   }
   button:hover {
     color:white;
-    background: $primary-color;
+    background: #2699FB;
   }
   .first {
     margin-top: 8px;
@@ -40,7 +40,7 @@
     padding-top: 16px;
   
     h2 {
-      border-top: 1px solid darken($primary-color, 20%);
+      border-top: 1px solid darken(#2699FB, 20%);
       padding-top: 8px;
     }
   
@@ -63,7 +63,7 @@
         .li-body-top {
           display: flex;
           font-weight: 400;
-          color: $primary-color;
+          color: #2699FB;
           font-size: 1.2rem;
           margin-bottom: 8px;
         }
