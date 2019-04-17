@@ -13,7 +13,7 @@ export namespace MessageProps {
 export default function Messages(props: MessageProps.Props) {
   const messageArray: JSX.Element[] = [];
 
-  let filteredMessageList = filterObject(props.messageList, props.messageRecommendations, props.messageTrieInput);
+  const filteredMessageList = filterObject(props.messageList, props.messageRecommendations, props.messageTrieInput);
   //console.log('filteredMessageList', filteredMessageList)
 
   if (filteredMessageList) {
@@ -55,11 +55,7 @@ export default function Messages(props: MessageProps.Props) {
     <div className="messages">
       <h2>Messages</h2>
       <div className="message-header">
-        <input
-          type="text"
-          placeholder="search for messages"
-          onChange={e => props.handleMessageTrie(e.target.value)}
-        />
+        <input type="text" placeholder="search for messages" onChange={e => props.handleMessageTrie(e.target.value)} />
       </div>
       <div className="message-area">{messageArray}</div>
     </div>

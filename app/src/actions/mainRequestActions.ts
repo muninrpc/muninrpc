@@ -139,7 +139,7 @@ export const mainRequestActions = {
         ...activeTab.requestConfig,
         callbacks: {
           onDataReadCb: res => dispatch(mainRequestActions.setGRPCResponse(res)),
-          onDataWriteCb: res => {},
+          // onDataWriteCb: res => {},
           onEndReadCb: () => {
             dispatch(mainRequestActions.handleStopStream());
           },
