@@ -62,7 +62,9 @@ $ npm run test-backend
 ### Brought to you by fine minds:
 
 Sterling Deng *@sterlingdeng* 
+
 Ray Yao *@RocaRay*
+
 Ed Ryan *@15ryane*
 
 
