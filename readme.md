@@ -1,5 +1,5 @@
-# MuninRPC 
-*Quoth the raven:* "I can mock my gRPC calls!"
+<h1 align="center">MuninRPC</h1>
+<p align="center">Quoth the raven: "I can mock my gRPC calls!"</p>
 
 ![MuninRPC](https://images-na.ssl-images-amazon.com/images/I/515xyoCME2L._SX425_.jpg)
 
