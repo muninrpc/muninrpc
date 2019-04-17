@@ -70,6 +70,3 @@ Ray Yao *@RocaRay*
 Ed Ryan *@15ryane*
 
 
-Contributors and feedback welcome.
-
-
