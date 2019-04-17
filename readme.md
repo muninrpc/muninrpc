@@ -3,7 +3,7 @@
 
 ![MuninRPC](https://images-na.ssl-images-amazon.com/images/I/515xyoCME2L._SX425_.jpg)
 
-MuninRPC: a GUI client for RPC services.
+MuninRPC is a GUI client for RPC services.
   - Send requests to a gRPC service.
   - Upload your proto files, select a service, configure your message, and go.
   - This is an early build. Development is in progress! 
