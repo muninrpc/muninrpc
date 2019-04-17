@@ -1,7 +1,7 @@
 <h1 align="center">MuninRPC</h1>
 <h5 align="center">Quoth the raven: "I can mock my gRPC calls!"</h5>
 
-->![MuninRPC](https://images-na.ssl-images-amazon.com/images/I/515xyoCME2L._SX425_.jpg)<-
+![MuninRPC](https://images-na.ssl-images-amazon.com/images/I/515xyoCME2L._SX425_.jpg){: .center-image, height="300px", width="300px"}
 
 MuninRPC is a GUI client for RPC services.
   - Send requests to a gRPC service.
