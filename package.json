@@ -4,7 +4,7 @@
   "description": "protobuf and HTTP2 testing tool",
   "main": "main_process.js",
   "scripts": {
-    "bundle": "webpack",
+    "bundle": "webpack --mode development",
     "start": "export NODE_ENV=production; npm-run-all --parallel bundle serve",
     "dev": "export NODE_ENV=development; npm-run-all --parallel bundle serve",
     "serve": "electron .",
