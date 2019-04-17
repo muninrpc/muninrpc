@@ -35,7 +35,7 @@ We have compiled binaries available:
 Windows | [Mac](https://s3-us-west-1.amazonaws.com/elasticbeanstalk-us-west-1-763399177644/munin-rpc.zip) | Linux
 
 
--
+_
 
 
 MuninRPC can be compiled from source. It requires [Node.js](https://nodejs.org/) v4+ to run.
@@ -61,7 +61,7 @@ $ npm run test-frontend
 $ npm run test-backend
 ```
 
--- 
+_
 
 ##### Contributors:
 
