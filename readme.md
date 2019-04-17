@@ -57,8 +57,7 @@ $ npm run grpcserver
 Looking to contribute? You might be interested in our tests.
 
 ```sh
-$ npm run test-frontend
-$ npm run test-backend
+$ npm run test
 ```
 
 _
