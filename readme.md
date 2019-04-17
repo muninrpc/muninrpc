@@ -48,7 +48,7 @@ $ npm install
 $ npm start
 ```
 
-Start up a local grpc server for testing. A compatible sample proto file is included in "./__tests__/grpc-server/protos".
+Start up a local grpc server for testing. A compatible sample proto file is included in ".//__tests/__/grpc-server/protos".
 
 ```sh
 $ npm run grpcserver
