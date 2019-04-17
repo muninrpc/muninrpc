@@ -17,17 +17,17 @@
   }
 
   p:hover {
-    background: $primary-color;
+    background: #2699FB;
     color: white;
     cursor: pointer;
   }
   p:active {
-    background: darken($primary-color, 20%); 
+    background: darken(#2699FB, 20%); 
   }
   .selected {
     border-top-color: black;
     border-bottom-color: black;
-    background: $primary-color;
+    background: #2699FB;
     color: white;
   }
 

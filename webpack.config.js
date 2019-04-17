@@ -14,19 +14,27 @@ module.exports = {
     filename: 'bundle.js'
   },
 
-  devtool: 'source-map',
-
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json']
   },
 
   module: {
     rules: [
-      { test: /\.tsx?$/, loader: 'ts-loader' },
+      { 
+        test: /\.tsx?$/, 
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
+          }
+        ] 
+      },
       {
-        test: /\.scss$/,
+        test: /\.css$/,
         exclude: /(node_modules|bower_components)/,
-        use: ['style-loader', 'css-loader', 'sass-loader']
+        use: ['style-loader', 'css-loader']
       },
       {
         test: /\.(png|jpg|gif|svg)$/,
@@ -36,5 +44,12 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  // optimization: {
+  //   minimizer: [
+  //     new UglifyJsPlugin({
+  //       parallel: true,
+  //     }),
+  //   ],
+  // }
 };
