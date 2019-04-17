@@ -1,47 +1,49 @@
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const shouldWatch = process.env.NODE_ENV === "development";
 
 module.exports = {
-  watch: true,
+  watch: shouldWatch,
+  mode: process.env.NODE_ENV,
+  target: "electron-renderer",
 
-  target: 'electron-renderer',
+  entry: "./app/src/renderer_process.tsx",
 
-  entry: './app/src/renderer_process.tsx',
-
-  externals: ['grpc'],
+  externals: ["grpc"],
 
   output: {
-    path: __dirname + '/app/build',
-    libraryTarget: 'commonjs2',
-    publicPath: 'build/',
-    filename: 'bundle.js'
+    path: __dirname + "/app/build",
+    libraryTarget: "commonjs2",
+    publicPath: "build/",
+    filename: "bundle.js",
   },
 
-  devtool: 'source-map',
+  devtool: "source-map",
 
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: [".ts", ".tsx", ".js", ".json"],
   },
 
   module: {
     rules: [
-      { test: /\.tsx?$/, 
+      {
+        test: /\.tsx?$/,
         use: [
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
             options: {
-              transpileOnly: true
-            }
-          }
-        ] 
-      },   
+              transpileOnly: true,
+            },
+          },
+        ],
+      },
       {
         test: /\.scss$/,
         exclude: /(node_modules|bower_components)/,
-        use: ['style-loader', 'css-loader', 'sass-loader']
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
       {
         test: /\.(png|jpg|gif|svg)$/,
-        loader: 'file-loader',
+        loader: "file-loader",
         query: {
           name: '[name].[ext]?[hash]'
         }

@@ -4,12 +4,14 @@
   "description": "protobuf and HTTP2 testing tool",
   "main": "main_process.js",
   "scripts": {
-    "bundle": "webpack --mode production",
+    "bundle": "webpack",
+    "start": "export NODE_ENV=production; npm-run-all --parallel bundle serve",
+    "dev": "export NODE_ENV=development; npm-run-all --parallel bundle serve",
     "serve": "electron .",
-    "start": "npm-run-all --parallel bundle serve",
-    "test": "jest",
     "postinstall": "npm rebuild --target=4.0.0 --runtime=electron --dist-url=https://atom.io/download/electron",
-    "grpcserver": "node app/__tests__/grpc-server/grpc-server.js"
+    "grpcserver": "node app/__tests__/grpc-server/grpc-server.js",
+    "test": "jest --verbose",
+    "build": "export NODE_ENV=production; webpack"
   },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
