@@ -23,7 +23,7 @@ interface LeftProps {
   baseConfig: BaseConfig;
   requestConfig: RequestConfig<any>;
   configElements: {};
-  configArguments: {};
+  configArguments: { arguments: {} };
   messageRecommendations: string[];
   messageTrie: Trie;
   messageTrieInput: string;
@@ -33,9 +33,9 @@ interface LeftProps {
   serviceRecommendations: string[];
   serviceTrie: Trie;
   serviceTrieInput: string;
-  cleanConfigArgs: {};
+  cleanConfigArgs: { arguments: {} };
   getTabState: (state: LeftProps) => { type: string; payload: LeftProps };
-  updateTabNames: { getTabState: (state: any) => any; updateTabNames: (state: any) => any };
+  updateTabNames: (o: { val: string; tabKey: string }) => void;
   setGRPCResponse: ({response: string, tabKey}) => any;
 }
 
@@ -63,8 +63,8 @@ export const LeftFactory = (props: LeftProps) => {
       baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "", onErrCb: (err) => props.setGRPCResponse({response: err, tabKey: props.tabKey}) },
       requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
-      configArguments: {},
-      cleanConfigArgs: {},
+      configArguments: { arguments: {} },
+      cleanConfigArgs: { arguments: {} },
       messageRecommendations: [],
       messageTrie: new Trie(),
       messageTrieInput: "",
@@ -228,7 +228,7 @@ export const LeftFactory = (props: LeftProps) => {
     };
 
     const handleRepeatedClick = payload => {
-      let keys = payload.id.split(".").slice(1);
+      const keys = payload.id.split(".").slice(1);
 
       function findNestedValue(context, keyArray, clean = false) {
         // base case
@@ -237,7 +237,7 @@ export const LeftFactory = (props: LeftProps) => {
         }
         // recu case
         if (keyArray[0].match("@")) {
-          let loc = clean ? 0 : Number(keyArray[0].match(/\d+$/)[0]);
+          const loc = clean ? 0 : Number(keyArray[0].match(/\d+$/)[0]);
           let con = keyArray[0];
           con = con.match(/(.+)@/)[1];
           return findNestedValue(context[con][loc], keyArray.slice(1), clean);
@@ -335,7 +335,7 @@ export const LeftFactory = (props: LeftProps) => {
         <input
           className={"tab-header"}
           value={state.tabName}
-          onClick={() => console.log(state)}
+          onClick={() => (process.env.NODE_ENV === "development" ? console.log(state) : null)}
           onChange={e => handleTabNameChange(e.target.value)}
           style={{ color: "black" }}
         />

@@ -147,7 +147,6 @@ export const mainRequestActions = {
         ...activeTab.requestConfig,
         callbacks: {
           onDataReadCb: response => dispatch(mainRequestActions.setGRPCResponse({response: response, tabKey: selectedTab})),
-          onDataWriteCb: response => {},
           onEndReadCb: () => {
             dispatch(mainRequestActions.handleStopStream());
           },
