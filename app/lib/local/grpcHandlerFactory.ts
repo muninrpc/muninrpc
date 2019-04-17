@@ -8,6 +8,7 @@ export interface BaseConfig {
   packageDefinition: protoLoader.PackageDefinition;
   packageName: string; // ex: todo
   serviceName: string; // ex: ListActions
+  onErrCb: (err: Error) => void;
 }
 
 export interface RequestConfig<T extends void | ClientStreamCbs | BidiAndServerStreamCbs> {
@@ -119,6 +120,7 @@ abstract class GrpcHandler {
   protected loadedPackage: typeof grpc.Client;
   public client: grpc.Client;
   protected args: object;
+  protected onErrCb: (err: Error) => void;
 
   constructor(config: BaseConfig & RequestConfig<any>) {
     this.packageName = config.packageName;
@@ -126,6 +128,7 @@ abstract class GrpcHandler {
     this.requestName = config.requestName;
     this.loadedPackage = grpc.loadPackageDefinition(config.packageDefinition)[this.packageName] as typeof grpc.Client;
     this.args = config.argument;
+    this.onErrCb = config.onErrCb;
     this.client = new this.loadedPackage[this.serviceName](
       config.grpcServerURI,
       grpc.credentials.createInsecure(),
@@ -182,7 +185,7 @@ class ClientStreamHandler extends GrpcHandler implements GrpcWriter {
   public initiateRequest() {
     this.writableStream = this.client[this.requestName]((err, response) => {
       if (err) {
-        throw err;
+        this.onErrCb(err);
       }
       this.onEndReadCb(response);
     });
@@ -225,6 +228,7 @@ export class ServerStreamHandler extends GrpcHandler implements GrpcReader {
       this.updateReadData(data);
       this.notifyObservers(this.onEndReadCb);
     });
+    this.readableStream.on("error", err => this.onErrCb(err));
   }
 
   public getEmitters() {
@@ -270,7 +274,7 @@ export class BidiStreamHandler extends GrpcHandler implements GrpcReaderWriter {
       // this.notifyObservers("read", "end");
       this.notifyObservers(this.onEndReadCb);
     });
-    this.bidiStream.on("error", err => console.error("Error message in bidistream:", err));
+    this.bidiStream.on("error", err => this.onErrCb(err));
     return this;
   }
 

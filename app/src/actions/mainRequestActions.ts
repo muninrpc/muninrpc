@@ -50,7 +50,7 @@ export const mainRequestActions = {
         .then(response => {
           dispatch(mainRequestActions.setGRPCResponse(response));
         })
-        .catch(error => {
+        .catch(error: Error => {
           dispatch(mainRequestActions.setGRPCResponse(error));
         });
     }
