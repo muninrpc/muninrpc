@@ -69,4 +69,4 @@ Ray Yao *@RocaRay*
 
 Ed Ryan *@15ryane*
 
-Raven motif from ![Silver Spiral](https://www.zazzle.com/mbr/238845459138370735).
+Raven motif from [Silver Spiral](https://www.zazzle.com/mbr/238845459138370735).
