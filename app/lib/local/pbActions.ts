@@ -8,16 +8,20 @@ import * as protoLoader from "@grpc/proto-loader";
 
 //loads and configures a proto file
 //takes a file path to a .proto file as an argument
-export function loadProtoFile(protoPath: string): protoLoader.PackageDefinition {
-  const packageDefinition = protoLoader.loadSync(protoPath, {
-    keepCase: true,
-    longs: String,
-    enums: String,
-    defaults: true,
-    oneofs: true,
-  });
-  //returns a pckg definition
-  return packageDefinition;
+export function loadProtoFile(protoPath: string): protoLoader.PackageDefinition | Error {
+  try {
+    const packageDefinition = protoLoader.loadSync(protoPath, {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+    });
+    //returns a pckg definition
+    return packageDefinition;
+  } catch {
+    return Error("Cannot load protofile");
+  }
 }
 
 //parses a pkg definition
