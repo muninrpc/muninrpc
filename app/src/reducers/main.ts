@@ -130,10 +130,10 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
 
     case mainRequestActionType.SET_GRPC_RESPONSE: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
-      newHandlerInfo[state.selectedTab].serverResponse = action.payload;
+      newHandlerInfo[action.payload.tabKey].serverResponse = action.payload.response;
       // console.log('action.payload inside of reducer', action.payload instanceof Error)
-      if (action.payload instanceof Error) {
-        newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR";
+      if (action.payload.response instanceof Error) {
+        newHandlerInfo[action.payload.tabKey].responseMetrics.request = "ERROR";
       }
       return {
         ...state,

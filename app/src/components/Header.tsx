@@ -165,6 +165,7 @@ export function Header(props: MainModel & actions, context?: any) {
           {tabArray}
           <button
             className="add"
+            //@ts-ignore
             onClick={() => addNewTab({ getTabState: getTabState, updateTabNames: updateTabNames })}
           >
             +

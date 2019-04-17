@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "sourceMap": true,
+    "skipLibCheck": true,
     "noImplicitAny": false,
     "module": "commonjs",
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
     "experimentalDecorators": true
-  }
+  },
 }

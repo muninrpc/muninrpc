@@ -13,6 +13,11 @@
     "test": "jest --verbose",
     "build": "export NODE_ENV=production; webpack"
   },
+  "jest": {
+    "globals": {
+      "window": {}
+    }
+  },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
   "license": "MIT",
@@ -40,6 +45,7 @@
     "enzyme-to-json": "^3.3.5",
     "file-loader": "^1.1.10",
     "jest": "^24.5.0",
+    "jest-enzyme": "^7.0.2",
     "node-sass": "^4.11.0",
     "npm-run-all": "^4.1.2",
     "redux-devtools-extension": "^2.13.8",

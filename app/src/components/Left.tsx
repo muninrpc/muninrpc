@@ -52,7 +52,7 @@ export const LeftFactory = (props: LeftProps) => {
       updateTabNames: props.updateTabNames,
       tabName: "New Connection",
       handlerContext: [],
-      filePath: "",
+      filePath: "Upload your proto file to get started",
       serviceList: {},
       messageList: [],
       selectedService: "",
