@@ -71,3 +71,55 @@ Ed Ryan *@15ryane*
 Contributors and feedback welcome.
 
 
+  - Supports unary, server-push, client-push, and bi-directional requests.
+  - Keeps a record of your outgoing and incoming messages.
+  - Large proto file? No problem. Search your messages and services for what you need.
+  - Clean, beautiful, tabbed interface.
+
+
+_
+
+
+### Installation & Use
+
+We have compiled binaries available:
+
+Windows | [Mac](https://s3-us-west-1.amazonaws.com/elasticbeanstalk-us-west-1-763399177644/munin-rpc.zip) | Linux
+
+
+_
+
+
+MuninRPC can be compiled from source. It requires [Node.js](https://nodejs.org/) v4+ to run.
+
+Install the dependencies and devDependencies and start the application.
+
+```sh
+$ cd MuninRPC
+$ npm install
+$ npm start
+```
+
+Start up a local grpc server for testing. A compatible sample proto file is included in "./\_\_tests\_\_/grpc-server/protos".
+
+```sh
+$ npm run grpcserver
+```
+
+Looking to contribute? You might be interested in our tests.
+
+```sh
+$ npm run test
+```
+
+_
+
+##### Contributors:
+
+Sterling Deng *@sterlingdeng* 
+
+Ray Yao *@RocaRay*
+
+Ed Ryan *@15ryane*
+
+Raven motif from [Silver Spiral](https://www.zazzle.com/mbr/238845459138370735).

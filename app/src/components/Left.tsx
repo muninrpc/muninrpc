@@ -58,7 +58,7 @@ export const LeftFactory = (props: LeftProps) => {
       selectedService: "",
       selectedRequest: "",
       mode: "SERVICE_AND_REQUEST",
-      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "" },
+      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "", onErrCb: null },
       requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
       configArguments: {},
@@ -194,6 +194,11 @@ export const LeftFactory = (props: LeftProps) => {
       // handle file
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
+      if (packageDefinition instanceof Error) {
+        props.baseConfig.onErrCb(packageDefinition);
+        throw new Error("Cannot load protofile");
+      }
+
       const { protoServices, protoMessages } = pbActions.parsePackageDefinition(packageDefinition);
 
       // populate tries
@@ -240,10 +245,10 @@ export const LeftFactory = (props: LeftProps) => {
       }
 
       // find the correct location
-      let context = findNestedValue(state.configArguments.arguments, keys);
-      let cleanContext = findNestedValue(state.cleanConfigArgs.arguments, keys, true);
-      let baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
-      let baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
+      const context = findNestedValue(state.configArguments.arguments, keys);
+      const cleanContext = findNestedValue(state.cleanConfigArgs.arguments, keys, true);
+      const baseKey = keys[keys.length - 1].match(/(.+)@/)[1];
+      const baseLoc = Number(keys[keys.length - 1].match(/\d+$/)[0]);
 
       if (payload.request === "add") {
         context[baseKey][context[baseKey].length] = cloneDeep(cleanContext[baseKey][0]);
