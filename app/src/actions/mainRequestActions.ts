@@ -24,15 +24,17 @@ export const mainRequestActions = {
   handleSendMessage: () => action(mainRequestActionType.HANDLE_SEND_MESSAGE),
   handleRecieveMessage: () => action(mainRequestActionType.HANDLE_RECIEVE_MESSAGE),
   handleStopStream: (type?: string) => action(mainRequestActionType.HANDLE_STOP_STREAM, type),
-  setGRPCResponse: (response: object) => action(mainRequestActionType.SET_GRPC_RESPONSE, response),
+  setGRPCResponse: (res: {response: object, tabKey: string}) => action(mainRequestActionType.SET_GRPC_RESPONSE, res),
   handleUnaryRequest: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
+    const selectedTab = state.selectedTab;
 
     if (activeTab.requestConfig.callType === CallType.UNARY_CALL) {
       const requestConfig: RequestConfig<void> = {
         ...activeTab.requestConfig,
         argument: activeTab.configArguments.arguments,
+        
       };
       const mergedConfig: BaseConfig & RequestConfig<void> = {
         ...activeTab.baseConfig,
@@ -48,10 +50,10 @@ export const mainRequestActions = {
       handler
         .initiateRequest()
         .then(response => {
-          dispatch(mainRequestActions.setGRPCResponse(response));
+          dispatch(mainRequestActions.setGRPCResponse({response: response, tabKey: selectedTab}) );
         })
         .catch(error => {
-          dispatch(mainRequestActions.setGRPCResponse(error));
+          dispatch(mainRequestActions.setGRPCResponse({response: error, tabKey: selectedTab}));
         });
     }
   },
@@ -59,6 +61,7 @@ export const mainRequestActions = {
   handleClientStreamStart: () => (dispatch, getState) => {
     const activeTab = getState().main.activeTab;
     const state = getState().main;
+    const selectedTab = state.selectedTab;
 
     if (activeTab.requestConfig.callType === CallType.CLIENT_STREAM) {
       const requestConfig: RequestConfig<ClientStreamCbs> = {
@@ -66,15 +69,20 @@ export const mainRequestActions = {
         callbacks: {
           onEndReadCb: res => {
             dispatch(
-              mainRequestActions.setGRPCResponse([
-                { type: "read", payload: res },
-                ...getState().main.handlerInfo[state.selectedTab].serverResponse,
-              ]),
+              mainRequestActions.setGRPCResponse({
+                response: [{ 
+                  type: "read", 
+                  payload: res 
+                  },
+                  ...getState().main.handlerInfo[state.selectedTab].serverResponse,
+                ], 
+                tabKey: selectedTab
+              }),
             );
           },
-          onDataWriteCb: res =>
+          onDataWriteCb: response =>
             setTimeout(() => {
-              dispatch(mainRequestActions.setGRPCResponse(res));
+              dispatch(mainRequestActions.setGRPCResponse({response: response, tabKey: selectedTab}));
             }, 1),
         },
         argument: {},
@@ -103,11 +111,11 @@ export const mainRequestActions = {
       const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
         callbacks: {
-          onDataReadCb: res => {
-            dispatch(mainRequestActions.setGRPCResponse(res));
+          onDataReadCb: response => {
+            dispatch(mainRequestActions.setGRPCResponse({response: response, tabKey: selectedTab}));
             dispatch(mainRequestActions.handleRecieveMessage());
           },
-          onEndReadCb: res => {
+          onEndReadCb: response => {
             dispatch(mainRequestActions.handleStopStream("server_end"));
           },
         },
@@ -138,8 +146,7 @@ export const mainRequestActions = {
       const requestConfig: RequestConfig<BidiAndServerStreamCbs> = {
         ...activeTab.requestConfig,
         callbacks: {
-          onDataReadCb: res => dispatch(mainRequestActions.setGRPCResponse(res)),
-          // onDataWriteCb: res => {},
+          onDataReadCb: response => dispatch(mainRequestActions.setGRPCResponse({response: response, tabKey: selectedTab})),
           onEndReadCb: () => {
             dispatch(mainRequestActions.handleStopStream());
           },

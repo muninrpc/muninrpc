@@ -4,7 +4,7 @@
   "description": "protobuf and HTTP2 testing tool",
   "main": "main_process.js",
   "scripts": {
-    "bundle": "webpack",
+    "bundle": "webpack --mode development",
     "start": "export NODE_ENV=production; npm-run-all --parallel bundle serve",
     "dev": "export NODE_ENV=development; npm-run-all --parallel bundle serve",
     "serve": "electron .",
@@ -12,6 +12,11 @@
     "grpcserver": "node app/__tests__/grpc-server/grpc-server.js",
     "test": "jest --verbose",
     "build": "export NODE_ENV=production; webpack"
+  },
+  "jest": {
+    "globals": {
+      "window": {}
+    }
   },
   "author": "Sterling Deng @sterlingdeng, Edward Ryan @15ryane, Ray Yao @rocaray",
   "repository": "muninrpc/muninrpc",
@@ -35,25 +40,29 @@
     "electron": "4.0.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-reload": "^1.4.0",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.12.1",
+    "enzyme-to-json": "^3.3.5",
     "file-loader": "^1.1.10",
     "jest": "^24.5.0",
-    "lodash": "^4.17.11",
+    "jest-enzyme": "^7.0.2",
     "node-sass": "^4.11.0",
     "npm-run-all": "^4.1.2",
     "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0",
     "sass-loader": "^7.1.0",
+    "sinon": "^7.3.1",
     "style-loader": "^0.23.1",
     "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.3",
     "typesafe-actions": "^4.0.0",
     "typescript": "^3.3.4000",
+    "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.1.1",
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
-    "express": "^4.16.4",
+    "electron-forge": "^5.2.4",
     "grpc": "^1.19.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

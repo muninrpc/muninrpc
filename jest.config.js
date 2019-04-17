@@ -1,5 +1,10 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
-  testPathIgnorePatterns: ['/grpc-server/']
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/grpc-server/'],
+  globals: {
+    'ts-jest': {
+      diagnostics: false
+    }
+  }
 };

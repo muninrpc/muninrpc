@@ -8,6 +8,7 @@ import { Trie } from "../utils/trieClass";
 import { parseService } from "../utils/parseService";
 import { CallType, RequestConfig, BaseConfig } from "../../lib/local/grpcHandlerFactory";
 import * as cloneDeep from "lodash.clonedeep";
+import { any } from "prop-types";
 
 interface LeftProps {
   handlerContext: [];
@@ -35,6 +36,7 @@ interface LeftProps {
   cleanConfigArgs: { arguments: {} };
   getTabState: (state: LeftProps) => { type: string; payload: LeftProps };
   updateTabNames: (o: { val: string; tabKey: string }) => void;
+  setGRPCResponse: ({response: string, tabKey}) => any;
 }
 
 enum Mode {
@@ -52,13 +54,13 @@ export const LeftFactory = (props: LeftProps) => {
       updateTabNames: props.updateTabNames,
       tabName: "New Connection",
       handlerContext: [],
-      filePath: "",
+      filePath: "Upload your proto file to get started",
       serviceList: {},
       messageList: [],
       selectedService: "",
       selectedRequest: "",
       mode: "SERVICE_AND_REQUEST",
-      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "", onErrCb: null },
+      baseConfig: { grpcServerURI: "", packageDefinition: null, packageName: "", serviceName: "", onErrCb: (err) => props.setGRPCResponse({response: err, tabKey: props.tabKey}) },
       requestConfig: { requestName: "", callType: null, argument: {}, callbacks: null },
       configElements: {},
       configArguments: { arguments: {} },
@@ -195,7 +197,7 @@ export const LeftFactory = (props: LeftProps) => {
       const filePath = file[0].path;
       const packageDefinition = pbActions.loadProtoFile(filePath);
       if (packageDefinition instanceof Error) {
-        props.baseConfig.onErrCb(packageDefinition);
+        state.baseConfig.onErrCb(packageDefinition);
         throw new Error("Cannot load protofile");
       }
 

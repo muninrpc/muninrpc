@@ -1,3 +1,4 @@
+// const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const shouldWatch = process.env.NODE_ENV === "development";
 
 module.exports = {
@@ -44,9 +45,13 @@ module.exports = {
         test: /\.(png|jpg|gif|svg)$/,
         loader: "file-loader",
         query: {
-          name: "[name].[ext]?[hash]",
-        },
-      },
-    ],
+          name: '[name].[ext]?[hash]'
+        }
+      }
+    ]
   },
+  optimization: {
+    checkWasmTypes: false,
+    minimize: false
+	},
 };
