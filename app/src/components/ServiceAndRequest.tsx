@@ -18,7 +18,6 @@ export namespace ServiceAndRequestProps {
     serviceTrieInput: string;
     requestTrieInput: string;
     requestRecommendations: string[];
-    
   }
 }
 
@@ -26,23 +25,15 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   const requestListJSX: JSX.Element[] = [];
 
   // first filter based on service recommendations
-  const filteredServices = filterObject(
-    props.serviceList,
-    props.serviceRecommendations,
-    props.serviceTrieInput,
-  );
-  let requestList = {};
+  const filteredServices = filterObject(props.serviceList, props.serviceRecommendations, props.serviceTrieInput);
+  const requestList = {};
   Object.values(props.serviceList).forEach(serviceObj => {
-    Object.keys(serviceObj).forEach( requestName => {
+    Object.keys(serviceObj).forEach(requestName => {
       requestList[requestName] = true;
-    })
-  })
-  const filteredRequests = filterObject(
-    requestList,
-    props.requestRecommendations,
-    props.requestTrieInput
-  )
-  let filteredRequestsArray = Object.keys(filteredRequests);
+    });
+  });
+  const filteredRequests = filterObject(requestList, props.requestRecommendations, props.requestTrieInput);
+  const filteredRequestsArray = Object.keys(filteredRequests);
 
   /*
    * if we did not select a service, display all requests
@@ -77,7 +68,9 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
   } else {
     requestListJSX.push(
       <ServiceOrRequestList
-        List={Object.keys(props.serviceList[props.selectedService]).filter(elem => filteredRequestsArray.includes(elem))}
+        List={Object.keys(props.serviceList[props.selectedService]).filter(elem =>
+          filteredRequestsArray.includes(elem),
+        )}
         ListType="request"
         onClickHandler={props.handleRequestClick}
         selectedService={props.selectedService}
@@ -119,16 +112,14 @@ export default function ServiceAndRequest(props: ServiceAndRequestProps.Props, c
       <div className="service-request-right">
         <h2>Request</h2>
         <div className="request-header">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="type a request"
-            onChange={e => props.handleRequestTrie(e.target.value)} 
+            onChange={e => props.handleRequestTrie(e.target.value)}
             value={props.requestTrieInput}
           />
         </div>
-        <div className="request-area">
-          {requestListJSX}
-        </div>
+        <div className="request-area">{requestListJSX}</div>
       </div>
     </div>
   );

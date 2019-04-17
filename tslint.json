@@ -9,6 +9,7 @@
     "no-arg": true,
     "no-duplicate-key": true,
     "no-duplicate-variable": true,
+    "no-console": true,
     "no-empty": true,
     "no-eval": true,
     "no-string-literal": true,

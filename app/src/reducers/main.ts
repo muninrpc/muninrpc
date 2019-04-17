@@ -1,4 +1,4 @@
-import { mainActions, mainRequestActions } from "../actions";
+import { mainActionType, mainRequestActionType } from "../actions";
 import { MainModel } from "../models/MainModel";
 import * as cloneDeep from "lodash.clonedeep";
 import { LeftFactory } from "../components/Left";
@@ -16,7 +16,8 @@ const initialState: MainModel = {
 
 export const mainReducer = (state: MainModel = initialState, action: Types.RootAction) => {
   switch (action.type) {
-    case mainActions.Type.GET_TAB_STATE: {
+    case mainActionType.GET_TAB_STATE: {
+      // case getType(mainActions.getTabState): {
       return {
         ...state,
         activeTab: {
@@ -26,7 +27,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainActions.Type.ADD_NEW_TAB: {
+    case mainActionType.ADD_NEW_TAB: {
       const newLeftArray = cloneDeep(state.leftArray);
       const newSelectedTab = "tab" + state.tabPrimaryKey;
       const newHandlerInfo = cloneDeep(state.handlerInfo);
@@ -42,6 +43,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       const newTabPrimaryKey = state.tabPrimaryKey + 1;
       const leftEle = LeftFactory({
         tabKey: newSelectedTab,
+        //@ts-ignore
         getTabState: action.payload.getTabState,
         updateTabNames: action.payload.updateTabNames,
       });
@@ -61,10 +63,10 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainActions.Type.REMOVE_TAB: {
+    case mainActionType.REMOVE_TAB: {
       // expect a payload of 'tabN' where N is the tabID
-      let newLeftArray = cloneDeep(state.leftArray);
-      let removeIdx;
+      const newLeftArray: MainModel["leftArray"] = cloneDeep(state.leftArray);
+      let removeIdx: number;
       let newSelectedTab = state.selectedTab;
 
       // first search for the tab to delete
@@ -78,15 +80,12 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       if (state.selectedTab === action.payload) {
         // case - where there's nothing left to select
         if (state.leftArray.length === 1) {
-          console.log("case0");
           newSelectedTab = "";
           // case - where you delete the last tab
         } else if (removeIdx === newLeftArray.length - 1) {
-          console.log("case1");
           newSelectedTab = state.leftArray[removeIdx - 1].key.toString();
           // all other cases
         } else {
-          console.log("case2");
           newSelectedTab = state.leftArray[removeIdx + 1].key.toString();
         }
       }
@@ -103,7 +102,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainActions.Type.SELECT_TAB: {
+    case mainActionType.SELECT_TAB: {
       const newSelectedTab = action.payload;
       return {
         ...state,
@@ -111,7 +110,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainActions.Type.SELECT_RESPONSE_TAB: {
+    case mainActionType.SELECT_RESPONSE_TAB: {
       const newTabInfo = cloneDeep(state.tabInfo);
       newTabInfo[action.payload.selectedTab].activeResponseTab = action.payload.mode;
       return {
@@ -120,7 +119,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainActions.Type.UPDATE_TAB_NAMES: {
+    case mainActionType.UPDATE_TAB_NAMES: {
       const newTabInfo = cloneDeep(state.tabInfo);
       newTabInfo[action.payload.tabKey].name = action.payload.val;
       return {
@@ -129,18 +128,20 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainRequestActions.Type.SET_GRPC_RESPONSE: {
-      let newHandlerInfo = cloneDeep(state.handlerInfo);
+    case mainRequestActionType.SET_GRPC_RESPONSE: {
+      const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].serverResponse = action.payload;
       // console.log('action.payload inside of reducer', action.payload instanceof Error)
-      if (action.payload instanceof Error) newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR";
+      if (action.payload instanceof Error) {
+        newHandlerInfo[state.selectedTab].responseMetrics.request = "ERROR";
+      }
       return {
         ...state,
         handlerInfo: newHandlerInfo,
       };
     }
 
-    case mainActions.Type.TOGGLE_STREAM: {
+    case mainActionType.TOGGLE_STREAM: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].isStreaming = action.payload;
       newHandlerInfo[state.selectedTab].serverResponse = {};
@@ -150,7 +151,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainRequestActions.Type.HANDLE_SEND_MESSAGE: {
+    case mainRequestActionType.HANDLE_SEND_MESSAGE: {
       state.handlers[state.selectedTab].write(state.activeTab.configArguments.arguments);
       const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].responseMetrics = {
@@ -164,7 +165,7 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainRequestActions.Type.HANDLE_RECIEVE_MESSAGE: {
+    case mainRequestActionType.HANDLE_RECIEVE_MESSAGE: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
       newHandlerInfo[state.selectedTab].responseMetrics = {
         timeStamp: new Date().toLocaleTimeString("en-US", { hour12: false }),
@@ -176,18 +177,18 @@ export const mainReducer = (state: MainModel = initialState, action: Types.RootA
       };
     }
 
-    case mainRequestActions.Type.HANDLE_STOP_STREAM: {
+    case mainRequestActionType.HANDLE_STOP_STREAM: {
       const newHandlerInfo = cloneDeep(state.handlerInfo);
 
       // case - stopping a client push from client side
-      if(state.activeTab.requestConfig.callType === "CLIENT_STREAM") {
+      if (state.activeTab.requestConfig.callType === "CLIENT_STREAM") {
         state.handlers[state.selectedTab].end();
-      // case - stopping bidi / server push stream from client side
+        // case - stopping bidi / server push stream from client side
       } else {
         state.handlers[state.selectedTab].cancel();
       }
-      
-      let request;
+
+      let request: string;
       if (action.payload === "server_end") {
         request = `${state.activeTab.selectedRequest}: con. terminated by server.`;
       } else {

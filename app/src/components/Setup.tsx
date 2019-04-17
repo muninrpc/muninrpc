@@ -15,35 +15,25 @@ export interface SetupProps {
 }
 
 export default function Setup(props: SetupProps, context?: any) {
-  const {
-    handleConfigInput,
-    handleRepeatedClick,
-    serviceList,
-    selectedService,
-    selectedRequest,
-  } = props;
+  const { handleConfigInput, handleRepeatedClick, serviceList, selectedService, selectedRequest } = props;
+  const additionalMessages: JSX.Element[] | JSX.Element = ([] = []);
 
-  function generateFields(
-    cfgArgs: any,
-    cfgEle: any,
-    depth = 0,
-    path = "",
-  ): JSX.Element[] | JSX.Element {
+  function generateFields(cfgArgs: any, cfgEle: any, depth = 0, path = ""): JSX.Element[] | JSX.Element {
     function findNestedValue(context, keyArray) {
       // base case
       if (keyArray.length === 1) {
-        if(keyArray[0].match(/\d+$/)){
-          let loc = Number(keyArray[0].match(/\d+$/)[0]);
+        if (keyArray[0].match(/\d+$/)) {
+          const loc = Number(keyArray[0].match(/\d+$/)[0]);
           let con = keyArray[0];
           con = con.match(/(.+)@/)[1];
           return context[con][loc];
         } else {
-          return context[keyArray[0]]
+          return context[keyArray[0]];
         }
       }
       // recu case
       if (keyArray[0].match("@")) {
-        let loc = Number(keyArray[0].match(/\d+$/)[0]);
+        const loc = Number(keyArray[0].match(/\d+$/)[0]);
         let con = keyArray[0];
         con = con.match(/(.+)@/)[1];
         return findNestedValue(context[con][loc], keyArray.slice(1));
@@ -67,7 +57,7 @@ export default function Setup(props: SetupProps, context?: any) {
           if (Array.isArray(cfgEle[field])) {
             // is a repeating message
             if (cfgEle[field][0].type === "TYPE_MESSAGE") {
-              let pos = additionalMessages.length;
+              const pos = additionalMessages.length;
               cfgArgs[field].forEach((ele, idx) => {
                 additionalMessages.push(
                   <li
@@ -77,11 +67,7 @@ export default function Setup(props: SetupProps, context?: any) {
                       borderTopLeftRadius: idx === 0 ? "10px" : "",
                     }}
                   >
-                    <button
-                      onClick={() =>
-                        handleRepeatedClick({ id: path + "." + field + "@" + idx, request: "add" })
-                      }
-                    >
+                    <button onClick={() => handleRepeatedClick({ id: path + "." + field + "@" + idx, request: "add" })}>
                       +
                     </button>
                     <button
@@ -107,19 +93,14 @@ export default function Setup(props: SetupProps, context?: any) {
                     </div>
                   </li>,
                 );
-                generateFields(
-                  cfgArgs[field][idx],
-                  cfgEle[field][0],
-                  depth + 1,
-                  path + "." + field + "@" + idx,
-                );
+                generateFields(cfgArgs[field][idx], cfgEle[field][0], depth + 1, path + "." + field + "@" + idx);
               });
             }
             // case: is non-repeating
           } else {
             // is a non-repeating message
             if (cfgEle[field].type === "TYPE_MESSAGE") {
-              let pos = additionalMessages.length;
+              const pos = additionalMessages.length;
               additionalMessages.push(
                 <li
                   style={{
@@ -142,7 +123,7 @@ export default function Setup(props: SetupProps, context?: any) {
               generateFields(cfgArgs[field], cfgEle[field], depth + 1, path + "." + field);
               // is a repeating non-message
             } else if (cfgEle[field].label === "LABEL_REPEATED") {
-              let pos = additionalMessages.length;
+              const pos = additionalMessages.length;
               cfgArgs[field].forEach((ele, idx) => {
                 additionalMessages.push(
                   <li
@@ -152,11 +133,7 @@ export default function Setup(props: SetupProps, context?: any) {
                       borderTopLeftRadius: idx === 0 ? "10px" : "",
                     }}
                   >
-                    <button
-                      onClick={() =>
-                        handleRepeatedClick({ id: path + "." + field + "@" + idx, request: "add" })
-                      }
-                    >
+                    <button onClick={() => handleRepeatedClick({ id: path + "." + field + "@" + idx, request: "add" })}>
                       +
                     </button>
                     <button
@@ -199,7 +176,7 @@ export default function Setup(props: SetupProps, context?: any) {
               });
               // is a non-repeating non-message
             } else {
-              let pos = additionalMessages.length;
+              const pos = additionalMessages.length;
               additionalMessages.push(
                 <li
                   style={{
@@ -217,14 +194,9 @@ export default function Setup(props: SetupProps, context?: any) {
                   </div>
                   <input
                     id={path + "." + field}
-                    value={findNestedValue(
-                      props.configArguments.arguments,
-                      (path + "." + field).split(".").slice(1),
-                    )}
+                    value={findNestedValue(props.configArguments.arguments, (path + "." + field).split(".").slice(1))}
                     className={pos}
-                    onChange={e =>
-                      handleConfigInput({ id: path + "." + field, value: e.target.value })
-                    }
+                    onChange={e => handleConfigInput({ id: path + "." + field, value: e.target.value })}
                   />
                 </li>,
               );
@@ -235,7 +207,6 @@ export default function Setup(props: SetupProps, context?: any) {
     }
   }
 
-  const additionalMessages: JSX.Element[] | JSX.Element = ([] = []);
   generateFields(props.configArguments.arguments, props.configElements.arguments);
 
   return (

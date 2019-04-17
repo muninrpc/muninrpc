@@ -91,9 +91,6 @@ export class Trie {
       return recommended;
     }
 
-    // first we need to get to the final node
-    // REMINDER TO POP OFF WHEN WE EXiT FUNCTION
-
     Object.values(currNode.nextWords).forEach(childNode => {
       recommendHelper(childNode);
     });
