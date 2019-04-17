@@ -34,6 +34,7 @@ export const mainRequestActions = {
       const requestConfig: RequestConfig<void> = {
         ...activeTab.requestConfig,
         argument: activeTab.configArguments.arguments,
+        
       };
       const mergedConfig: BaseConfig & RequestConfig<void> = {
         ...activeTab.baseConfig,

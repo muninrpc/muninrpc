@@ -5,6 +5,7 @@ import { actions } from "../actions";
 
 export function Header(props: MainModel & actions, context?: any) {
   const {
+    setGRPCResponse,
     updateTabNames,
     handlerInfo,
     handleClientStreamStart,
@@ -33,7 +34,7 @@ export function Header(props: MainModel & actions, context?: any) {
   }
 
   //logic for what the buttons do
-  let displayButton = <button>SEND REQUEST</button>;
+  let displayButton = <button disabled={true}>SEND REQUEST</button>;
 
   const sendRequestButton = (
     <button className="send-req-btn" onClick={handleUnaryRequest}>
@@ -166,7 +167,7 @@ export function Header(props: MainModel & actions, context?: any) {
           <button
             className="add"
             //@ts-ignore
-            onClick={() => addNewTab({ getTabState: getTabState, updateTabNames: updateTabNames })}
+            onClick={() => addNewTab({ getTabState: getTabState, updateTabNames: updateTabNames, setGRPCResponse: setGRPCResponse })}
           >
             +
           </button>
