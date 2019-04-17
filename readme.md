@@ -34,9 +34,9 @@ We have compiled binaries available:
 
 Windows | [Mac](https://s3-us-west-1.amazonaws.com/elasticbeanstalk-us-west-1-763399177644/munin-rpc.zip) | Linux
 
+--
 
-
-MuninRPC requires [Node.js](https://nodejs.org/) v4+ to run.
+MuninRPC can be compiled from source. It requires [Node.js](https://nodejs.org/) v4+ to run.
 
 Install the dependencies and devDependencies and start the application.
 
