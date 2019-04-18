@@ -1,0 +1,11 @@
+package todo;
+syntax = "proto3";
+
+service ListActions {
+  rpc AddItem (Item) returns (ItemList) {}
+  // rpc RemoveItem(Item) returns (ItemList) {}
+  rpc GetList(GetListParams) returns (ItemList) {}
+  rpc TestServerStream(NoFields) returns (stream Numbers) {}
+  rpc ItemStreamer(stream Item) returns (stream StreamResponse) {}
+ 
+broken
