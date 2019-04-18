@@ -24,8 +24,13 @@ Built on the shoulders of giants:
   - Large proto file? No problem. Search your messages and services for what you need.
   - Clean, beautiful, tabbed interface.
 
-### Screenshots
+### Screengrabs
+#### Upload your protofiles
 ![](https://muninrpc.dev/static/ex0-2f7b65fcbbb0f5c82174a2e09b729a9b.gif)
+#### Supports Streaming
+![](https://muninrpc.dev/static/ex1-c137b702eaeea7a111f57936584c9d60.gif)
+#### Tabbed Interface
+![](https://muninrpc.dev/static/ex2-0b0344c2be229df36a70ceeada27a61f.gif)
 
 
 ### Installation & Use
