@@ -2,6 +2,7 @@ import * as React from "react";
 import { CallType } from "../../lib/local/grpcHandlerFactory";
 import { MainModel } from "../models";
 import { actions } from "../actions";
+import { JSXElement } from "@babel/types";
 
 export function Header(props: MainModel & actions, context?: any) {
   const {
@@ -84,6 +85,18 @@ export function Header(props: MainModel & actions, context?: any) {
     </button>
   );
 
+  const stopStreamButtonEnabled = (
+    <button className="stop-button" onClick={() => handleStopStream()}>
+      STOP STREAM
+    </button>
+  )
+
+  const stopStreamButtonDisabled = (
+    <button className="stop-button" disabled={true} onClick={() => handleStopStream()}>
+      STOP STREAM
+    </button>
+  )
+
   switch (callType) {
     case CallType.UNARY_CALL: {
       userConnectType = "UNARY";
@@ -139,10 +152,13 @@ export function Header(props: MainModel & actions, context?: any) {
     );
   });
 
-  let disabledFlag: boolean;
+  let stopStreamButton = stopStreamButtonDisabled;
+
   if (handlerInfo[selectedTab]) {
-    disabledFlag = handlerInfo[selectedTab].isStreaming ? false : true;
+    if(handlerInfo[selectedTab].isStreaming) displayButton = writeToStreamButton;
+    stopStreamButton = handlerInfo[selectedTab].isStreaming ? stopStreamButtonEnabled : stopStreamButtonDisabled;
   }
+
 
   return (
     <div className="header">
@@ -151,9 +167,7 @@ export function Header(props: MainModel & actions, context?: any) {
           <div className="trail">{trail}</div>
           <div className="connection-display">{userConnectType}</div>
           {displayButton}
-          <button className="stop-button" disabled={disabledFlag} onClick={() => handleStopStream()}>
-            STOP STREAM
-          </button>
+          {stopStreamButton}
         </div>
         <div className="header-right">
           <h1>MuninRPC</h1>
