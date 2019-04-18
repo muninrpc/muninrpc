@@ -24,8 +24,8 @@ Built on the shoulders of giants:
   - Large proto file? No problem. Search your messages and services for what you need.
   - Clean, beautiful, tabbed interface.
 
-
-_
+### Screenshots
+![](https://muninrpc.dev/static/ex0-2f7b65fcbbb0f5c82174a2e09b729a9b.gif)
 
 
 ### Installation & Use
