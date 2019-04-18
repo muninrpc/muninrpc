@@ -25,7 +25,6 @@ const toDoList = [{ item: "clean the house" }, { item: "do laundry" }];
  */
 
 function GetList(call, callback) {
-  console.log("Getting List of ToDo's");
   callback(null, { items: toDoList });
 }
 
@@ -60,14 +59,19 @@ function TestServerStream(call: grpc.ServerWriteableStream<any>) {
   call.on("cancelled", () => {
     call.end();
   });
-  const stopID = setInterval(() => {
-    const randomInt = Math.floor(Math.random() * 100);
-    call.write({ numb: 3 });
-  }, 500);
-  setTimeout(() => {
-    clearInterval(stopID);
-    call.end();
-  }, 1000 * 3);
+  const sendThis = [3, 3, 3, 3, 3];
+  sendThis.forEach(msg => {
+    call.write({ numb: msg });
+  });
+  call.end();
+  // const stopID = setInterval(() => {
+  //   const randomInt = Math.floor(Math.random() * 100);
+  //   call.write({ numb: 3 });
+  // }, 100);
+  // setTimeout(() => {
+  //   clearInterval(stopID);
+  //   call.end();
+  // }, 1000 * 0.6);
 }
 
 /**
@@ -77,7 +81,6 @@ function TestServerStream(call: grpc.ServerWriteableStream<any>) {
  */
 
 function ItemStreamer(call: grpc.ServerDuplexStream<any, any>) {
-  console.log("stream open");
   let counter = 0;
   call.on("data", msg => {
     call.write({ msg: `${msg.item} - count: ${counter++}` });
